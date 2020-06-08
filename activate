@@ -1,2 +1,3 @@
 export JQF_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+export CLASSPATH=$CLASSPATH:$($JQF_DIR/scripts/classpath.sh)
 export PATH=$PATH:$JQF_DIR/bin
