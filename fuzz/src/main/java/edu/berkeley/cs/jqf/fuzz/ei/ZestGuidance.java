@@ -161,6 +161,12 @@ public class ZestGuidance implements Guidance {
     /** save crash to specific location (should be used with EXIT_ON_CRASH) **/
     static final String EXACT_CRASH_PATH = System.getProperty("jqf.ei.EXACT_CRASH_PATH");
 
+    protected boolean isPlateauReached = false;
+
+    protected int notToSaveCount = 0;
+
+    protected int plateauThreshold = 10;
+
     // ---------- LOGGING / STATS OUTPUT ------------
 
     /** Whether to print log statements to stderr (debug option; manually edit). */
@@ -209,6 +215,9 @@ public class ZestGuidance implements Guidance {
 
     /** Whether to stop/exit once a crash is found. **/
     static final boolean EXIT_ON_CRASH = Boolean.getBoolean("jqf.ei.EXIT_ON_CRASH");
+
+    /** Whether to stop/exit once a plateau is reached. **/
+    static final boolean EXIT_ON_PLATEAU = Boolean.getBoolean("jqf.ei.EXIT_ON_PLATEAU");
 
     // ------------- FUZZING HEURISTICS ------------
 
@@ -612,13 +621,16 @@ public class ZestGuidance implements Guidance {
 
     @Override
     public boolean hasInput() {
-        Date now = new Date();
-        long elapsedMilliseconds = now.getTime() - startTime.getTime();
-        if (EXIT_ON_CRASH && uniqueFailures.size() >= 1) {
-            // exit
-            return false;
-        }
-        return elapsedMilliseconds < maxDurationMillis;
+      Date now = new Date();
+      long elapsedMilliseconds = now.getTime() - startTime.getTime();
+      if (EXIT_ON_CRASH && uniqueFailures.size() >= 1) {
+        // exit
+        return false;
+      }
+      if (EXIT_ON_PLATEAU && isPlateauReached) {
+        return false;
+      }
+      return elapsedMilliseconds < maxDurationMillis;
     }
 
     @Override
@@ -690,6 +702,9 @@ public class ZestGuidance implements Guidance {
 
             if (toSave) {
 
+                // reset
+                notToSaveCount = 0;
+
                 // Trim input (remove unused keys)
                 currentInput.gc();
 
@@ -714,6 +729,12 @@ public class ZestGuidance implements Guidance {
                 final String reason = why;
                 GuidanceException.wrap(() -> saveCurrentInput(responsibilities, reason));
 
+            } else {
+              notToSaveCount++;
+              if (notToSaveCount > plateauThreshold) {
+                console.printf("A plateau is reached!!!\n");
+                isPlateauReached = true;
+              }
             }
         } else if (result == Result.FAILURE || result == Result.TIMEOUT) {
             String msg = error.getMessage();

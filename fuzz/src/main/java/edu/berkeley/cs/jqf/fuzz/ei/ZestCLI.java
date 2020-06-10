@@ -61,6 +61,10 @@ public class ZestCLI implements Runnable{
         @Option(names = { "--exact-crash-path" },
                 description = "exact path for the crash")
         String exactCrashPath;
+
+        @Option(names = { "--exit-on-plateau" },
+                description = "Exit fuzzer when plateau is reached (default: false)")
+        boolean exitOnPlateau = false;
     }
 
     @Option(names = { "-l", "--libfuzzer-compat-output" },
@@ -119,11 +123,15 @@ public class ZestCLI implements Runnable{
 
         if (this.dependent != null) {
             if (this.dependent.exitOnCrash) {
-                System.setProperty("jqf.ei.EXIT_ON_CRASH", "true");
+              System.setProperty("jqf.ei.EXIT_ON_CRASH", "true");
             }
 
             if (this.dependent.exactCrashPath != null) {
-                System.setProperty("jqf.ei.EXACT_CRASH_PATH", this.dependent.exactCrashPath);
+              System.setProperty("jqf.ei.EXACT_CRASH_PATH", this.dependent.exactCrashPath);
+            }
+
+            if (this.dependent.exitOnPlateau) {
+              System.setProperty("jqf.ei.EXIT_ON_PLATEAU", "true");
             }
         }
 
