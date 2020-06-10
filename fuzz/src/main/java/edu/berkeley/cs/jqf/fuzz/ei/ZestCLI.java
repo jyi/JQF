@@ -67,6 +67,10 @@ public class ZestCLI implements Runnable{
         boolean exitOnPlateau = false;
     }
 
+    @Option(names = { "--plateau-threshold" },
+            description = "Plateau threshold")
+    int plateauThreshold = 10;
+
     @Option(names = { "-l", "--libfuzzer-compat-output" },
             description = "Use libFuzzer compat output instead of AFL like stats screen (default: false)")
     private boolean libFuzzerCompatOutput = false;
@@ -134,6 +138,9 @@ public class ZestCLI implements Runnable{
               System.setProperty("jqf.ei.EXIT_ON_PLATEAU", "true");
             }
         }
+
+        System.setProperty("jqf.ei.PLATEAU_THRESHOLD",
+                           String.valueOf(this.plateauThreshold));
 
         if (this.libFuzzerCompatOutput) {
             System.setProperty("jqf.ei.LIBFUZZER_COMPAT_OUTPUT", "true");

@@ -165,7 +165,9 @@ public class ZestGuidance implements Guidance {
 
     protected int notToSaveCount = 0;
 
-    protected int plateauThreshold = 10;
+    protected int plateauThreshold =
+      System.getProperty("jqf.ei.PLATEAU_THRESHOLD") != null?
+      Integer.getInteger("jqf.ei.PLATEAU_THRESHOLD") : 10;
 
     // ---------- LOGGING / STATS OUTPUT ------------
 
