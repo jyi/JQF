@@ -1,0 +1,3 @@
+#!/bin/bash
+
+java -jar $JQF_DIR/fuzz/target/jqf-fuzz-1.5-SNAPSHOT-zest-cli.jar $@
