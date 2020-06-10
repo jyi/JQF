@@ -51,5 +51,5 @@ fi
 method=$2
 
 # Run the repro input driver
-$ROOT_DIR/scripts/jqf-driver.sh daikon.Chicory --ppt-select-pattern=${method}$ edu.berkeley.cs.jqf.fuzz.repro.ReproDriver $@
+$ROOT_DIR/scripts/jqf-driver.sh daikon.Chicory --ppt-select-pattern="run_${method}$" edu.berkeley.cs.jqf.fuzz.repro.ReproDriver $@
 $ROOT_DIR/scripts/jqf-driver.sh daikon.DataGen --out-dir data ReproDriver.dtrace.gz
