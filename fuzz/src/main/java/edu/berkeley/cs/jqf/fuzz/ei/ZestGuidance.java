@@ -163,7 +163,7 @@ public class ZestGuidance implements Guidance {
 
     protected boolean isPlateauReached = false;
 
-    protected int notToSaveCount = 0;
+    protected int noProgress = 0;
 
     protected int plateauThreshold =
       System.getProperty("jqf.ei.PLATEAU_THRESHOLD") != null?
@@ -249,6 +249,8 @@ public class ZestGuidance implements Guidance {
 
     /** Whether to steal responsibility from old inputs (this increases computation cost). */
     static final boolean STEAL_RESPONSIBILITY = Boolean.getBoolean("jqf.ei.STEAL_RESPONSIBILITY");
+
+    static final boolean SAVE_ALL_INPUTS = Boolean.getBoolean("jqf.ei.SAVE_ALL_INPUTS");
 
     /**
      * Creates a new guidance instance.
@@ -672,6 +674,13 @@ public class ZestGuidance implements Guidance {
             int nonZeroAfter = totalCoverage.getNonZeroCount();
             if (nonZeroAfter > maxCoverage) {
                 maxCoverage = nonZeroAfter;
+                noProgress = 0; // reset
+            } else {
+              noProgress++;
+              if (noProgress > plateauThreshold) {
+                console.printf("A plateau is reached!!!\n");
+                isPlateauReached = true;
+              }
             }
             int validNonZeroAfter = validCoverage.getNonZeroCount();
 
@@ -679,6 +688,9 @@ public class ZestGuidance implements Guidance {
             boolean toSave = false;
             String why = "";
 
+            if (SAVE_ALL_INPUTS) {
+              toSave = true;
+            }
 
             if (SAVE_NEW_COUNTS && coverageBitsUpdated) {
                 toSave = true;
@@ -704,9 +716,6 @@ public class ZestGuidance implements Guidance {
 
             if (toSave) {
 
-                // reset
-                notToSaveCount = 0;
-
                 // Trim input (remove unused keys)
                 currentInput.gc();
 
@@ -731,12 +740,6 @@ public class ZestGuidance implements Guidance {
                 final String reason = why;
                 GuidanceException.wrap(() -> saveCurrentInput(responsibilities, reason));
 
-            } else {
-              notToSaveCount++;
-              if (notToSaveCount > plateauThreshold) {
-                console.printf("A plateau is reached!!!\n");
-                isPlateauReached = true;
-              }
             }
         } else if (result == Result.FAILURE || result == Result.TIMEOUT) {
             String msg = error.getMessage();
