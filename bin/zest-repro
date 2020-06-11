@@ -1,0 +1,23 @@
+#!/bin/bash
+
+CP=$JQF_DIR/fuzz/target/classes:$CLASSPATH
+
+if [ -z ${PROJECT_CP+x} ]; then
+    echo "PROJECT_CP is not set"
+    exit 1
+fi
+CP=$PROJECT_CP:$CP
+
+if [ -z ${METHOD+x} ]; then
+    echo "METHOD is not set"
+    exit 1
+fi
+
+if [ -z ${OUTPUT_DIR+x} ]; then
+    echo "OUTPUT_DIR is not set"
+    exit 1
+fi
+
+java -cp $CP daikon.Chicory --ppt-select-pattern="${METHOD}$" \
+     --output-dir "$OUTPUT_DIR" \
+     edu.berkeley.cs.jqf.fuzz.repro.ReproDriver $@
