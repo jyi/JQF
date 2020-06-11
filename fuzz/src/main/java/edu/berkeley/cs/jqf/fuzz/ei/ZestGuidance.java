@@ -250,7 +250,8 @@ public class ZestGuidance implements Guidance {
     /** Whether to steal responsibility from old inputs (this increases computation cost). */
     static final boolean STEAL_RESPONSIBILITY = Boolean.getBoolean("jqf.ei.STEAL_RESPONSIBILITY");
 
-    static final boolean SAVE_ALL_INPUTS = Boolean.getBoolean("jqf.ei.SAVE_ALL_INPUTS");
+    static final boolean SAVE_ALL_PASSING_INPUTS =
+      Boolean.getBoolean("jqf.ei.SAVE_ALL_PASSING_INPUTS");
 
     /**
      * Creates a new guidance instance.
@@ -344,7 +345,7 @@ public class ZestGuidance implements Guidance {
         this.savedCorpusDirectory.mkdirs();
         this.savedFailuresDirectory = new File(outputDirectory, "failures");
         this.savedFailuresDirectory.mkdirs();
-        if (Boolean.getBoolean("jqf.ei.SAVE_ALL_INPUTS")) {
+        if (Boolean.getBoolean("jqf.ei.SAVE_ALL_PASSING_INPUTS")) {
             this.savedAllDirectory = new File(outputDirectory, "all");
             this.savedAllDirectory.mkdirs();
         }
@@ -688,7 +689,7 @@ public class ZestGuidance implements Guidance {
             boolean toSave = false;
             String why = "";
 
-            if (SAVE_ALL_INPUTS) {
+            if (SAVE_ALL_PASSING_INPUTS && result == Result.SUCCESS) {
               toSave = true;
             }
 

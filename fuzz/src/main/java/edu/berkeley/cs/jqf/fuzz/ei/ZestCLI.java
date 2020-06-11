@@ -67,9 +67,9 @@ public class ZestCLI implements Runnable{
         boolean exitOnPlateau = false;
     }
 
-    @Option(names = { "--save-all-inputs" },
-            description = "Save all inputs")
-    boolean saveAllInputs = false;
+    @Option(names = { "--save-all-passing-inputs" },
+            description = "Save all passing inputs")
+    boolean saveAllPassingInputs = false;
 
     @Option(names = { "--plateau-threshold" },
             description = "Plateau threshold")
@@ -148,10 +148,10 @@ public class ZestCLI implements Runnable{
                              String.valueOf(this.plateauThreshold));
         }
 
-        if (this.saveAllInputs) {
-          System.setProperty("jqf.ei.SAVE_ALL_INPUTS", "true");
+        if (this.saveAllPassingInputs) {
+          System.setProperty("jqf.ei.SAVE_ALL_PASSING_INPUTS", "true");
         } else {
-          System.setProperty("jqf.ei.SAVE_ALL_INPUTS", "false");
+          System.setProperty("jqf.ei.SAVE_ALL_PASSING_INPUTS", "false");
         }
 
         if (this.libFuzzerCompatOutput) {
