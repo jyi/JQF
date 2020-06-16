@@ -587,6 +587,9 @@ public class ZestGuidance implements Guidance {
             // Make fresh input using either list or maps
             // infoLog("Spawning new input from thin air");
             currentInput = createFreshInput();
+
+            // Start time-counting for timeout handling
+            this.runStart = new Date();
         } else {
             // The number of children to produce is determined by how much of the coverage
             // pool this parent input hits

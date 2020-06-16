@@ -75,6 +75,10 @@ public class ZestCLI implements Runnable{
             description = "Plateau threshold")
     int plateauThreshold = 10;
 
+    @Option(names = { "--timeout" },
+            description = "Timeout")
+    int timeout = 1000;
+
     @Option(names = { "-l", "--libfuzzer-compat-output" },
             description = "Use libFuzzer compat output instead of AFL like stats screen (default: false)")
     private boolean libFuzzerCompatOutput = false;
@@ -146,6 +150,11 @@ public class ZestCLI implements Runnable{
         if (this.plateauThreshold >= 0) {
           System.setProperty("jqf.ei.PLATEAU_THRESHOLD",
                              String.valueOf(this.plateauThreshold));
+        }
+
+        if (this.timeout >= 0) {
+          System.setProperty("jqf.ei.TIMEOUT",
+                             String.valueOf(this.timeout));
         }
 
         if (this.saveAllInputs) {
