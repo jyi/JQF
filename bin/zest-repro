@@ -18,6 +18,10 @@ if [ -z ${OUTPUT_DIR+x} ]; then
     exit 1
 fi
 
+echo "[zest-repro] CP: $CP"
+echo ""
+
 java -cp $CP daikon.Chicory --ppt-select-pattern="${METHOD}$" \
+     --ppt-omit-pattern="^org\.junit\." \
      --output-dir "$OUTPUT_DIR" \
      edu.berkeley.cs.jqf.fuzz.repro.ReproDriver $@
