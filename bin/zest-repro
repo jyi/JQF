@@ -8,8 +8,8 @@ if [ -z ${PROJECT_CP+x} ]; then
 fi
 CP=$PROJECT_CP:$CP
 
-if [ -z ${METHOD+x} ]; then
-    echo "METHOD is not set"
+if [ -z ${TARGET_METHOD+x} ]; then
+    echo "TARGET_METHOD is not set"
     exit 1
 fi
 
@@ -18,10 +18,11 @@ if [ -z ${OUTPUT_DIR+x} ]; then
     exit 1
 fi
 
-echo "[zest-repro] CP: $CP"
-echo ""
+echo "[zest-repro] CP: $CP\n"
+echo "[zest-repro] TARGET_METHOD: $TARGET_METHOD"
+echo "[zest-reprot] args: $@"
 
-java -cp $CP daikon.Chicory --ppt-select-pattern="${METHOD}$" \
+java -cp $CP daikon.Chicory --ppt-select-pattern="${TARGET_METHOD}$" \
      --ppt-omit-pattern="^org\.junit\." \
      --output-dir "$OUTPUT_DIR" \
      edu.berkeley.cs.jqf.fuzz.repro.ReproDriver $@
