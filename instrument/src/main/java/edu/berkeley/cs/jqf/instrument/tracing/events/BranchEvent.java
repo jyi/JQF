@@ -55,7 +55,7 @@ public class BranchEvent extends TraceEvent {
 
     @Override
     public String toString() {
-        return String.format("BRANCH(%d,%d,%d)", iid, arm, lineNumber);
+        return String.format("BRANCH(%d,%d,%d,%s)", iid, arm, lineNumber, this.getFileName());
     }
 
     @Override
