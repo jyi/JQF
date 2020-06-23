@@ -31,6 +31,7 @@
 package edu.berkeley.cs.jqf.fuzz.ei;
 
 import edu.berkeley.cs.jqf.fuzz.junit.GuidedFuzzing;
+import edu.berkeley.cs.jqf.fuzz.reach.ReachGuidance;
 import edu.berkeley.cs.jqf.instrument.InstrumentingClassLoader;
 import org.junit.runner.Result;
 import picocli.CommandLine;
@@ -98,6 +99,10 @@ public class ZestCLI implements Runnable{
     @Option(names = { "-b", "--blind" },
             description = "Blind fuzzing: do not use coverage feedback (default: false)")
     private boolean blindFuzzing;
+
+    @Option(names = { "-r", "--reach" },
+            description = "Reach fuzzing (default: false)")
+    private boolean reachFuzzing;
 
     @Parameters(index = "0", paramLabel = "PACKAGE", description = "package containing the fuzz target and all dependencies")
     private String testPackageName;
@@ -175,9 +180,16 @@ public class ZestCLI implements Runnable{
 
             // Load the guidance
             String title = this.testClassName+"#"+this.testMethodName;
-            ZestGuidance guidance = seedFiles.length > 0 ?
-                    new ZestGuidance(title, duration, this.outputDirectory, seedFiles) :
-                    new ZestGuidance(title, duration, this.outputDirectory);
+            ZestGuidance guidance;
+            if (reachFuzzing) {
+                guidance = seedFiles.length > 0 ?
+                        new ReachGuidance(title, duration, this.outputDirectory, seedFiles) :
+                        new ReachGuidance(title, duration, this.outputDirectory);
+            } else {
+                guidance = seedFiles.length > 0 ?
+                        new ZestGuidance(title, duration, this.outputDirectory, seedFiles) :
+                        new ZestGuidance(title, duration, this.outputDirectory);
+            }
             guidance.setBlind(blindFuzzing);
             // Run the Junit test
             Result res = GuidedFuzzing.run(testClassName, testMethodName, loader, guidance, System.out);
