@@ -31,7 +31,7 @@ package edu.berkeley.cs.jqf.fuzz.reach;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Random;
+import java.util.*;
 import java.util.function.Consumer;
 import java.time.Duration;
 
@@ -39,6 +39,7 @@ import edu.berkeley.cs.jqf.fuzz.ei.ZestGuidance;
 import edu.berkeley.cs.jqf.fuzz.guidance.GuidanceException;
 import edu.berkeley.cs.jqf.fuzz.guidance.Result;
 import edu.berkeley.cs.jqf.fuzz.util.Coverage;
+import edu.berkeley.cs.jqf.instrument.tracing.events.BranchEvent;
 import edu.berkeley.cs.jqf.instrument.tracing.events.TraceEvent;
 
 /**
@@ -50,46 +51,66 @@ import edu.berkeley.cs.jqf.instrument.tracing.events.TraceEvent;
  */
 public class ReachGuidance extends ZestGuidance {
 
+    private Target[] targets;
+    private List<Target> targetsReached;
+
     /**
      * Creates a new guidance instance.
      *
      * @param testName the name of test to display on the status screen
+     * @param targets the targets to reach
      * @param duration the amount of time to run fuzzing for, where
      *                 {@code null} indicates unlimited time.
      * @param outputDirectory the directory where fuzzing results will be written
      * @throws IOException if the output directory could not be prepared
      */
-    public ReachGuidance(String testName, Duration duration, File outputDirectory) throws IOException {
+    public ReachGuidance(String testName, Target[] targets,
+                         Duration duration, File outputDirectory) throws IOException {
         super(testName, duration, outputDirectory);
+        this.targets = targets;
     }
 
     /**
      * Creates a new guidance instance.
      *
      * @param testName the name of test to display on the status screen
+     * @param targets the targets to reach
      * @param duration the amount of time to run fuzzing for, where
      *                 {@code null} indicates unlimited time.
      * @param outputDirectory the directory where fuzzing results will be written
      * @param seedInputDir the directory containing one or more input files to be used as initial inputs
      * @throws IOException if the output directory could not be prepared
      */
-    public ReachGuidance(String testName, Duration duration, File outputDirectory, File seedInputDir) throws IOException {
+    public ReachGuidance(String testName, Target[] targets,
+                         Duration duration, File outputDirectory, File seedInputDir) throws IOException {
         super(testName, duration, outputDirectory, seedInputDir);
+        this.targets = targets;
     }
 
     /**
      * Creates a new guidance instance.
      *
      * @param testName the name of test to display on the status screen
+     * @param targets the targets to reach
      * @param duration the amount of time to run fuzzing for, where
      *                 {@code null} indicates unlimited time.
      * @param outputDirectory the directory where fuzzing results will be written
      * @param seedInputFiles one or more input files to be used as initial inputs
      * @throws IOException if the output directory could not be prepared
      */
-    public ReachGuidance(String testName, Duration duration, File outputDirectory,
+    public ReachGuidance(String testName, Target[] targets,
+                         Duration duration, File outputDirectory,
                          File[] seedInputFiles) throws IOException {
         super(testName, duration, outputDirectory, seedInputFiles);
+        this.targets = targets;
+    }
+
+    @Override
+    public InputStream getInput() throws GuidanceException {
+        // initialize targetsReached
+        this.targetsReached = new ArrayList<>();
+
+        return super.getInput();
     }
 
     @Override
@@ -100,9 +121,184 @@ public class ReachGuidance extends ZestGuidance {
         }
         appThread = thread;
 
-        return (event) -> {
-            System.out.println(String.format("Thread %s produced event %s",
-                    thread.getName(), event));
-        };
+        return this::handleEvent;
+    }
+
+    /** Handles a trace event generated during test execution */
+    protected void handleEvent(TraceEvent e) {
+        super.handleEvent(e);
+
+        if (e instanceof BranchEvent) {
+            BranchEvent be = (BranchEvent) e;
+            String filename = be.getFileName();
+            int linenum = be.getLineNumber();
+            for (Target target : this.targets) {
+                if (target.getFilename().equals(filename) &&
+                        target.getLinenum() == linenum) {
+                    this.targetsReached.add(target);
+                }
+            }
+        }
+    }
+
+    @Override
+    public void handleResult(Result result, Throwable error) throws GuidanceException {
+        // Stop timeout handling
+        this.runStart = null;
+
+        // Increment run count
+        this.numTrials++;
+
+        boolean valid = result == Result.SUCCESS;
+
+        if (valid) {
+            // Increment valid counter
+            numValid++;
+        }
+
+        if (result == Result.SUCCESS || result == Result.INVALID) {
+
+            // Coverage before
+            int nonZeroBefore = totalCoverage.getNonZeroCount();
+            int validNonZeroBefore = validCoverage.getNonZeroCount();
+
+            // Compute a list of keys for which this input can assume responsiblity.
+            // Newly covered branches are always included.
+            // Existing branches *may* be included, depending on the heuristics used.
+            // A valid input will steal responsibility from invalid inputs
+            Set<Object> responsibilities = computeResponsibilities(valid);
+
+            // Update total coverage
+            boolean coverageBitsUpdated = totalCoverage.updateBits(runCoverage);
+            if (valid) {
+                validCoverage.updateBits(runCoverage);
+            }
+
+            // Coverage after
+            int nonZeroAfter = totalCoverage.getNonZeroCount();
+            if (nonZeroAfter > maxCoverage) {
+                maxCoverage = nonZeroAfter;
+                noProgress = 0; // reset
+            } else {
+                noProgress++;
+                if (USE_PLATEAU_THRESHOLD && noProgress > plateauThreshold) {
+                    console.printf("A plateau is reached!!!\n");
+                    isPlateauReached = true;
+                }
+            }
+            int validNonZeroAfter = validCoverage.getNonZeroCount();
+
+            // Possibly save input
+            boolean toSave = false;
+            String why = "";
+
+            if (isTargetCovered()) {
+                if (SAVE_NEW_COUNTS && coverageBitsUpdated) {
+                    toSave = true;
+                    why = why + "+count";
+                }
+
+                // Save if new total coverage found
+                if (nonZeroAfter > nonZeroBefore) {
+                    // Must be responsible for some branch
+                    assert (responsibilities.size() > 0);
+                    toSave = true;
+                    why = why + "+cov";
+                }
+
+                // Save if new valid coverage is found
+                if (this.validityFuzzing && validNonZeroAfter > validNonZeroBefore) {
+                    // Must be responsible for some branch
+                    assert (responsibilities.size() > 0);
+                    currentInput.setValid();
+                    toSave = true;
+                    why = why + "+valid";
+                }
+            }
+
+            if (toSave) {
+
+                // Trim input (remove unused keys)
+                currentInput.gc();
+
+                // It must still be non-empty
+                assert(currentInput.size() > 0) : String.format("Empty input: %s", currentInput.getDesc());
+
+                // libFuzzerCompat stats are only displayed when they hit new coverage
+                if (console != null && LIBFUZZER_COMPAT_OUTPUT) {
+                    displayStats();
+                }
+
+                infoLog("Saving new input (at run %d): " +
+                                "input #%d " +
+                                "of size %d; " +
+                                "total coverage = %d",
+                        numTrials,
+                        savedInputs.size(),
+                        currentInput.size(),
+                        nonZeroAfter);
+
+                // Save input to queue and to disk
+                final String reason = why;
+                GuidanceException.wrap(() -> saveCurrentInput(responsibilities, reason));
+
+            }
+        } else if (result == Result.FAILURE || result == Result.TIMEOUT) {
+            String msg = error.getMessage();
+
+            // Get the root cause of the failure
+            Throwable rootCause = error;
+            while (rootCause.getCause() != null) {
+                rootCause = rootCause.getCause();
+            }
+
+            // Attempt to add this to the set of unique failures
+            if (uniqueFailures.add(Arrays.asList(rootCause.getStackTrace()))) {
+
+                // Trim input (remove unused keys)
+                currentInput.gc();
+
+                // It must still be non-empty
+                assert(currentInput.size() > 0) : String.format("Empty input: %s", currentInput.getDesc());
+
+                // Save crash to disk
+                int crashIdx = uniqueFailures.size()-1;
+                String saveFileName = String.format("id_%06d", crashIdx);
+                File saveFile = new File(savedFailuresDirectory, saveFileName);
+                GuidanceException.wrap(() -> writeCurrentInputToFile(saveFile));
+                infoLog("%s","Found crash: " + error.getClass() + " - " + (msg != null ? msg : ""));
+                String how = currentInput.getDesc();
+                String why = result == Result.FAILURE ? "+crash" : "+hang";
+                infoLog("Saved - %s %s %s", saveFile.getPath(), how, why);
+
+                if (EXACT_CRASH_PATH != null && !EXACT_CRASH_PATH.equals("")) {
+                    File exactCrashFile = new File(EXACT_CRASH_PATH);
+                    GuidanceException.wrap(() -> writeCurrentInputToFile(exactCrashFile));
+                }
+
+                // libFuzzerCompat stats are only displayed when they hit new coverage or crashes
+                if (console != null && LIBFUZZER_COMPAT_OUTPUT) {
+                    displayStats();
+                }
+
+            }
+        }
+
+        // displaying stats on every interval is only enabled for AFL-like stats screen
+        if (console != null && !LIBFUZZER_COMPAT_OUTPUT) {
+            displayStats();
+        }
+
+        // Save input unconditionally if such a setting is enabled
+        if (savedAllDirectory != null) {
+            String saveFileName = String.format("id_%09d", numTrials);
+            File saveFile = new File(savedAllDirectory, saveFileName);
+            GuidanceException.wrap(() -> writeCurrentInputToFile(saveFile));
+        }
+
+    }
+
+    private boolean isTargetCovered() {
+        return this.targetsReached.size() > 0;
     }
 }

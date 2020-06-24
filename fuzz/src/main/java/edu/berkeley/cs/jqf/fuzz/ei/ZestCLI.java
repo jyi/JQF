@@ -32,6 +32,7 @@ package edu.berkeley.cs.jqf.fuzz.ei;
 
 import edu.berkeley.cs.jqf.fuzz.junit.GuidedFuzzing;
 import edu.berkeley.cs.jqf.fuzz.reach.ReachGuidance;
+import edu.berkeley.cs.jqf.fuzz.reach.Target;
 import edu.berkeley.cs.jqf.instrument.InstrumentingClassLoader;
 import org.junit.runner.Result;
 import picocli.CommandLine;
@@ -76,6 +77,10 @@ public class ZestCLI implements Runnable{
             description = "Plateau threshold")
     int plateauThreshold = 10;
 
+    @Option(names = { "--max-corpus-size" },
+            description = "Max Corpus size")
+    int maxCorpusSize = 10;
+
     @Option(names = { "--timeout" },
             description = "Timeout")
     int timeout = 1000;
@@ -100,9 +105,9 @@ public class ZestCLI implements Runnable{
             description = "Blind fuzzing: do not use coverage feedback (default: false)")
     private boolean blindFuzzing;
 
-    @Option(names = { "-r", "--reach" },
-            description = "Reach fuzzing (default: false)")
-    private boolean reachFuzzing;
+    @Option(names = { "-t", "--target" }, split = ",",
+            description = "")
+    private Target[] targets;
 
     @Parameters(index = "0", paramLabel = "PACKAGE", description = "package containing the fuzz target and all dependencies")
     private String testPackageName;
@@ -157,6 +162,10 @@ public class ZestCLI implements Runnable{
                              String.valueOf(this.plateauThreshold));
         }
 
+        if (this.maxCorpusSize >= 0) {
+            System.setProperty("jqf.ei.MAX_CORPUS_SIZE", String.valueOf(this.maxCorpusSize));
+        }
+
         if (this.timeout >= 0) {
           System.setProperty("jqf.ei.TIMEOUT",
                              String.valueOf(this.timeout));
@@ -181,10 +190,10 @@ public class ZestCLI implements Runnable{
             // Load the guidance
             String title = this.testClassName+"#"+this.testMethodName;
             ZestGuidance guidance;
-            if (reachFuzzing) {
+            if (targets != null) {
                 guidance = seedFiles.length > 0 ?
-                        new ReachGuidance(title, duration, this.outputDirectory, seedFiles) :
-                        new ReachGuidance(title, duration, this.outputDirectory);
+                        new ReachGuidance(title, this.targets, duration, this.outputDirectory, seedFiles) :
+                        new ReachGuidance(title, this.targets, duration, this.outputDirectory);
             } else {
                 guidance = seedFiles.length > 0 ?
                         new ZestGuidance(title, duration, this.outputDirectory, seedFiles) :
@@ -216,6 +225,7 @@ public class ZestCLI implements Runnable{
                         return Duration.parse("PT" + v);
                     }
                 })
+                .registerConverter(Target.class, Target::parse)
                 .execute(args);
         System.exit(exitCode);
     }

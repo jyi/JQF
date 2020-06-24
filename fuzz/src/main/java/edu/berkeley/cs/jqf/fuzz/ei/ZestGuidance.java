@@ -159,15 +159,29 @@ public class ZestGuidance implements Guidance {
     protected Set<List<StackTraceElement>> uniqueFailures = new HashSet<>();
 
     /** save crash to specific location (should be used with EXIT_ON_CRASH) **/
-    static final String EXACT_CRASH_PATH = System.getProperty("jqf.ei.EXACT_CRASH_PATH");
+    protected static final String EXACT_CRASH_PATH = System.getProperty("jqf.ei.EXACT_CRASH_PATH");
 
     protected boolean isPlateauReached = false;
 
     protected int noProgress = 0;
 
+    protected boolean USE_PLATEAU_THRESHOLD =
+            System.getProperty("jqf.ei.PLATEAU_THRESHOLD") != null?
+                    true : false;
+
     protected int plateauThreshold =
-      System.getProperty("jqf.ei.PLATEAU_THRESHOLD") != null?
-      Integer.getInteger("jqf.ei.PLATEAU_THRESHOLD") : 10;
+            System.getProperty("jqf.ei.PLATEAU_THRESHOLD") != null?
+                    Integer.getInteger("jqf.ei.PLATEAU_THRESHOLD") : 10;
+
+    protected boolean USE_CORPUS_SIZE =
+            System.getProperty("jqf.ei.MAX_CORPUS_SIZE") != null?
+                    true : false;
+
+    protected int maxCorpusSize =
+            System.getProperty("jqf.ei.MAX_CORPUS_SIZE") != null?
+                    Integer.getInteger("jqf.ei.MAX_CORPUS_SIZE") : 10;
+
+    private int curCorpusSize = 0;
 
     // ---------- LOGGING / STATS OUTPUT ------------
 
@@ -199,7 +213,7 @@ public class ZestGuidance implements Guidance {
     protected File currentInputFile;
 
     /** Use libFuzzer like output instead of AFL like stats screen (https://llvm.org/docs/LibFuzzer.html#output) **/
-    static final boolean LIBFUZZER_COMPAT_OUTPUT = Boolean.getBoolean("jqf.ei.LIBFUZZER_COMPAT_OUTPUT");
+    protected static final boolean LIBFUZZER_COMPAT_OUTPUT = Boolean.getBoolean("jqf.ei.LIBFUZZER_COMPAT_OUTPUT");
 
     /** Whether to hide fuzzing statistics **/
     static final boolean QUIET_MODE = Boolean.getBoolean("jqf.ei.QUIET_MODE");
@@ -245,7 +259,7 @@ public class ZestGuidance implements Guidance {
     static final double MEAN_MUTATION_SIZE = 4.0; // Bytes
 
     /** Whether to save inputs that only add new coverage bits (but no new responsibilities). */
-    static final boolean SAVE_NEW_COUNTS = true;
+    protected static final boolean SAVE_NEW_COUNTS = true;
 
     /** Whether to steal responsibility from old inputs (this increases computation cost). */
     static final boolean STEAL_RESPONSIBILITY = Boolean.getBoolean("jqf.ei.STEAL_RESPONSIBILITY");
@@ -412,7 +426,7 @@ public class ZestGuidance implements Guidance {
     }
 
     // Call only if console exists
-    private void displayStats() {
+    protected void displayStats() {
         assert (console != null);
 
         Date now = new Date();
@@ -632,11 +646,14 @@ public class ZestGuidance implements Guidance {
       Date now = new Date();
       long elapsedMilliseconds = now.getTime() - startTime.getTime();
       if (EXIT_ON_CRASH && uniqueFailures.size() >= 1) {
-        // exit
-        return false;
+          // exit
+          return false;
       }
       if (EXIT_ON_PLATEAU && isPlateauReached) {
-        return false;
+          return false;
+      }
+      if (USE_CORPUS_SIZE && this.curCorpusSize > this.maxCorpusSize) {
+          return false;
       }
       return elapsedMilliseconds < maxDurationMillis;
     }
@@ -679,7 +696,7 @@ public class ZestGuidance implements Guidance {
             if (nonZeroAfter > maxCoverage) {
                 maxCoverage = nonZeroAfter;
                 noProgress = 0; // reset
-            } else {
+            } else if (USE_PLATEAU_THRESHOLD) {
               noProgress++;
               if (noProgress > plateauThreshold) {
                 console.printf("A plateau is reached!!!\n");
@@ -798,7 +815,7 @@ public class ZestGuidance implements Guidance {
 
 
     // Compute a set of branches for which the current input may assume responsibility
-    private Set<Object> computeResponsibilities(boolean valid) {
+    protected Set<Object> computeResponsibilities(boolean valid) {
         Set<Object> result = new HashSet<>();
 
         // This input is responsible for all new coverage
@@ -869,6 +886,8 @@ public class ZestGuidance implements Guidance {
 
     /* Saves an interesting input to the queue. */
     protected void saveCurrentInput(Set<Object> responsibilities, String why) throws IOException {
+
+        this.curCorpusSize++;
 
         // First, save to disk (note: we issue IDs to everyone, but only write to disk  if valid)
         int newInputIdx = numSavedInputs++;
@@ -1042,7 +1061,10 @@ public class ZestGuidance implements Guidance {
         public abstract Input fuzz(Random random);
         public abstract void gc();
 
+        public boolean isValid() { return this.valid; }
+        public void setValid() { this.valid = true; }
 
+        public String getDesc() { return this.desc; }
 
         /**
          * Returns whether this input should be favored for fuzzing.
