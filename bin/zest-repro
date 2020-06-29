@@ -18,7 +18,7 @@ if [ -z ${OUTPUT_DIR+x} ]; then
     exit 1
 fi
 
-echo "[zest-repro] CP: $CP\n"
+echo "[zest-repro] PROJECT_CP: ${PROJECT_CP}"
 echo "[zest-repro] TARGET_METHOD: $TARGET_METHOD"
 echo "[zest-reprot] args: $@"
 
