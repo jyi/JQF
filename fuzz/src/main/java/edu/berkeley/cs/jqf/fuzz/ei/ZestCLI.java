@@ -75,7 +75,7 @@ public class ZestCLI implements Runnable{
 
     @Option(names = { "--plateau-threshold" },
             description = "Plateau threshold")
-    int plateauThreshold = 10;
+    int plateauThreshold = -1; // negative to denote that the option is not used
 
     @Option(names = { "--max-corpus-size" },
             description = "Max Corpus size")

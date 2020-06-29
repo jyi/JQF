@@ -698,7 +698,7 @@ public class ZestGuidance implements Guidance {
                 noProgress = 0; // reset
             } else if (USE_PLATEAU_THRESHOLD) {
               noProgress++;
-              if (noProgress > plateauThreshold) {
+              if (USE_PLATEAU_THRESHOLD && noProgress > plateauThreshold) {
                 console.printf("A plateau is reached!!!\n");
                 isPlateauReached = true;
               }
