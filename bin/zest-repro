@@ -18,11 +18,21 @@ if [ -z ${OUTPUT_DIR+x} ]; then
     exit 1
 fi
 
+if [ -z ${VERBOSE+x} ]; then
+    verbose=""
+else
+    verbose="--verbose --debug-decl-print"
+fi
+
 echo "[zest-repro] PROJECT_CP: ${PROJECT_CP}"
 echo "[zest-repro] TARGET_METHOD: $TARGET_METHOD"
-echo "[zest-reprot] args: $@"
+echo "[zest-repro] PURE_METHOD_FILE: $PURE_METHOD_FILE"
+echo "[zest-repro] verbose: $verbose"
+echo "[zest-repro] args: $@"
 
 java -cp $CP daikon.Chicory --ppt-select-pattern="${TARGET_METHOD}$" \
      --ppt-omit-pattern="^org\.junit\." \
      --output-dir "$OUTPUT_DIR" \
+     --purity-file="$PURE_METHOD_FILE" \
+     $verbose \
      edu.berkeley.cs.jqf.fuzz.repro.ReproDriver $@
