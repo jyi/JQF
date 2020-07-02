@@ -38,7 +38,6 @@ import java.time.Duration;
 import edu.berkeley.cs.jqf.fuzz.ei.ZestGuidance;
 import edu.berkeley.cs.jqf.fuzz.guidance.GuidanceException;
 import edu.berkeley.cs.jqf.fuzz.guidance.Result;
-import edu.berkeley.cs.jqf.fuzz.util.Coverage;
 import edu.berkeley.cs.jqf.instrument.tracing.events.BranchEvent;
 import edu.berkeley.cs.jqf.instrument.tracing.events.TraceEvent;
 
@@ -192,28 +191,9 @@ public class ReachGuidance extends ZestGuidance {
             boolean toSave = false;
             String why = "";
 
-            if (isTargetCovered()) {
-                if (SAVE_NEW_COUNTS && coverageBitsUpdated) {
-                    toSave = true;
-                    why = why + "+count";
-                }
-
-                // Save if new total coverage found
-                if (nonZeroAfter > nonZeroBefore) {
-                    // Must be responsible for some branch
-                    assert (responsibilities.size() > 0);
-                    toSave = true;
-                    why = why + "+cov";
-                }
-
-                // Save if new valid coverage is found
-                if (this.validityFuzzing && validNonZeroAfter > validNonZeroBefore) {
-                    // Must be responsible for some branch
-                    assert (responsibilities.size() > 0);
-                    currentInput.setValid();
-                    toSave = true;
-                    why = why + "+valid";
-                }
+            if (isTargetReached()) {
+                // Save if the target is reached.
+                toSave = true;
             }
 
             if (toSave) {
@@ -298,7 +278,7 @@ public class ReachGuidance extends ZestGuidance {
 
     }
 
-    private boolean isTargetCovered() {
+    private boolean isTargetReached() {
         return this.targetsReached.size() > 0;
     }
 }
