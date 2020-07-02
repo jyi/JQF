@@ -50,7 +50,7 @@ import java.util.ArrayList;
  * @author Yevgeny Pats
  */
 @CommandLine.Command(name = "ZestCLI", mixinStandardHelpOptions = true, version = "1.3")
-public class ZestCLI implements Runnable{
+public class ZestCLI implements Runnable {
 
     @CommandLine.ArgGroup(exclusive = false, multiplicity = "0..2")
     Dependent dependent;

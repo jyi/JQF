@@ -32,27 +32,30 @@ package edu.berkeley.cs.jqf.fuzz.repro;
 import java.io.File;
 
 import edu.berkeley.cs.jqf.fuzz.junit.GuidedFuzzing;
+import picocli.CommandLine;
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Option;
+import picocli.CommandLine.Parameters;
 
 /**
  * @author Rohan Padhye
  */
-public class ReproDriver {
+@Command(name = "ReproDriver", mixinStandardHelpOptions = true)
+public class ReproDriver implements Runnable {
 
-    public static void main(String[] args) {
-        if (args.length < 3){
-            System.err.println("Usage: java " + ReproDriver.class + " TEST_CLASS TEST_METHOD TEST_INPUT_FILE...");
-            System.exit(1);
-        }
+    @Parameters(index = "0") String testClassName;
+    @Parameters(index = "1") String testMethodName;
+    @Parameters(index = "2..*") File[] testInputFiles;
 
+    @Option(names = "--logdir", description = "log directory")
+    public String logDir = null;
 
-        String testClassName  = args[0];
-        String testMethodName = args[1];
-        File[] testInputFiles = new File[args.length - 2];
-        for (int i = 0; i < testInputFiles.length; i++) {
-            testInputFiles[i] = new File(args[i+2]);
-        }
-
+    @Override
+    public void run() {
         try {
+            if (logDir != null)
+                System.setProperty("jqf.ei.logDir", logDir);
+
             // Maybe log the trace
             String traceDirName = System.getProperty("jqf.repro.traceDir");
             File traceDir = traceDirName != null ? new File(traceDirName) : null;
@@ -62,8 +65,6 @@ public class ReproDriver {
 
             // Run the Junit test
             GuidedFuzzing.run(testClassName, testMethodName, guidance, System.out);
-
-
 
             if (guidance.getBranchesCovered() != null) {
                 String cov = "";
@@ -78,12 +79,14 @@ public class ReproDriver {
                 System.out.println(String.format("Covered %d edges.",
                         guidance.getCoverage().getNonZeroCount()));
             }
-
-
         } catch (Exception e) {
             e.printStackTrace();
             System.exit(2);
         }
+    }
 
+    public static void main(String[] args) {
+        int exitCode = new CommandLine(new ReproDriver()).execute(args);
+        System.exit(exitCode);
     }
 }

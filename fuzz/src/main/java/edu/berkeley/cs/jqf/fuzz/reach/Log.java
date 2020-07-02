@@ -6,8 +6,11 @@ import java.nio.file.Paths;
 
 public class Log {
   public static void logOut(String msg) {
+    String logDir = System.getProperty("jqf.ei.logDir");
+    if (logDir == null) return;
+
     try {
-      Files.write(Paths.get("OUT.log"), msg.getBytes());
+      Files.write(Paths.get(logDir, "OUT.log"), msg.getBytes());
     } catch (IOException e) {
       System.err.println("Failed to write output due to IOException");
     }
