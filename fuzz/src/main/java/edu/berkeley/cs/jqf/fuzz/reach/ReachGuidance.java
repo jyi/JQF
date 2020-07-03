@@ -53,6 +53,8 @@ public class ReachGuidance extends ZestGuidance {
     private Target[] targets;
     private List<Target> targetsReached;
 
+    private final List<Input<?>> inputs = new ArrayList<>();
+
     /**
      * Creates a new guidance instance.
      *
@@ -191,13 +193,8 @@ public class ReachGuidance extends ZestGuidance {
             boolean toSave = false;
             String why = "";
 
-            if (isTargetReached()) {
-                // Save if the target is reached.
-                toSave = true;
-            }
-
-            if (toSave) {
-
+            // Save if the target is reached.
+            if (isTargetReached() && !isDuplicate()) {
                 // Trim input (remove unused keys)
                 currentInput.gc();
 
@@ -222,6 +219,8 @@ public class ReachGuidance extends ZestGuidance {
                 final String reason = why;
                 GuidanceException.wrap(() -> saveCurrentInput(responsibilities, reason));
 
+                // update inputs
+                inputs.add(currentInput);
             }
         } else if (result == Result.FAILURE || result == Result.TIMEOUT) {
             String msg = error.getMessage();
@@ -234,7 +233,6 @@ public class ReachGuidance extends ZestGuidance {
 
             // Attempt to add this to the set of unique failures
             if (uniqueFailures.add(Arrays.asList(rootCause.getStackTrace()))) {
-
                 // Trim input (remove unused keys)
                 currentInput.gc();
 
@@ -260,7 +258,6 @@ public class ReachGuidance extends ZestGuidance {
                 if (console != null && LIBFUZZER_COMPAT_OUTPUT) {
                     displayStats();
                 }
-
             }
         }
 
@@ -280,5 +277,9 @@ public class ReachGuidance extends ZestGuidance {
 
     private boolean isTargetReached() {
         return this.targetsReached.size() > 0;
+    }
+
+    private boolean isDuplicate() {
+        return inputs.contains(this.currentInput);
     }
 }
