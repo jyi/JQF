@@ -32,6 +32,7 @@ echo "[zest-repro] args: $@"
 
 java -cp $CP daikon.Chicory --ppt-select-pattern="${TARGET_METHOD}$" \
      --ppt-omit-pattern="^org\.junit\." \
+     --ppt-omit-pattern="^picocli\." \
      --output-dir "$OUTPUT_DIR" \
      $verbose \
      edu.berkeley.cs.jqf.fuzz.repro.ReproDriver $@
