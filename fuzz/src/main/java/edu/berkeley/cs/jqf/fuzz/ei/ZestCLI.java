@@ -69,6 +69,9 @@ public class ZestCLI implements Runnable {
         boolean exitOnPlateau = false;
     }
 
+    @Option(names = "--logdir", description = "log directory")
+    public String logDir = null;
+
     @Option(names = { "--save-all-inputs" },
             description = "Save all inputs")
     boolean saveAllInputs = false;
@@ -156,6 +159,9 @@ public class ZestCLI implements Runnable {
               System.setProperty("jqf.ei.EXIT_ON_PLATEAU", "true");
             }
         }
+
+        if (logDir != null)
+            System.setProperty("jqf.ei.logDir", logDir);
 
         if (this.plateauThreshold >= 0) {
           System.setProperty("jqf.ei.PLATEAU_THRESHOLD",
