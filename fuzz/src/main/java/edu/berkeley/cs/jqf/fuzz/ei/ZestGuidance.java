@@ -584,6 +584,10 @@ public class ZestGuidance implements Guidance {
         // Clear coverage stats for this run
         runCoverage.clear();
 
+        // set inputID
+        String saveFileName = String.format("id_%09d", numTrials);
+        System.setProperty("jqf.ei.inputID", saveFileName);
+
         // Choose an input to execute based on state of queues
         if (!seedInputs.isEmpty()) {
             // First, if we have some specific seeds, use those
@@ -810,7 +814,6 @@ public class ZestGuidance implements Guidance {
             File saveFile = new File(savedAllDirectory, saveFileName);
             GuidanceException.wrap(() -> writeCurrentInputToFile(saveFile));
         }
-
     }
 
 
