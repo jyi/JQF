@@ -70,36 +70,37 @@ public class Log {
     }
   }
 
-  public void logOut(int out) {
-    logOut(Integer.toString(out));
+  public void logOut(int val) {
+    logOut(Integer.toString(val));
   }
 
-  public void logOut(double out) {
-    logOut(Double.toString(out));
+  public void logOut(double val) {
+    if (Double.isNaN(val)) logOut(0);
+    else logOut(Double.toString(val));
   }
 
-  public void logOut(byte out) {
-    logOut(Byte.toString(out));
+  public void logOut(byte val) {
+    logOut(Byte.toString(val));
   }
 
-  public void logOut(short out) {
-    logOut(Short.toString(out));
+  public void logOut(short val) {
+    logOut(Short.toString(val));
   }
 
-  public void logOut(long out) {
-    logOut(Long.toString(out));
+  public void logOut(long val) {
+    logOut(Long.toString(val));
   }
 
-  public void logOut(float out) {
-    logOut(Float.toString(out));
+  public void logOut(float val) {
+    logOut(Float.toString(val));
   }
 
-  public void logOut(boolean out) {
-    logOut(Boolean.toString(out));
+  public void logOut(boolean val) {
+    logOut(Boolean.toString(val));
   }
 
-  public void logOut(char out) {
-    logOut(Character.toString(out));
+  public void logOut(char val) {
+    logOut(Character.toString(val));
   }
 
   public void logOut(Object first, Object ... rest) {
@@ -149,36 +150,37 @@ public class Log {
     }
   }
 
-  public void logIn(int out) {
-    logIn(Integer.toString(out));
+  public void logIn(int val) {
+    logIn(Integer.toString(val));
   }
 
-  public void logIn(double out) {
-    logIn(Double.toString(out));
+  public void logIn(double val) {
+    if (Double.isNaN(val)) logOut(0);
+    else logIn(Double.toString(val));
   }
 
-  public void logIn(byte out) {
-    logIn(Byte.toString(out));
+  public void logIn(byte val) {
+    logIn(Byte.toString(val));
   }
 
-  public void logIn(short out) {
-    logIn(Short.toString(out));
+  public void logIn(short val) {
+    logIn(Short.toString(val));
   }
 
-  public void logIn(long out) {
-    logIn(Long.toString(out));
+  public void logIn(long val) {
+    logIn(Long.toString(val));
   }
 
-  public void logIn(float out) {
-    logIn(Float.toString(out));
+  public void logIn(float val) {
+    logIn(Float.toString(val));
   }
 
-  public void logIn(boolean out) {
-    logIn(Boolean.toString(out));
+  public void logIn(boolean val) {
+    logIn(Boolean.toString(val));
   }
 
-  public void logIn(char out) {
-    logIn(Character.toString(out));
+  public void logIn(char val) {
+    logIn(Character.toString(val));
   }
 
   public void logIn(Object first, Object ... rest) {
