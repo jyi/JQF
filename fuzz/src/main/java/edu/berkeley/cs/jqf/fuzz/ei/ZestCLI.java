@@ -31,6 +31,7 @@
 package edu.berkeley.cs.jqf.fuzz.ei;
 
 import edu.berkeley.cs.jqf.fuzz.junit.GuidedFuzzing;
+import edu.berkeley.cs.jqf.fuzz.reach.Log;
 import edu.berkeley.cs.jqf.fuzz.reach.ReachGuidance;
 import edu.berkeley.cs.jqf.fuzz.reach.Target;
 import edu.berkeley.cs.jqf.instrument.InstrumentingClassLoader;
@@ -68,6 +69,9 @@ public class ZestCLI implements Runnable {
                 description = "Exit fuzzer when plateau is reached (default: false)")
         boolean exitOnPlateau = false;
     }
+
+    @Option(names = "--run-buggy-version", description =  "do you run a buggy version?")
+    public boolean runBuggyVersion = false;
 
     @Option(names = "--logdir", description = "log directory")
     public String logDir = null;
@@ -158,6 +162,10 @@ public class ZestCLI implements Runnable {
             if (this.dependent.exitOnPlateau) {
               System.setProperty("jqf.ei.EXIT_ON_PLATEAU", "true");
             }
+        }
+
+        if (runBuggyVersion) {
+            Log.runBuggyVersion = true;
         }
 
         if (logDir != null)

@@ -10,6 +10,8 @@ import java.util.List;
 
 public class Log {
 
+  public static boolean runBuggyVersion = false;
+
   public Log() {
     String logDir = System.getProperty("jqf.ei.logDir");
     if (logDir == null) {
@@ -75,8 +77,7 @@ public class Log {
   }
 
   public void logOut(double val) {
-    if (Double.isNaN(val)) logOut(0);
-    else logOut(Double.toString(val));
+    logOut(Double.toString(val));
   }
 
   public void logOut(byte val) {
@@ -155,8 +156,7 @@ public class Log {
   }
 
   public void logIn(double val) {
-    if (Double.isNaN(val)) logOut(0);
-    else logIn(Double.toString(val));
+    logIn(Double.toString(val));
   }
 
   public void logIn(byte val) {
