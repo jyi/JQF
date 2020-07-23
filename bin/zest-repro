@@ -1,38 +1,38 @@
 #!/bin/bash
 
+die() {
+    printf '%s\n' "$1" >&2
+    exit 1
+}
+
+# parse options
+zest_args=""
+while :; do
+    if [[ $# > 0 ]]; then
+        case $1 in
+            --project-cp)
+                if [ "$2" ]; then
+                    project_cp=$2
+                    shift
+                    shift
+                else
+                    die 'ERROR: "--project-cp" requires a non-empty option argument.'
+                fi
+                ;;
+            *)
+                zest_args="$zest_args $1"
+                shift
+                ;;
+        esac
+    else
+        break
+    fi
+done
+
+echo "project_cp: $project_cp"
+echo "options: $options"
+
 CP=$JQF_DIR/fuzz/target/classes:$CLASSPATH
+CP=$project_cp:$CP
 
-if [ -z ${PROJECT_CP+x} ]; then
-    echo "PROJECT_CP is not set"
-    exit 1
-fi
-CP=$PROJECT_CP:$CP
-
-if [ -z ${TARGET_METHOD+x} ]; then
-    echo "TARGET_METHOD is not set"
-    exit 1
-fi
-
-if [ -z ${OUTPUT_DIR+x} ]; then
-    echo "OUTPUT_DIR is not set"
-    exit 1
-fi
-
-if [ -z ${VERBOSE+x} ]; then
-    verbose=""
-else
-    verbose="--verbose --debug-decl-print"
-fi
-
-echo "[zest-repro] PROJECT_CP: ${PROJECT_CP}"
-echo "[zest-repro] TARGET_METHOD: $TARGET_METHOD"
-echo "[zest-repro] PURE_METHOD_FILE: $PURE_METHOD_FILE"
-echo "[zest-repro] verbose: $verbose"
-echo "[zest-repro] args: $@"
-
-java -cp $CP daikon.Chicory --ppt-select-pattern="${TARGET_METHOD}$" \
-     --ppt-omit-pattern="^org\.junit\." \
-     --ppt-omit-pattern="^picocli\." \
-     --output-dir "$OUTPUT_DIR" \
-     $verbose \
-     edu.berkeley.cs.jqf.fuzz.repro.ReproDriver $@
+java -cp $CP edu.berkeley.cs.jqf.fuzz.repro.ReproDriver $zest_args
