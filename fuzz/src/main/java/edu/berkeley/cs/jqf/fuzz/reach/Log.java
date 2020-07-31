@@ -56,7 +56,7 @@ public class Log {
   public void logOut(String msg) {
     String logDir = System.getProperty("jqf.ei.logDir");
     if (logDir == null) {
-      System.out.println(msg);
+      System.out.println("out: " + msg);
       return;
     }
 
@@ -101,14 +101,21 @@ public class Log {
   }
 
   public void logOut(boolean val) {
-    logOut(Boolean.toString(val));
+    if (val) logOut(0);
+    else logOut(1);
   }
 
   public void logOut(char val) {
-    logOut(Character.toString(val));
+    logOut(Character.getNumericValue(val));
   }
 
   public void logOutArray(double[] arr) {
+    if (arr.length <= 0) logOut("Warning: empty array");
+    else if (arr.length == 1) logOut(arr[0]);
+    else logOut(arr[0], Arrays.copyOfRange(arr, 1, arr.length));
+  }
+
+  public void logOutArray(Double[] arr) {
     if (arr.length <= 0) logOut("Warning: empty array");
     else if (arr.length == 1) logOut(arr[0]);
     else logOut(arr[0], Arrays.copyOfRange(arr, 1, arr.length));
@@ -120,7 +127,19 @@ public class Log {
     else logOut(arr[0], Arrays.copyOfRange(arr, 1, arr.length));
   }
 
+  public void logOutArray(Integer[] arr) {
+    if (arr.length <= 0) logOut("Warning: empty array");
+    else if (arr.length == 1) logOut(arr[0]);
+    else logOut(arr[0], Arrays.copyOfRange(arr, 1, arr.length));
+  }
+
   public void logOutArray(byte[] arr) {
+    if (arr.length <= 0) logOut("Warning: empty array");
+    else if (arr.length == 1) logOut(arr[0]);
+    else logOut(arr[0], Arrays.copyOfRange(arr, 1, arr.length));
+  }
+
+  public void logOutArray(Byte[] arr) {
     if (arr.length <= 0) logOut("Warning: empty array");
     else if (arr.length == 1) logOut(arr[0]);
     else logOut(arr[0], Arrays.copyOfRange(arr, 1, arr.length));
@@ -132,7 +151,19 @@ public class Log {
     else logOut(arr[0], Arrays.copyOfRange(arr, 1, arr.length));
   }
 
+  public void logOutArray(Short[] arr) {
+    if (arr.length <= 0) logOut("Warning: empty array");
+    else if (arr.length == 1) logOut(arr[0]);
+    else logOut(arr[0], Arrays.copyOfRange(arr, 1, arr.length));
+  }
+
   public void logOutArray(long[] arr) {
+    if (arr.length <= 0) logOut("Warning: empty array");
+    else if (arr.length == 1) logOut(arr[0]);
+    else logOut(arr[0], Arrays.copyOfRange(arr, 1, arr.length));
+  }
+
+  public void logOutArray(Long[] arr) {
     if (arr.length <= 0) logOut("Warning: empty array");
     else if (arr.length == 1) logOut(arr[0]);
     else logOut(arr[0], Arrays.copyOfRange(arr, 1, arr.length));
@@ -144,13 +175,31 @@ public class Log {
     else logOut(arr[0], Arrays.copyOfRange(arr, 1, arr.length));
   }
 
+  public void logOutArray(Float[] arr) {
+    if (arr.length <= 0) logOut("Warning: empty array");
+    else if (arr.length == 1) logOut(arr[0]);
+    else logOut(arr[0], Arrays.copyOfRange(arr, 1, arr.length));
+  }
+
   public void logOutArray(boolean[] arr) {
     if (arr.length <= 0) logOut("Warning: empty array");
     else if (arr.length == 1) logOut(arr[0]);
     else logOut(arr[0], Arrays.copyOfRange(arr, 1, arr.length));
   }
 
+  public void logOutArray(Boolean[] arr) {
+    if (arr.length <= 0) logOut("Warning: empty array");
+    else if (arr.length == 1) logOut(arr[0]);
+    else logOut(arr[0], Arrays.copyOfRange(arr, 1, arr.length));
+  }
+
   public void logOutArray(char[] arr) {
+    if (arr.length <= 0) logOut("Warning: empty array");
+    else if (arr.length == 1) logOut(arr[0]);
+    else logOut(arr[0], Arrays.copyOfRange(arr, 1, arr.length));
+  }
+
+  public void logOutArray(Character[] arr) {
     if (arr.length <= 0) logOut("Warning: empty array");
     else if (arr.length == 1) logOut(arr[0]);
     else logOut(arr[0], Arrays.copyOfRange(arr, 1, arr.length));
@@ -175,13 +224,21 @@ public class Log {
       logOut((char) first);
     } else if (first.getClass().isArray()) {
       if (first instanceof double[]) logOutArray((double[]) first);
+      else if (first instanceof Double[]) logOutArray((Double[]) first);
       else if (first instanceof int[]) logOutArray((int[]) first);
+      else if (first instanceof Integer[]) logOutArray((Integer[]) first);
       else if (first instanceof byte[]) logOutArray((byte[]) first);
+      else if (first instanceof Byte[]) logOutArray((Byte[]) first);
       else if (first instanceof short[]) logOutArray((short[]) first);
+      else if (first instanceof Short[]) logOutArray((Short[]) first);
       else if (first instanceof long[]) logOutArray((long[]) first);
+      else if (first instanceof Long[]) logOutArray((Long[]) first);
       else if (first instanceof float[]) logOutArray((float[]) first);
+      else if (first instanceof Float[]) logOutArray((Float[]) first);
       else if (first instanceof boolean[]) logOutArray((boolean[]) first);
+      else if (first instanceof Boolean[]) logOutArray((Boolean[]) first);
       else if (first instanceof char[]) logOutArray((char[]) first);
+      else if (first instanceof Character[]) logOutArray((Character[]) first);
       else throw new RuntimeException("Unexpected array type: " + first.getClass());
     } else {
       throw new RuntimeException("Unexpected type: " + first.getClass());
@@ -195,7 +252,10 @@ public class Log {
 
   public void logIn(String msg) {
     String logDir = System.getProperty("jqf.ei.logDir");
-    if (logDir == null) return;
+    if (logDir == null) {
+      System.out.println("in: " + msg);
+      return;
+    }
 
     Path inFile;
     String inputID = System.getProperty("jqf.ei.inputID");
@@ -238,11 +298,108 @@ public class Log {
   }
 
   public void logIn(boolean val) {
-    logIn(Boolean.toString(val));
+    if (val) logIn(0);
+    else logIn(1);
   }
 
   public void logIn(char val) {
-    logIn(Character.toString(val));
+    logIn(Character.getNumericValue(val));
+  }
+
+  public void logInArray(double[] arr) {
+    if (arr.length <= 0) logIn("Warning: empty array");
+    else if (arr.length == 1) logIn(arr[0]);
+    else logIn(arr[0], Arrays.copyOfRange(arr, 1, arr.length));
+  }
+
+  public void logInArray(Double[] arr) {
+    if (arr.length <= 0) logIn("Warning: empty array");
+    else if (arr.length == 1) logIn(arr[0]);
+    else logIn(arr[0], Arrays.copyOfRange(arr, 1, arr.length));
+  }
+
+  public void logInArray(int[] arr) {
+    if (arr.length <= 0) logIn("Warning: empty array");
+    else if (arr.length == 1) logIn(arr[0]);
+    else logIn(arr[0], Arrays.copyOfRange(arr, 1, arr.length));
+  }
+
+  public void logInArray(Integer[] arr) {
+    if (arr.length <= 0) logIn("Warning: empty array");
+    else if (arr.length == 1) logIn(arr[0]);
+    else logIn(arr[0], Arrays.copyOfRange(arr, 1, arr.length));
+  }
+
+  public void logInArray(byte[] arr) {
+    if (arr.length <= 0) logIn("Warning: empty array");
+    else if (arr.length == 1) logIn(arr[0]);
+    else logIn(arr[0], Arrays.copyOfRange(arr, 1, arr.length));
+  }
+
+  public void logInArray(Byte[] arr) {
+    if (arr.length <= 0) logIn("Warning: empty array");
+    else if (arr.length == 1) logIn(arr[0]);
+    else logIn(arr[0], Arrays.copyOfRange(arr, 1, arr.length));
+  }
+
+  public void logInArray(short[] arr) {
+    if (arr.length <= 0) logIn("Warning: empty array");
+    else if (arr.length == 1) logIn(arr[0]);
+    else logIn(arr[0], Arrays.copyOfRange(arr, 1, arr.length));
+  }
+
+  public void logInArray(Short[] arr) {
+    if (arr.length <= 0) logIn("Warning: empty array");
+    else if (arr.length == 1) logIn(arr[0]);
+    else logIn(arr[0], Arrays.copyOfRange(arr, 1, arr.length));
+  }
+
+  public void logInArray(long[] arr) {
+    if (arr.length <= 0) logIn("Warning: empty array");
+    else if (arr.length == 1) logIn(arr[0]);
+    else logIn(arr[0], Arrays.copyOfRange(arr, 1, arr.length));
+  }
+
+  public void logInArray(Long[] arr) {
+    if (arr.length <= 0) logIn("Warning: empty array");
+    else if (arr.length == 1) logIn(arr[0]);
+    else logIn(arr[0], Arrays.copyOfRange(arr, 1, arr.length));
+  }
+
+  public void logInArray(float[] arr) {
+    if (arr.length <= 0) logIn("Warning: empty array");
+    else if (arr.length == 1) logIn(arr[0]);
+    else logIn(arr[0], Arrays.copyOfRange(arr, 1, arr.length));
+  }
+
+  public void logInArray(Float[] arr) {
+    if (arr.length <= 0) logIn("Warning: empty array");
+    else if (arr.length == 1) logIn(arr[0]);
+    else logIn(arr[0], Arrays.copyOfRange(arr, 1, arr.length));
+  }
+
+  public void logInArray(boolean[] arr) {
+    if (arr.length <= 0) logIn("Warning: empty array");
+    else if (arr.length == 1) logIn(arr[0]);
+    else logIn(arr[0], Arrays.copyOfRange(arr, 1, arr.length));
+  }
+
+  public void logInArray(Boolean[] arr) {
+    if (arr.length <= 0) logIn("Warning: empty array");
+    else if (arr.length == 1) logIn(arr[0]);
+    else logIn(arr[0], Arrays.copyOfRange(arr, 1, arr.length));
+  }
+
+  public void logInArray(char[] arr) {
+    if (arr.length <= 0) logIn("Warning: empty array");
+    else if (arr.length == 1) logIn(arr[0]);
+    else logIn(arr[0], Arrays.copyOfRange(arr, 1, arr.length));
+  }
+
+  public void logInArray(Character[] arr) {
+    if (arr.length <= 0) logIn("Warning: empty array");
+    else if (arr.length == 1) logIn(arr[0]);
+    else logIn(arr[0], Arrays.copyOfRange(arr, 1, arr.length));
   }
 
   public void logIn(Object first, Object ... rest) {
@@ -262,6 +419,24 @@ public class Log {
       logIn((boolean) first);
     } else if (first instanceof Character) {
       logIn((char) first);
+    } else if (first.getClass().isArray()) {
+      if (first instanceof double[]) logInArray((double[]) first);
+      else if (first instanceof Double[]) logInArray((Double[]) first);
+      else if (first instanceof int[]) logInArray((int[]) first);
+      else if (first instanceof Integer[]) logInArray((Integer[]) first);
+      else if (first instanceof byte[]) logInArray((byte[]) first);
+      else if (first instanceof Byte[]) logInArray((Byte[]) first);
+      else if (first instanceof short[]) logInArray((short[]) first);
+      else if (first instanceof Short[]) logInArray((Short[]) first);
+      else if (first instanceof long[]) logInArray((long[]) first);
+      else if (first instanceof Long[]) logInArray((Long[]) first);
+      else if (first instanceof float[]) logInArray((float[]) first);
+      else if (first instanceof Float[]) logInArray((Float[]) first);
+      else if (first instanceof boolean[]) logInArray((boolean[]) first);
+      else if (first instanceof Boolean[]) logInArray((Boolean[]) first);
+      else if (first instanceof char[]) logInArray((char[]) first);
+      else if (first instanceof Character[]) logInArray((Character[]) first);
+      else throw new RuntimeException("Unexpected array type: " + first.getClass());
     } else {
       throw new RuntimeException("Unexpected type: " + first.getClass());
     }
