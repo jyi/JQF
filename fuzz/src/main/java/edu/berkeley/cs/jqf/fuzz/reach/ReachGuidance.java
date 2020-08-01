@@ -65,27 +65,11 @@ public class ReachGuidance extends ZestGuidance {
      * @param outputDirectory the directory where fuzzing results will be written
      * @throws IOException if the output directory could not be prepared
      */
-    public ReachGuidance(String testName, Target[] targets,
+    public ReachGuidance(String testName, Target[] targets, long seed,
                          Duration duration, File outputDirectory) throws IOException {
         super(testName, duration, outputDirectory);
         this.targets = targets;
-    }
-
-    /**
-     * Creates a new guidance instance.
-     *
-     * @param testName the name of test to display on the status screen
-     * @param targets the targets to reach
-     * @param duration the amount of time to run fuzzing for, where
-     *                 {@code null} indicates unlimited time.
-     * @param outputDirectory the directory where fuzzing results will be written
-     * @param seedInputDir the directory containing one or more input files to be used as initial inputs
-     * @throws IOException if the output directory could not be prepared
-     */
-    public ReachGuidance(String testName, Target[] targets,
-                         Duration duration, File outputDirectory, File seedInputDir) throws IOException {
-        super(testName, duration, outputDirectory, seedInputDir);
-        this.targets = targets;
+        if (seed != -1) this.random.setSeed(seed);
     }
 
     /**
@@ -99,11 +83,12 @@ public class ReachGuidance extends ZestGuidance {
      * @param seedInputFiles one or more input files to be used as initial inputs
      * @throws IOException if the output directory could not be prepared
      */
-    public ReachGuidance(String testName, Target[] targets,
+    public ReachGuidance(String testName, Target[] targets, long seed,
                          Duration duration, File outputDirectory,
                          File[] seedInputFiles) throws IOException {
         super(testName, duration, outputDirectory, seedInputFiles);
         this.targets = targets;
+        if (seed != -1) this.random.setSeed(seed);
     }
 
     @Override

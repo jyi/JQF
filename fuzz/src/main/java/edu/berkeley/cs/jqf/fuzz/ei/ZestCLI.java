@@ -116,6 +116,10 @@ public class ZestCLI implements Runnable {
             description = "")
     private Target[] targets;
 
+    @Option(names = { "--seed" },
+            description = "seed")
+    private long seed = -1; // negative to denote that the option is not used
+
     @Parameters(index = "0", paramLabel = "PACKAGE", description = "package containing the fuzz target and all dependencies")
     private String testPackageName;
 
@@ -206,8 +210,8 @@ public class ZestCLI implements Runnable {
             ZestGuidance guidance;
             if (targets != null) {
                 guidance = seedFiles.length > 0 ?
-                        new ReachGuidance(title, this.targets, duration, this.outputDirectory, seedFiles) :
-                        new ReachGuidance(title, this.targets, duration, this.outputDirectory);
+                        new ReachGuidance(title, this.targets, this.seed, duration, this.outputDirectory, seedFiles) :
+                        new ReachGuidance(title, this.targets, this.seed, duration, this.outputDirectory);
             } else {
                 guidance = seedFiles.length > 0 ?
                         new ZestGuidance(title, duration, this.outputDirectory, seedFiles) :
