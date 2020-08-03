@@ -12,6 +12,10 @@ import java.util.List;
 public class Log {
 
   public static boolean runBuggyVersion = false;
+  private boolean shouldReplacePositiveInfinityInput = false;
+  private double valueForPositiveInfinity = 0;
+  private boolean shouldReplaceNegativeInfinityInput;
+  private double valueForNegativeInfinity;
 
   public Log() {
     String logDir = System.getProperty("jqf.ei.logDir");
@@ -278,7 +282,13 @@ public class Log {
   }
 
   public void logIn(double val) {
-    logIn(Double.toString(val));
+    if (val == Double.POSITIVE_INFINITY && this.shouldReplacePositiveInfinityInput) {
+      logIn(this.valueForPositiveInfinity);
+    } else if (val == Double.NEGATIVE_INFINITY && this.shouldReplaceNegativeInfinityInput) {
+      logIn(this.valueForNegativeInfinity);
+    } else {
+      logIn(Double.toString(val));
+    }
   }
 
   public void logIn(byte val) {
@@ -445,5 +455,15 @@ public class Log {
       logIn(";");
       logIn(o);
     }
+  }
+
+  public void replacePositiveInfinityInputWith(double x) {
+    shouldReplacePositiveInfinityInput = true;
+    valueForPositiveInfinity = x;
+  }
+
+  public void replaceNegativeInfinityInputWith(double x) {
+    shouldReplaceNegativeInfinityInput = true;
+    valueForNegativeInfinity = x;
   }
 }
