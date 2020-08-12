@@ -17,3 +17,4 @@ experiments/*-results-*
 GPATH
 GRTAGS
 GTAGS
+*.bak
