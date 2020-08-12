@@ -210,7 +210,9 @@ public class Log {
   }
 
   public void logOut(Object first, Object ... rest) {
-    if (first instanceof Double) {
+    if (first instanceof String) {
+      logOut((String) first);
+    } else if (first instanceof Double) {
       logOut((double) first);
     } else if (first instanceof Integer) {
       logOut((int) first);
@@ -425,7 +427,9 @@ public class Log {
   }
 
   public void logIn(Object first, Object ... rest) {
-    if (first instanceof Double) {
+    if (first instanceof  String) {
+      logIn((String) first);
+    } else if (first instanceof Double) {
       logIn((double) first);
     } else if (first instanceof Integer) {
       logIn((int) first);
