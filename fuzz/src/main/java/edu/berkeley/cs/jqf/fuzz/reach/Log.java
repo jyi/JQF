@@ -254,6 +254,18 @@ public class Log {
     }
   }
 
+  public void logOutIf(boolean cond, int val) {
+    if (Log.runBuggyVersion) {
+      if (!cond) {
+        logOut("IGNORE_OUTPUT: " + val);
+      } else {
+        logOut(val);
+      }
+    } else {
+      logOut(val);
+    }
+  }
+
   public void logIn(String msg) {
     String logDir = System.getProperty("jqf.ei.logDir");
     if (logDir == null) {
