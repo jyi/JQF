@@ -32,6 +32,7 @@ package edu.berkeley.cs.jqf.fuzz.repro;
 import java.io.File;
 
 import edu.berkeley.cs.jqf.fuzz.junit.GuidedFuzzing;
+import edu.berkeley.cs.jqf.fuzz.reach.Log;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -50,11 +51,18 @@ public class ReproDriver implements Runnable {
     @Option(names = "--logdir", description = "log directory")
     public String logDir = null;
 
+    @Option(names = "--run-buggy-version", description =  "do you run a buggy version?")
+    public boolean runBuggyVersion = false;
+
     @Override
     public void run() {
         try {
             if (logDir != null)
                 System.setProperty("jqf.ei.logDir", logDir);
+
+            if (runBuggyVersion) {
+                Log.runBuggyVersion = true;
+            }
 
             // Maybe log the trace
             String traceDirName = System.getProperty("jqf.repro.traceDir");
