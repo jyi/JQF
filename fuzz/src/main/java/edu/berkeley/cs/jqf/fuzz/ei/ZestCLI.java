@@ -44,6 +44,7 @@ import java.io.File;
 import java.time.Duration;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 /**
  * CLI for Zest based guidance.
@@ -209,6 +210,7 @@ public class ZestCLI implements Runnable {
             String title = this.testClassName+"#"+this.testMethodName;
             ZestGuidance guidance;
             if (targets != null) {
+                System.setProperty("jqf.ei.targets", Arrays.toString(targets));
                 guidance = seedFiles.length > 0 ?
                         new ReachGuidance(title, this.targets, this.seed, duration, this.outputDirectory, seedFiles) :
                         new ReachGuidance(title, this.targets, this.seed, duration, this.outputDirectory);

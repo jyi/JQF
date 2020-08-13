@@ -30,6 +30,7 @@
 package edu.berkeley.cs.jqf.instrument.tracing;
 
 import java.util.ArrayDeque;
+import java.util.Arrays;
 import java.util.Deque;
 import java.util.function.Consumer;
 
@@ -40,6 +41,7 @@ import edu.berkeley.cs.jqf.instrument.tracing.events.ReadEvent;
 import edu.berkeley.cs.jqf.instrument.tracing.events.ReturnEvent;
 import edu.berkeley.cs.jqf.instrument.tracing.events.TraceEvent;
 import janala.logger.inst.*;
+import sun.security.util.ArrayUtil;
 
 /**
  * This class is responsible for tracing for an instruction stream
@@ -69,6 +71,9 @@ public class ThreadTracer {
     // Set this to TRUE if instrumenting JDK classes, in order to skip JVM classloading activity
     private static final boolean MATCH_CALLEE_NAMES = Boolean.getBoolean("jqf.tracing.MATCH_CALLEE_NAMES");
 
+    private final Target[] targets;
+    private String currentClass;
+
 
     /**
      * Creates a new tracer that will process instructions executed by an application
@@ -94,6 +99,11 @@ public class ThreadTracer {
         this.traceGenerators = Boolean.getBoolean("jqf.traceGenerators");
         this.callback = callback;
         this.handlers.push(new BaseHandler());
+        if (System.getProperty("jqf.ei.targets") != null) {
+            targets = Target.getTargetArray(System.getProperty("jqf.ei.targets"));
+        } else {
+            targets = null;
+        }
     }
 
     /**
@@ -131,6 +141,20 @@ public class ThreadTracer {
      * @param ins the instruction to process
      */
     protected final void consume(Instruction ins) {
+        if (ins instanceof METHOD_BEGIN) {
+            METHOD_BEGIN mb = (METHOD_BEGIN) ins;
+            currentClass = mb.owner;
+        }
+
+        if (targets != null && currentClass != null) {
+            for (Target target : this.targets) {
+                if (currentClass.equals(target.getFilename2()) &&
+                        target.getLinenum() == ins.mid) {
+                    System.out.println("Hit the target!");
+                }
+            }
+        }
+
         // Apply the visitor at the top of the stack
         ins.visit(handlers.peek());
         if (callBackException != null) {

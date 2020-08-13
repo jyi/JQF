@@ -27,4 +27,8 @@ public class Target {
     return this.filename;
   }
 
+  @Override
+  public String toString() {
+    return filename + ":" + linenum;
+  }
 }
