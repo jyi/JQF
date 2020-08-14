@@ -256,7 +256,7 @@ public class Log {
     }
   }
 
-  public void logOutIf(boolean cond, int val) {
+  public <T> void logOutIf(boolean cond, T val) {
     if (Log.runBuggyVersion) {
       if (!cond) {
         logOut("IGNORE_OUTPUT: " + val);
