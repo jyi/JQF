@@ -29,17 +29,13 @@
 
 package edu.berkeley.cs.jqf.instrument.tracing;
 
+import java.io.File;
 import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.Deque;
 import java.util.function.Consumer;
 
-import edu.berkeley.cs.jqf.instrument.tracing.events.AllocEvent;
-import edu.berkeley.cs.jqf.instrument.tracing.events.BranchEvent;
-import edu.berkeley.cs.jqf.instrument.tracing.events.CallEvent;
-import edu.berkeley.cs.jqf.instrument.tracing.events.ReadEvent;
-import edu.berkeley.cs.jqf.instrument.tracing.events.ReturnEvent;
-import edu.berkeley.cs.jqf.instrument.tracing.events.TraceEvent;
+import edu.berkeley.cs.jqf.instrument.tracing.events.*;
 import janala.logger.inst.*;
 import sun.security.util.ArrayUtil;
 
@@ -72,8 +68,8 @@ public class ThreadTracer {
     private static final boolean MATCH_CALLEE_NAMES = Boolean.getBoolean("jqf.tracing.MATCH_CALLEE_NAMES");
 
     private final Target[] targets;
-    private String currentClass;
 
+    protected final boolean verbose = true;
 
     /**
      * Creates a new tracer that will process instructions executed by an application
@@ -141,18 +137,9 @@ public class ThreadTracer {
      * @param ins the instruction to process
      */
     protected final void consume(Instruction ins) {
-        if (ins instanceof METHOD_BEGIN) {
-            METHOD_BEGIN mb = (METHOD_BEGIN) ins;
-            currentClass = mb.owner;
-        }
-
-        if (targets != null && currentClass != null) {
-            for (Target target : this.targets) {
-                if (currentClass.equals(target.getFilename2()) &&
-                        target.getLinenum() == ins.mid) {
-                    System.out.println("Hit the target!");
-                }
-            }
+        // check whether a target is hit
+        if (targets != null) {
+            emitTargetEvent(ins);
         }
 
         // Apply the visitor at the top of the stack
@@ -161,6 +148,36 @@ public class ThreadTracer {
             RuntimeException e = callBackException;
             callBackException = null;
             throw e;
+        }
+    }
+
+    private void emitTargetEvent(Instruction ins) {
+        for (Target target : this.targets) {
+            if (target.getLinenum() == ins.mid) {
+                boolean singleSnoopFound = false;
+                StackTraceElement[] traces = new Exception().getStackTrace();
+                if (traces != null) {
+                    int idx = 0;
+                    for (StackTraceElement te: traces) {
+                        if (te.getClassName().equals("edu.berkeley.cs.jqf.instrument.tracing.SingleSnoop")) {
+                            singleSnoopFound = true;
+                            break;
+                        }
+                        idx++;
+                    }
+                    // the next element behind SingleSnoop is the target candidate
+                    if (singleSnoopFound) {
+                        try {
+                            StackTraceElement candidate = traces[idx + 1];
+                            String candidateFileName = candidate.getClassName().replace(".", File.separator) + ".java";
+                            if (candidateFileName.equals(target.getFilename())) {
+                                emit(new TargetEvent(ins.iid, null, ins.mid, target.getFilename()));
+                            }
+                        } catch (ArrayIndexOutOfBoundsException e) {
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -203,7 +220,12 @@ public class ThreadTracer {
                 m1.getDesc().equals(m2.getDesc());
     }
 
-
+    protected void infoLog(String str, Object... args) {
+        if (verbose) {
+            String line = String.format(str, args);
+            System.err.println(line);
+        }
+    }
 
     class BaseHandler extends ControlFlowInstructionVisitor {
         @Override

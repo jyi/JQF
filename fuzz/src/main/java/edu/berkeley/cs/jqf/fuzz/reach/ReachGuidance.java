@@ -38,8 +38,11 @@ import java.time.Duration;
 import edu.berkeley.cs.jqf.fuzz.ei.ZestGuidance;
 import edu.berkeley.cs.jqf.fuzz.guidance.GuidanceException;
 import edu.berkeley.cs.jqf.fuzz.guidance.Result;
+import edu.berkeley.cs.jqf.fuzz.util.TargetCoverage;
 import edu.berkeley.cs.jqf.instrument.tracing.events.BranchEvent;
 import edu.berkeley.cs.jqf.instrument.tracing.events.TraceEvent;
+
+import de.hub.se.cfg.CFGAnalysis;
 
 /**
  * A front-end that only generates random inputs.
@@ -50,8 +53,9 @@ import edu.berkeley.cs.jqf.instrument.tracing.events.TraceEvent;
  */
 public class ReachGuidance extends ZestGuidance {
 
-    private Target[] targets;
-    private List<Target> targetsReached;
+    private TargetCoverage targetCoverage = new TargetCoverage();
+
+    private CFGAnalysis cfga;
 
     private final List<Input<?>> inputs = new ArrayList<>();
 
@@ -59,16 +63,14 @@ public class ReachGuidance extends ZestGuidance {
      * Creates a new guidance instance.
      *
      * @param testName the name of test to display on the status screen
-     * @param targets the targets to reach
      * @param duration the amount of time to run fuzzing for, where
      *                 {@code null} indicates unlimited time.
      * @param outputDirectory the directory where fuzzing results will be written
      * @throws IOException if the output directory could not be prepared
      */
-    public ReachGuidance(String testName, Target[] targets, long seed,
+    public ReachGuidance(String testName, long seed,
                          Duration duration, File outputDirectory) throws IOException {
         super(testName, duration, outputDirectory);
-        this.targets = targets;
         if (seed != -1) this.random.setSeed(seed);
     }
 
@@ -76,26 +78,22 @@ public class ReachGuidance extends ZestGuidance {
      * Creates a new guidance instance.
      *
      * @param testName the name of test to display on the status screen
-     * @param targets the targets to reach
      * @param duration the amount of time to run fuzzing for, where
      *                 {@code null} indicates unlimited time.
      * @param outputDirectory the directory where fuzzing results will be written
      * @param seedInputFiles one or more input files to be used as initial inputs
      * @throws IOException if the output directory could not be prepared
      */
-    public ReachGuidance(String testName, Target[] targets, long seed,
+    public ReachGuidance(String testName, long seed,
                          Duration duration, File outputDirectory,
                          File[] seedInputFiles) throws IOException {
         super(testName, duration, outputDirectory, seedInputFiles);
-        this.targets = targets;
         if (seed != -1) this.random.setSeed(seed);
     }
 
     @Override
     public InputStream getInput() throws GuidanceException {
-        // initialize targetsReached
-        this.targetsReached = new ArrayList<>();
-
+        targetCoverage.clear();
         return super.getInput();
     }
 
@@ -113,18 +111,7 @@ public class ReachGuidance extends ZestGuidance {
     /** Handles a trace event generated during test execution */
     protected void handleEvent(TraceEvent e) {
         super.handleEvent(e);
-
-        if (e instanceof BranchEvent) {
-            BranchEvent be = (BranchEvent) e;
-            String filename = be.getFileName();
-            int linenum = be.getLineNumber();
-            for (Target target : this.targets) {
-                if (target.getFilename().equals(filename) &&
-                        target.getLinenum() == linenum) {
-                    this.targetsReached.add(target);
-                }
-            }
-        }
+        targetCoverage.handleEvent(e);
     }
 
     @Override
@@ -261,7 +248,7 @@ public class ReachGuidance extends ZestGuidance {
     }
 
     private boolean isTargetReached() {
-        return this.targetsReached.size() > 0;
+        return targetCoverage.getCoveredTargets().size() > 0;
     }
 
     private boolean isDuplicate() {

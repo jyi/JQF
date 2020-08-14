@@ -81,6 +81,10 @@ public class ZestCLI implements Runnable {
             description = "Save all inputs")
     boolean saveAllInputs = false;
 
+    @Option(names = { "--verbose" },
+    description = "verbose")
+    boolean verbose = false;
+
     @Option(names = { "--plateau-threshold" },
             description = "Plateau threshold")
     int plateauThreshold = -1; // negative to denote that the option is not used
@@ -196,6 +200,12 @@ public class ZestCLI implements Runnable {
           System.setProperty("jqf.ei.SAVE_ALL_INPUTS", "false");
         }
 
+        if (this.verbose) {
+            System.setProperty("jqf.ei.verbose", "true");
+        } else {
+            System.setProperty("jqf.ei.verbose", "false");
+        }
+
         if (this.libFuzzerCompatOutput) {
             System.setProperty("jqf.ei.LIBFUZZER_COMPAT_OUTPUT", "true");
         }
@@ -212,8 +222,8 @@ public class ZestCLI implements Runnable {
             if (targets != null) {
                 System.setProperty("jqf.ei.targets", Arrays.toString(targets));
                 guidance = seedFiles.length > 0 ?
-                        new ReachGuidance(title, this.targets, this.seed, duration, this.outputDirectory, seedFiles) :
-                        new ReachGuidance(title, this.targets, this.seed, duration, this.outputDirectory);
+                        new ReachGuidance(title, this.seed, duration, this.outputDirectory, seedFiles) :
+                        new ReachGuidance(title, this.seed, duration, this.outputDirectory);
             } else {
                 guidance = seedFiles.length > 0 ?
                         new ZestGuidance(title, duration, this.outputDirectory, seedFiles) :
