@@ -1,5 +1,5 @@
 package kr.ac.unist.cse.jqf;
 
-public interface Expected {
+public interface Actual {
     Object[] values();
 }
