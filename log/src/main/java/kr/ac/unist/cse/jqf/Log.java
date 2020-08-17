@@ -118,13 +118,17 @@ public class Log {
         logOutIfCalled = true;
     }
 
-    public static <T> void logOutIf(boolean cond, T[] actual, T[] expected) {
+    public static <T> void logOutIf(boolean cond, T[] actual, Expected expected) {
         if (logOutIfCalled) logOut(";");
         if (Log.runBuggyVersion) {
             if (cond) {
                 logOut(actual);
             } else {
-                logOut(expected);
+                try {
+                    logOut(expected.values());
+                } catch (Exception e) {
+                    logOut("Exception occurred: " + e.getClass());
+                }
             }
         } else {
             logOut(actual);
