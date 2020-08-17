@@ -30,9 +30,8 @@ package edu.berkeley.cs.jqf.fuzz.junit.quickcheck;
 
 import java.io.EOFException;
 import java.io.File;
-import java.lang.reflect.Executable;
-import java.lang.reflect.Parameter;
-import java.lang.reflect.Type;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -41,7 +40,15 @@ import java.util.stream.Collectors;
 
 import com.pholser.junit.quickcheck.generator.GenerationStatus;
 import com.pholser.junit.quickcheck.generator.Generator;
+import com.pholser.junit.quickcheck.generator.InRange;
+import com.pholser.junit.quickcheck.generator.java.lang.*;
+import com.pholser.junit.quickcheck.generator.java.math.BigDecimalGenerator;
+import com.pholser.junit.quickcheck.generator.java.math.BigIntegerGenerator;
+import com.pholser.junit.quickcheck.generator.java.time.ClockGenerator;
+import com.pholser.junit.quickcheck.generator.java.time.DurationGenerator;
+import com.pholser.junit.quickcheck.generator.java.time.InstantGenerator;
 import com.pholser.junit.quickcheck.internal.ParameterTypeContext;
+import com.pholser.junit.quickcheck.internal.generator.CompositeGenerator;
 import com.pholser.junit.quickcheck.internal.generator.GeneratorRepository;
 import com.pholser.junit.quickcheck.random.SourceOfRandomness;
 import edu.berkeley.cs.jqf.fuzz.guidance.Guidance;
@@ -71,7 +78,7 @@ import static edu.berkeley.cs.jqf.fuzz.guidance.Result.*;
  * @author Rohan Padhye
  */
 public class FuzzStatement extends Statement {
-    private final FrameworkMethod method;
+    private FrameworkMethod method;
     private final TestClass testClass;
     private final Map<String, Type> typeVariables;
     private final GeneratorRepository generatorRepository;
@@ -104,6 +111,23 @@ public class FuzzStatement extends Statement {
                 .map(this::createParameterTypeContext)
                 .map(this::produceGenerator)
                 .collect(Collectors.toList());
+
+        for (int i = 0; i < method.getMethod().getParameterCount(); i++) {
+            Generator<?> gen = generators.get(i);
+            if (!(gen instanceof CompositeGenerator)) {
+                throw new RuntimeException("Unsupported generator type: " + gen.getClass());
+            }
+            CompositeGenerator comGen = (CompositeGenerator) gen;
+            for (int j = 0; j < comGen.numberOfComposedGenerators(); j++) {
+                Generator<?> gen2 = ((CompositeGenerator) comGen).composed(j);
+                Annotation[] anns = method.getMethod().getParameterAnnotations()[i];
+                for (Annotation ann: anns) {
+                    if (ann instanceof InRange) {
+                        updateRange(gen2, (InRange) ann);
+                    }
+                }
+            }
+        }
 
         // Get the currently registered fuzz guidance
         Guidance guidance = GuidedFuzzing.getCurrentGuidance();
@@ -217,6 +241,19 @@ public class FuzzStatement extends Statement {
             }
         }
 
+    }
+
+    private void updateRange(Generator<?> gen, InRange range) {
+        try {
+            Method m = gen.getClass().getMethod("configure", InRange.class);
+            m.invoke(gen, range);
+        } catch (NoSuchMethodException e) {
+            System.err.println(String.format("Class %s does not have configure(InRange)", gen.getClass()));
+        } catch (IllegalAccessException e) {
+            System.err.println(String.format("Class %s does not have public configure(InRange)", gen.getClass()));
+        } catch (InvocationTargetException e) {
+            System.err.println(String.format("An exception is thrown from %s.configure(InRange)", gen.getClass()));
+        }
     }
 
     /**
