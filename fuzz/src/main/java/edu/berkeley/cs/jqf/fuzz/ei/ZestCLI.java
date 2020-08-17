@@ -175,6 +175,7 @@ public class ZestCLI implements Runnable {
 
         if (runBuggyVersion) {
             Log.runBuggyVersion = true;
+            kr.ac.unist.cse.jqf.Log.runBuggyVersion = true;
         }
 
         if (logDir != null)

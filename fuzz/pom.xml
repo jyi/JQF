@@ -51,6 +51,12 @@
             <artifactId>picocli</artifactId>
             <version>4.0.4</version>
         </dependency>
+        <dependency>
+            <groupId>kr.ac.unist.cse.jqf</groupId>
+            <artifactId>jqf-log</artifactId>
+            <version>1.0-SNAPSHOT</version>
+            <scope>compile</scope>
+        </dependency>
     </dependencies>
 
 

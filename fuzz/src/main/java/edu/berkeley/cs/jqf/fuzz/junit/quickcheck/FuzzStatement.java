@@ -30,8 +30,12 @@ package edu.berkeley.cs.jqf.fuzz.junit.quickcheck;
 
 import java.io.EOFException;
 import java.io.File;
+import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -61,6 +65,7 @@ import edu.berkeley.cs.jqf.fuzz.guidance.StreamBackedRandom;
 import edu.berkeley.cs.jqf.fuzz.Fuzz;
 import edu.berkeley.cs.jqf.fuzz.junit.GuidedFuzzing;
 import edu.berkeley.cs.jqf.fuzz.junit.TrialRunner;
+import kr.ac.unist.cse.jqf.Log;
 import org.junit.AssumptionViolatedException;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.MultipleFailureException;
@@ -106,11 +111,16 @@ public class FuzzStatement extends Statement {
      */
     @Override
     public void evaluate() throws Throwable {
+        init();
+
         // Construct generators for each parameter
         List<Generator<?>> generators = Arrays.stream(method.getMethod().getParameters())
                 .map(this::createParameterTypeContext)
                 .map(this::produceGenerator)
                 .collect(Collectors.toList());
+
+        // update input range
+        updateInputRange(generators);
 
         for (int i = 0; i < method.getMethod().getParameterCount(); i++) {
             Generator<?> gen = generators.get(i);
@@ -170,6 +180,8 @@ public class FuzzStatement extends Statement {
                         args = generators.stream()
                                 .map(g -> g.generate(random, genStatus))
                                 .toArray();
+
+                        Log.logIn(args);
 
                         // Let guidance observe the generated input args
                         guidance.observeGeneratedArgs(args);
@@ -238,6 +250,63 @@ public class FuzzStatement extends Statement {
                 // Not sure if we should report each failing run,
                 // as there may be duplicates
                 throw new MultipleFailureException(failures);
+            }
+        }
+    }
+
+    private void init() {
+        String logDir = System.getProperty("jqf.ei.logDir");
+        String inputID = System.getProperty("jqf.ei.inputID");
+
+        if (logDir == null) {
+            return;
+        }
+
+        Path dir;
+        if (inputID == null)
+            dir = Paths.get(logDir);
+        else
+            dir = Paths.get(logDir, inputID);
+        try {
+            Files.createDirectories(dir);
+        } catch (IOException e) {
+            System.err.println("Failed to create directory " + dir);
+            e.printStackTrace();
+        }
+        List<Path> files = new ArrayList<>();
+        files.add(Paths.get(dir.toString(), "OUT.log"));
+        files.add(Paths.get(dir.toString(), "IN.log"));
+
+        for (Path file : files) {
+            try {
+                Files.deleteIfExists(file);
+            } catch (IOException e) {
+                System.err.println("Failed to delete " + file);
+            }
+
+            try {
+                Files.createFile(file);
+            } catch (IOException e) {
+                System.err.println("Failed to create " + file);
+            }
+        }
+    }
+
+    private void updateInputRange(List<Generator<?>> generators) {
+        for (int i = 0; i < method.getMethod().getParameterCount(); i++) {
+            Generator<?> gen = generators.get(i);
+            if (!(gen instanceof CompositeGenerator)) {
+                throw new RuntimeException("Unsupported generator type: " + gen.getClass());
+            }
+            CompositeGenerator comGen = (CompositeGenerator) gen;
+            for (int j = 0; j < comGen.numberOfComposedGenerators(); j++) {
+                Generator<?> gen2 = ((CompositeGenerator) comGen).composed(j);
+                Annotation[] anns = method.getMethod().getParameterAnnotations()[i];
+                for (Annotation ann: anns) {
+                    if (ann instanceof InRange) {
+                        updateRange(gen2, (InRange) ann);
+                    }
+                }
             }
         }
 

@@ -62,6 +62,7 @@ public class ReproDriver implements Runnable {
 
             if (runBuggyVersion) {
                 Log.runBuggyVersion = true;
+                kr.ac.unist.cse.jqf.Log.runBuggyVersion = true;
             }
 
             // Maybe log the trace
