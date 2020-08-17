@@ -45,12 +45,6 @@ import java.util.stream.Collectors;
 import com.pholser.junit.quickcheck.generator.GenerationStatus;
 import com.pholser.junit.quickcheck.generator.Generator;
 import com.pholser.junit.quickcheck.generator.InRange;
-import com.pholser.junit.quickcheck.generator.java.lang.*;
-import com.pholser.junit.quickcheck.generator.java.math.BigDecimalGenerator;
-import com.pholser.junit.quickcheck.generator.java.math.BigIntegerGenerator;
-import com.pholser.junit.quickcheck.generator.java.time.ClockGenerator;
-import com.pholser.junit.quickcheck.generator.java.time.DurationGenerator;
-import com.pholser.junit.quickcheck.generator.java.time.InstantGenerator;
 import com.pholser.junit.quickcheck.internal.ParameterTypeContext;
 import com.pholser.junit.quickcheck.internal.generator.CompositeGenerator;
 import com.pholser.junit.quickcheck.internal.generator.GeneratorRepository;
@@ -165,6 +159,7 @@ public class FuzzStatement extends Statement {
 
             // Keep fuzzing as long as guidance wants to
             while (guidance.hasInput()) {
+                Log.logOutIfCalled = false;
                 Result result = INVALID;
                 Throwable error = null;
 
@@ -235,8 +230,6 @@ public class FuzzStatement extends Statement {
 
                 // Inform guidance about the outcome of this trial
                 guidance.handleResult(result, error);
-
-
             }
         } catch (GuidanceException e) {
             System.err.println("Fuzzing stopped due to guidance exception: " + e.getMessage());
