@@ -104,11 +104,26 @@ public class Log {
         }
     }
 
-    public static <T> void logOutIf(boolean cond, T[] actual) {
+    public static <T> void logOutIf(boolean cond, final T actual, T expected) {
+        logOutIf(cond, new Actual() {
+            @Override
+            public Object[] values() {
+                return new Object[] { actual };
+            }
+        }, new Object[] { expected });
+    }
+
+    // We assume that an exception should not occur while
+    // evaluating actual.
+    public static <T> void logOutIf(boolean cond, Actual actual) {
         if (logOutIfCalled) logOut(";");
         if (Log.runBuggyVersion) {
             if (cond) {
-                logOut(actual);
+                try {
+                    logOut(actual.values());
+                } catch (Exception e) {
+                    logOut("IGNORE_OUTPUT: exception occurred: " + e.getClass());
+                }
             } else {
                 logOut("IGNORE_OUTPUT: " + actual);
             }
