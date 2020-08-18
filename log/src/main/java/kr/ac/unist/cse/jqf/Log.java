@@ -128,7 +128,11 @@ public class Log {
                 logOut("IGNORE_OUTPUT: " + actual);
             }
         } else {
-            logOut(actual);
+            try {
+                logOut(actual.values());
+            } catch (Exception e) {
+                logOut("IGNORE_OUTPUT: exception occurred: " + e.getClass());
+            }
         }
         logOutIfCalled = true;
     }
