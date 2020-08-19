@@ -23,7 +23,22 @@ public class Log {
         if (inputID == null) {
             outFile = Paths.get(logDir, "OUT.log");
         } else {
+            try {
+                Files.createDirectories(Paths.get(logDir, inputID));
+            } catch (IOException e) {
+                System.err.println("Failed to create directory " + Paths.get(logDir, inputID));
+                e.printStackTrace();
+            }
             outFile = Paths.get(logDir, inputID, "OUT.log");
+        }
+
+        if (!Files.exists(outFile)) {
+            try {
+                Files.createFile(outFile);
+            } catch (IOException e) {
+                System.err.println("Failed to create a file: " + outFile);
+                e.printStackTrace();
+            }
         }
 
         try {
@@ -171,14 +186,30 @@ public class Log {
         if (inputID == null) {
             inFile = Paths.get(logDir, "IN.log");
         } else {
+            try {
+                Files.createDirectories(Paths.get(logDir, inputID));
+            } catch (IOException e) {
+                System.err.println("Failed to create directory " + Paths.get(logDir, inputID));
+                e.printStackTrace();
+            }
             inFile = Paths.get(logDir, inputID, "IN.log");
+        }
+
+        if (!Files.exists(inFile)) {
+            try {
+                Files.createFile(inFile);
+            } catch (IOException e) {
+                System.err.println("Failed to create a file: " + inFile);
+                e.printStackTrace();
+            }
         }
 
         try {
             Files.write(inFile, msg.getBytes(),
                     StandardOpenOption.APPEND);
         } catch (IOException e) {
-            System.err.println("Failed to write output due to IOException");
+            System.err.println("Failed to write output to " + inFile);
+            e.printStackTrace();
         }
     }
 
