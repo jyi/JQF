@@ -146,7 +146,7 @@ public class Log {
             try {
                 logOut(actual.values());
             } catch (Exception e) {
-                logOut("IGNORE_OUTPUT: exception occurred: " + e.getClass());
+                logOut("Exception occurred: " + e.getClass());
             }
         }
         logOutIfCalled = true;
@@ -159,7 +159,7 @@ public class Log {
                 try {
                     logOut(actual.values());
                 } catch (Exception e) {
-                    logOut("Exception occurred: " + e.getClass());
+                    logOut(expected);
                 }
             } else {
                 logOut(expected);
