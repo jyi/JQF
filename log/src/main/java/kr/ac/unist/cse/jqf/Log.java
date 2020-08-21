@@ -174,6 +174,14 @@ public class Log {
         logOutIfCalled = true;
     }
 
+    public static void ignoreOut() {
+        logOut("IGNORE_OUTPUT");
+    }
+
+    public static void ignoreOut(String msg) {
+        logOut("IGNORE_OUTPUT: " + msg);
+    }
+
     protected static void logIn(String msg) {
         String logDir = System.getProperty("jqf.ei.logDir");
         if (logDir == null) {
