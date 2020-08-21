@@ -116,23 +116,6 @@ public class FuzzStatement extends Statement {
         // update input range
         updateInputRange(generators);
 
-        for (int i = 0; i < method.getMethod().getParameterCount(); i++) {
-            Generator<?> gen = generators.get(i);
-            if (!(gen instanceof CompositeGenerator)) {
-                throw new RuntimeException("Unsupported generator type: " + gen.getClass());
-            }
-            CompositeGenerator comGen = (CompositeGenerator) gen;
-            for (int j = 0; j < comGen.numberOfComposedGenerators(); j++) {
-                Generator<?> gen2 = ((CompositeGenerator) comGen).composed(j);
-                Annotation[] anns = method.getMethod().getParameterAnnotations()[i];
-                for (Annotation ann: anns) {
-                    if (ann instanceof InRange) {
-                        updateRange(gen2, (InRange) ann);
-                    }
-                }
-            }
-        }
-
         // Get the currently registered fuzz guidance
         Guidance guidance = GuidedFuzzing.getCurrentGuidance();
 
