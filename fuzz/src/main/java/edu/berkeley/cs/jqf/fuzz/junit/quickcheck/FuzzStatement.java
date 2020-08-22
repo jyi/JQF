@@ -49,9 +49,11 @@ import com.pholser.junit.quickcheck.internal.ParameterTypeContext;
 import com.pholser.junit.quickcheck.internal.generator.CompositeGenerator;
 import com.pholser.junit.quickcheck.internal.generator.GeneratorRepository;
 import com.pholser.junit.quickcheck.random.SourceOfRandomness;
+import edu.berkeley.cs.jqf.fuzz.ei.ZestGuidance;
 import edu.berkeley.cs.jqf.fuzz.guidance.Guidance;
 import edu.berkeley.cs.jqf.fuzz.guidance.GuidanceException;
 import edu.berkeley.cs.jqf.fuzz.guidance.TimeoutException;
+import edu.berkeley.cs.jqf.fuzz.junit.GuidedFuzzingForPatched;
 import edu.berkeley.cs.jqf.fuzz.random.NoGuidance;
 import edu.berkeley.cs.jqf.fuzz.repro.ReproGuidance;
 import edu.berkeley.cs.jqf.fuzz.guidance.Result;
@@ -77,6 +79,7 @@ import static edu.berkeley.cs.jqf.fuzz.guidance.Result.*;
  * @author Rohan Padhye
  */
 public class FuzzStatement extends Statement {
+    private ClassLoader loaderForPatch;
     private FrameworkMethod method;
     private final TestClass testClass;
     private final Map<String, Type> typeVariables;
@@ -97,6 +100,11 @@ public class FuzzStatement extends Statement {
 
     }
 
+    public FuzzStatement(FrameworkMethod method, TestClass testClass,
+                         GeneratorRepository generatorRepository, ClassLoader loaderForPatch) {
+        this(method, testClass, generatorRepository);
+        this.loaderForPatch = loaderForPatch;
+    }
 
     /**
      * Run the test.
@@ -105,6 +113,9 @@ public class FuzzStatement extends Statement {
      */
     @Override
     public void evaluate() throws Throwable {
+        if (this.loaderForPatch != null) {
+            evaluate2();
+        }
         init();
 
         // Construct generators for each parameter
@@ -139,7 +150,223 @@ public class FuzzStatement extends Statement {
 
         // Keep fuzzing until no more input or I/O error with guidance
         try {
+            // Keep fuzzing as long as guidance wants to
+            while (guidance.hasInput()) {
+                Log.logOutIfCalled = false;
+                Result result = INVALID;
+                Throwable error = null;
 
+                // Initialize guided fuzzing using a file-backed random number source
+                try {
+                    Object[] args;
+                    try {
+
+                        // Generate input values
+                        StreamBackedRandom randomFile = new StreamBackedRandom(guidance.getInput(), Long.BYTES);
+                        SourceOfRandomness random = new FastSourceOfRandomness(randomFile);
+                        GenerationStatus genStatus = new NonTrackingGenerationStatus(random);
+                        args = generators.stream()
+                                .map(g -> g.generate(random, genStatus))
+                                .toArray();
+
+                        Log.logIn(args);
+
+                        // Let guidance observe the generated input args
+                        guidance.observeGeneratedArgs(args);
+                    } catch (IllegalStateException e) {
+                        if (e.getCause() instanceof EOFException) {
+                            // This happens when we reach EOF before reading all the random values.
+                            // Treat this as an assumption failure, so that the guidance considers the
+                            // generated input as INVALID
+                            throw new AssumptionViolatedException("StreamBackedRandom does not have enough data", e.getCause());
+                        } else {
+                            throw e;
+                        }
+                    } catch (AssumptionViolatedException | TimeoutException e) {
+                        // Propagate early termination of tests from generator
+                        throw e;
+                    } catch (GuidanceException e) {
+                        // Throw the guidance exception outside to stop fuzzing
+                        throw e;
+                    } catch (Throwable e) {
+                        // Throw the guidance exception outside to stop fuzzing
+                        throw new GuidanceException(e);
+                    } finally {
+                        // System.out.println(randomFile.getTotalBytesRead() + " random bytes read");
+                    }
+
+                    // Attempt to run the trial
+                    new TrialRunner(testClass.getJavaClass(), method, args).run();
+
+                    // If we reached here, then the trial must be a success
+                    result = SUCCESS;
+                } catch (GuidanceException e) {
+                    // Throw the guidance exception outside to stop fuzzing
+                    throw e;
+                } catch (AssumptionViolatedException e) {
+                    result = INVALID;
+                    error = e;
+                } catch (TimeoutException e) {
+                    result = TIMEOUT;
+                    error = e;
+                } catch (Throwable e) {
+
+                    // Check if this exception was expected
+                    if (isExceptionExpected(e.getClass())) {
+                        result = SUCCESS; // Swallow the error
+                    } else {
+                        result = FAILURE;
+                        error = e;
+                        failures.add(e);
+                    }
+                }
+
+                // Inform guidance about the outcome of this trial
+                guidance.handleResult(result, error);
+            }
+        } catch (GuidanceException e) {
+            System.err.println("Fuzzing stopped due to guidance exception: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        if (failures.size() > 0) {
+            if (failures.size() == 1) {
+                throw failures.get(0);
+            } else {
+                // Not sure if we should report each failing run,
+                // as there may be duplicates
+                throw new MultipleFailureException(failures);
+            }
+        }
+    }
+
+    private void evaluate2() throws Throwable {
+        init();
+
+        // Construct generators for each parameter
+        List<Generator<?>> generators = Arrays.stream(method.getMethod().getParameters())
+                .map(this::createParameterTypeContext)
+                .map(this::produceGenerator)
+                .collect(Collectors.toList());
+
+        // update input range
+        updateInputRange(generators);
+
+        // Get the currently registered fuzz guidance
+        if (Boolean.getBoolean("jqf.ei.run_patch")) {
+            evaluatePatch((ReproGuidance) GuidedFuzzingForPatched.getCurrentGuidance(),
+                    generators);
+        } else {
+            evaluateOrg((ZestGuidance) GuidedFuzzing.getCurrentGuidance(),
+                    generators);
+        }
+    }
+
+    private void evaluateOrg(ZestGuidance guidance, List<Generator<?>> generators) throws Throwable {
+        // Keep fuzzing until no more input or I/O error with guidance
+        try {
+            // Keep fuzzing as long as guidance wants to
+            while (guidance.hasInput()) {
+                Log.logOutIfCalled = false;
+                Result result = INVALID;
+                Throwable error = null;
+
+                // Initialize guided fuzzing using a file-backed random number source
+                try {
+                    Object[] args;
+                    try {
+
+                        // Generate input values
+                        StreamBackedRandom randomFile = new StreamBackedRandom(guidance.getInput(), Long.BYTES);
+                        SourceOfRandomness random = new FastSourceOfRandomness(randomFile);
+                        GenerationStatus genStatus = new NonTrackingGenerationStatus(random);
+                        args = generators.stream()
+                                .map(g -> g.generate(random, genStatus))
+                                .toArray();
+
+                        Log.logIn(args);
+
+                        // Let guidance observe the generated input args
+                        guidance.observeGeneratedArgs(args);
+                    } catch (IllegalStateException e) {
+                        if (e.getCause() instanceof EOFException) {
+                            // This happens when we reach EOF before reading all the random values.
+                            // Treat this as an assumption failure, so that the guidance considers the
+                            // generated input as INVALID
+                            throw new AssumptionViolatedException("StreamBackedRandom does not have enough data", e.getCause());
+                        } else {
+                            throw e;
+                        }
+                    } catch (AssumptionViolatedException | TimeoutException e) {
+                        // Propagate early termination of tests from generator
+                        throw e;
+                    } catch (GuidanceException e) {
+                        // Throw the guidance exception outside to stop fuzzing
+                        throw e;
+                    } catch (Throwable e) {
+                        // Throw the guidance exception outside to stop fuzzing
+                        throw new GuidanceException(e);
+                    } finally {
+                        // System.out.println(randomFile.getTotalBytesRead() + " random bytes read");
+                    }
+
+                    // Attempt to run the trial
+                    new TrialRunner(testClass.getJavaClass(), method, args).run();
+
+                    // If we reached here, then the trial must be a success
+                    result = SUCCESS;
+                } catch (GuidanceException e) {
+                    // Throw the guidance exception outside to stop fuzzing
+                    throw e;
+                } catch (AssumptionViolatedException e) {
+                    result = INVALID;
+                    error = e;
+                } catch (TimeoutException e) {
+                    result = TIMEOUT;
+                    error = e;
+                } catch (Throwable e) {
+
+                    // Check if this exception was expected
+                    if (isExceptionExpected(e.getClass())) {
+                        result = SUCCESS; // Swallow the error
+                    } else {
+                        result = FAILURE;
+                        error = e;
+                        failures.add(e);
+                    }
+                }
+
+                // Inform guidance about the outcome of this trial
+                guidance.handleResult(result, error);
+
+                // run patched version
+                assert guidance.getSavedAllDirectory() != null;
+                assert guidance.getCurSaveFileName() != null;
+                File saveFile = new File(guidance.getSavedAllDirectory(), guidance.getCurSaveFileName());
+                ReproGuidance reproGuidance = new ReproGuidance(saveFile, null);
+                System.setProperty("jqf.ei.run_patch", "true");
+                GuidedFuzzingForPatched.run(testClass.getName(), method.getName(), this.loaderForPatch, reproGuidance, System.out);
+                System.setProperty("jqf.ei.run_patch", "false");
+            }
+        } catch (GuidanceException e) {
+            System.err.println("Fuzzing stopped due to guidance exception: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        if (failures.size() > 0) {
+            if (failures.size() == 1) {
+                throw failures.get(0);
+            } else {
+                // Not sure if we should report each failing run,
+                // as there may be duplicates
+                throw new MultipleFailureException(failures);
+            }
+        }
+    }
+
+    private void evaluatePatch(ReproGuidance guidance, List<Generator<?>> generators) throws Throwable {
+        // Keep fuzzing until no more input or I/O error with guidance
+        try {
             // Keep fuzzing as long as guidance wants to
             while (guidance.hasInput()) {
                 Log.logOutIfCalled = false;

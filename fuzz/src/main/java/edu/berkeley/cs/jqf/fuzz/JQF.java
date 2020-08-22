@@ -28,6 +28,8 @@
  */
 package edu.berkeley.cs.jqf.fuzz;
 
+import java.io.File;
+import java.net.MalformedURLException;
 import java.util.List;
 import java.util.Random;
 
@@ -36,7 +38,9 @@ import com.pholser.junit.quickcheck.internal.generator.GeneratorRepository;
 import com.pholser.junit.quickcheck.internal.generator.ServiceLoaderGeneratorSource;
 import com.pholser.junit.quickcheck.random.SourceOfRandomness;
 import com.pholser.junit.quickcheck.runner.JUnitQuickcheck;
+import edu.berkeley.cs.jqf.fuzz.ei.ZestCLI2;
 import edu.berkeley.cs.jqf.fuzz.junit.quickcheck.FuzzStatement;
+import edu.berkeley.cs.jqf.instrument.InstrumentingClassLoader;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.Statement;
@@ -50,14 +54,16 @@ import org.junit.runners.model.Statement;
 public class JQF extends JUnitQuickcheck {
 
     protected final GeneratorRepository generatorRepository;
+    private final String classPathForPatch;
 
     @SuppressWarnings("unused") // Invoked reflectively by JUnit
     public JQF(Class<?> clazz) throws InitializationError {
         super(clazz);
         // Initialize generator repository with a deterministic seed (for reproducibility)
         SourceOfRandomness randomness = new SourceOfRandomness(new Random(42));
-        this.generatorRepository = new GeneratorRepository(randomness).register(new ServiceLoaderGeneratorSource());;
+        this.generatorRepository = new GeneratorRepository(randomness).register(new ServiceLoaderGeneratorSource());
 
+        classPathForPatch = System.getProperty("jqf.ei.CLASSPATH_FOR_PATCH");
     }
 
     @Override protected List<FrameworkMethod> computeTestMethods() {
@@ -84,7 +90,20 @@ public class JQF extends JUnitQuickcheck {
 
     @Override public Statement methodBlock(FrameworkMethod method) {
         if (method.getAnnotation(Fuzz.class) != null) {
-            return new FuzzStatement(method, getTestClass(), generatorRepository);
+            if (this.classPathForPatch != null) {
+                ClassLoader loaderForPatch = null;
+                try {
+                    loaderForPatch = new InstrumentingClassLoader(
+                            this.classPathForPatch.split(File.pathSeparator),
+                            ZestCLI2.class.getClassLoader());
+                } catch (MalformedURLException e) {
+                    e.printStackTrace();
+                    System.exit(2);
+                }
+                return new FuzzStatement(method, getTestClass(), generatorRepository, loaderForPatch);
+            } else {
+                return new FuzzStatement(method, getTestClass(), generatorRepository);
+            }
         }
         return super.methodBlock(method);
     }

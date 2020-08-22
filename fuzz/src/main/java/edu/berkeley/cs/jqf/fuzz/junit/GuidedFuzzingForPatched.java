@@ -36,16 +36,13 @@ import edu.berkeley.cs.jqf.instrument.tracing.SingleSnoop;
 import org.junit.internal.TextListener;
 import org.junit.runner.*;
 
-public class GuidedFuzzing {
+public class GuidedFuzzingForPatched {
 
     private static Guidance guidance;
 
     public static long DEFAULT_MAX_TRIALS = 100;
 
     private static void setGuidance(Guidance g) {
-        if (guidance != null) {
-            throw new IllegalStateException("Can only set guided once.");
-        }
         guidance = g;
     }
 
@@ -85,7 +82,7 @@ public class GuidedFuzzing {
      * @return the Junit-style test result
      */
     public synchronized static Result run(String testClassName, String testMethod,
-                                        Guidance guidance, PrintStream out) throws ClassNotFoundException, IllegalStateException {
+                                          Guidance guidance, PrintStream out) throws ClassNotFoundException, IllegalStateException {
 
         // Run with the system class loader
         return run(testClassName, testMethod, ClassLoader.getSystemClassLoader(), guidance, out);
@@ -114,8 +111,8 @@ public class GuidedFuzzing {
      * @return the Junit-style test result
      */
     public synchronized static Result run(String testClassName, String testMethod,
-                                        ClassLoader loader,
-                                        Guidance guidance, PrintStream out) throws ClassNotFoundException, IllegalStateException {
+                                          ClassLoader loader,
+                                          Guidance guidance, PrintStream out) throws ClassNotFoundException, IllegalStateException {
         Class<?> testClass =
                 java.lang.Class.forName(testClassName, true, loader);
 

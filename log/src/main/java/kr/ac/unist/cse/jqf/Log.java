@@ -10,6 +10,15 @@ import java.util.Arrays;
 public class Log {
     public static boolean logOutIfCalled = false;
     public static boolean runBuggyVersion = false;
+    private static int ignoreCount = 0;
+
+    public static void turnOnRunBuggyVersion() {
+        Log.runBuggyVersion = true;
+    }
+
+    public static void turnOffRunBuggyVersion() {
+        Log.runBuggyVersion = false;
+    }
 
     protected static void logOut(String msg) {
         String logDir = System.getProperty("jqf.ei.logDir");
@@ -137,10 +146,10 @@ public class Log {
                 try {
                     logOut(actual.values());
                 } catch (Exception e) {
-                    logOut("IGNORE_OUTPUT: exception occurred: " + e.getClass());
+                    ignoreOut("exception occurred: " + e.getClass());
                 }
             } else {
-                logOut("IGNORE_OUTPUT: " + actual);
+                ignoreOut(Arrays.deepToString(actual.values()));
             }
         } else {
             try {
@@ -175,10 +184,11 @@ public class Log {
     }
 
     public static void ignoreOut() {
-        logOut("IGNORE_OUTPUT");
+        ignoreOut("");
     }
 
     public static void ignoreOut(String msg) {
+        ignoreCount++;
         logOut("IGNORE_OUTPUT: " + msg);
     }
 
@@ -289,5 +299,13 @@ public class Log {
             logIn(";");
             logIn(o);
         }
+    }
+
+    public static void clearIgnoreCount() {
+        ignoreCount = 0;
+    }
+
+    public static int getIgnoreCount() {
+        return ignoreCount;
     }
 }

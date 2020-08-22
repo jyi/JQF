@@ -240,8 +240,8 @@ public class ReachGuidance extends ZestGuidance {
 
         // Save input unconditionally if such a setting is enabled
         if (savedAllDirectory != null) {
-            String saveFileName = String.format("id_%09d", numTrials);
-            File saveFile = new File(savedAllDirectory, saveFileName);
+            this.curSaveFileName = String.format("id_%09d", numTrials);
+            File saveFile = new File(savedAllDirectory, this.curSaveFileName);
             GuidanceException.wrap(() -> writeCurrentInputToFile(saveFile));
         }
 

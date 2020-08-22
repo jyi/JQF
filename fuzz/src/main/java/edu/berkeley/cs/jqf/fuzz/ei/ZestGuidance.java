@@ -267,6 +267,8 @@ public class ZestGuidance implements Guidance {
     static final boolean SAVE_ALL_INPUTS =
       Boolean.getBoolean("jqf.ei.SAVE_ALL_INPUTS");
 
+    protected String curSaveFileName;
+
     /**
      * Creates a new guidance instance.
      *
@@ -810,8 +812,8 @@ public class ZestGuidance implements Guidance {
 
         // Save input unconditionally if such a setting is enabled
         if (savedAllDirectory != null) {
-            String saveFileName = String.format("id_%09d", numTrials);
-            File saveFile = new File(savedAllDirectory, saveFileName);
+            this.curSaveFileName = String.format("id_%09d", numTrials);
+            File saveFile = new File(savedAllDirectory, curSaveFileName);
             GuidanceException.wrap(() -> writeCurrentInputToFile(saveFile));
         }
     }
@@ -969,6 +971,14 @@ public class ZestGuidance implements Guidance {
      */
     public Coverage getTotalCoverage() {
         return totalCoverage;
+    }
+
+    public File getSavedAllDirectory() {
+        return this.savedAllDirectory;
+    }
+
+    public String getCurSaveFileName() {
+        return this.curSaveFileName;
     }
 
     /**
@@ -1258,6 +1268,4 @@ public class ZestGuidance implements Guidance {
         }
 
     }
-
-
 }
