@@ -43,6 +43,7 @@ import edu.berkeley.cs.jqf.instrument.tracing.events.BranchEvent;
 import edu.berkeley.cs.jqf.instrument.tracing.events.TraceEvent;
 
 import de.hub.se.cfg.CFGAnalysis;
+import kr.ac.unist.cse.jqf.Log;
 
 /**
  * A front-end that only generates random inputs.
@@ -58,6 +59,18 @@ public class ReachGuidance extends ZestGuidance {
     private CFGAnalysis cfga;
 
     private final List<Input<?>> inputs = new ArrayList<>();
+
+    public class HandleResult {
+        private boolean inputAdded;
+
+        public HandleResult(boolean inputAdded) {
+            this.inputAdded = inputAdded;
+        }
+
+        public boolean isInputAdded() {
+            return inputAdded;
+        }
+    }
 
     /**
      * Creates a new guidance instance.
@@ -114,8 +127,9 @@ public class ReachGuidance extends ZestGuidance {
         targetCoverage.handleEvent(e);
     }
 
-    @Override
-    public void handleResult(Result result, Throwable error) throws GuidanceException {
+    public HandleResult handleResult2(Result result, Throwable error) throws GuidanceException {
+        boolean inputAdded = false;
+
         // Stop timeout handling
         this.runStart = null;
 
@@ -155,7 +169,7 @@ public class ReachGuidance extends ZestGuidance {
             } else {
                 noProgress++;
                 if (USE_PLATEAU_THRESHOLD && noProgress > plateauThreshold) {
-                    console.printf("A plateau is reached!!!\n");
+                    System.out.println("A plateau is reached!!!");
                     isPlateauReached = true;
                 }
             }
@@ -166,7 +180,7 @@ public class ReachGuidance extends ZestGuidance {
             String why = "";
 
             // Save if the target is reached.
-            if (isTargetReached() && !isDuplicate()) {
+            if (isTargetReached() && Log.getActualCount() > 0 && !isDuplicate()) {
                 // Trim input (remove unused keys)
                 currentInput.gc();
 
@@ -193,6 +207,7 @@ public class ReachGuidance extends ZestGuidance {
 
                 // update inputs
                 inputs.add(currentInput);
+                inputAdded = true;
             }
         } else if (result == Result.FAILURE || result == Result.TIMEOUT) {
             String msg = error.getMessage();
@@ -245,6 +260,7 @@ public class ReachGuidance extends ZestGuidance {
             GuidanceException.wrap(() -> writeCurrentInputToFile(saveFile));
         }
 
+        return new HandleResult(inputAdded);
     }
 
     private boolean isTargetReached() {

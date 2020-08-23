@@ -97,6 +97,10 @@ public class ZestCLI2 implements Runnable {
             description = "Timeout")
     int timeout = 1000;
 
+    @Option(names = { "--widening-proportion" },
+    description = "widening proportion")
+    double widenProportion = 1;
+
     @Option(names = { "-l", "--libfuzzer-compat-output" },
             description = "Use libFuzzer compat output instead of AFL like stats screen (default: false)")
     private boolean libFuzzerCompatOutput = false;
@@ -204,6 +208,9 @@ public class ZestCLI2 implements Runnable {
 
         if (this.classPathForPatch != null) {
             System.setProperty("jqf.ei.CLASSPATH_FOR_PATCH", this.classPathForPatch);
+            System.setProperty("jqf.ei.run_two_versions", "true");
+        } else {
+            System.setProperty("jqf.ei.run_two_versions", "false");
         }
 
         if (this.verbose) {

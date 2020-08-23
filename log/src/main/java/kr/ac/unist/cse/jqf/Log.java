@@ -1,5 +1,6 @@
 package kr.ac.unist.cse.jqf;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -10,7 +11,9 @@ import java.util.Arrays;
 public class Log {
     public static boolean logOutIfCalled = false;
     public static boolean runBuggyVersion = false;
+
     private static int ignoreCount = 0;
+    private static int actualCount = 0;
 
     public static void turnOnRunBuggyVersion() {
         Log.runBuggyVersion = true;
@@ -20,11 +23,33 @@ public class Log {
         Log.runBuggyVersion = false;
     }
 
+    public static void reset() {
+        logOutIfCalled = false;
+        ignoreCount = 0;
+        actualCount = 0;
+    }
+
+    public static int getIgnoreCount() {
+        return ignoreCount;
+    }
+
+    public static int getActualCount() {
+        return actualCount;
+    }
+
     protected static void logOut(String msg) {
         String logDir = System.getProperty("jqf.ei.logDir");
         if (logDir == null) {
             System.out.println("out: " + msg);
             return;
+        }
+
+        if (Boolean.getBoolean("jqf.ei.run_two_versions")) {
+            if (Log.runBuggyVersion) {
+                logDir += File.separator + "ORG";
+            } else {
+                logDir += File.separator + "PATCH";
+            }
         }
 
         Path outFile;
@@ -140,25 +165,7 @@ public class Log {
     // We assume that an exception should not occur while
     // evaluating actual.
     public static <T> void logOutIf(boolean cond, Actual actual) {
-        if (logOutIfCalled) logOut(";");
-        if (Log.runBuggyVersion) {
-            if (cond) {
-                try {
-                    logOut(actual.values());
-                } catch (Exception e) {
-                    ignoreOut("exception occurred: " + e.getClass());
-                }
-            } else {
-                ignoreOut(Arrays.deepToString(actual.values()));
-            }
-        } else {
-            try {
-                logOut(actual.values());
-            } catch (Exception e) {
-                logOut("Exception occurred: " + e.getClass());
-            }
-        }
-        logOutIfCalled = true;
+        logOutIf(cond, actual, null);
     }
 
     public static <T> void logOutIf(boolean cond, Actual actual, T[] expected) {
@@ -167,17 +174,24 @@ public class Log {
             if (cond) {
                 try {
                     logOut(actual.values());
+                    actualCount++;
                 } catch (Exception e) {
-                    logOut(expected);
+                    ignoreOut("exception occurred: " + e.getClass());
                 }
             } else {
-                logOut(expected);
+                if (expected != null) {
+                    logOut(expected);
+                } else {
+                    ignoreOut(Arrays.deepToString(actual.values()));
+                }
             }
         } else {
             try {
                 logOut(actual.values());
             } catch (Exception e) {
                 logOut("Exception occurred: " + e.getClass());
+            } finally {
+                actualCount++;
             }
         }
         logOutIfCalled = true;
@@ -197,6 +211,14 @@ public class Log {
         if (logDir == null) {
             System.out.println("in: " + msg);
             return;
+        }
+
+        if (Boolean.getBoolean("jqf.ei.run_two_versions")) {
+            if (Log.runBuggyVersion) {
+                logDir += File.separator + "ORG";
+            } else {
+                logDir += File.separator + "PATCH";
+            }
         }
 
         Path inFile;
@@ -299,13 +321,5 @@ public class Log {
             logIn(";");
             logIn(o);
         }
-    }
-
-    public static void clearIgnoreCount() {
-        ignoreCount = 0;
-    }
-
-    public static int getIgnoreCount() {
-        return ignoreCount;
     }
 }

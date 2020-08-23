@@ -55,6 +55,7 @@ import edu.berkeley.cs.jqf.fuzz.guidance.GuidanceException;
 import edu.berkeley.cs.jqf.fuzz.guidance.TimeoutException;
 import edu.berkeley.cs.jqf.fuzz.junit.GuidedFuzzingForPatched;
 import edu.berkeley.cs.jqf.fuzz.random.NoGuidance;
+import edu.berkeley.cs.jqf.fuzz.reach.ReachGuidance;
 import edu.berkeley.cs.jqf.fuzz.repro.ReproGuidance;
 import edu.berkeley.cs.jqf.fuzz.guidance.Result;
 import edu.berkeley.cs.jqf.fuzz.guidance.StreamBackedRandom;
@@ -254,15 +255,17 @@ public class FuzzStatement extends Statement {
 
         // Get the currently registered fuzz guidance
         if (Boolean.getBoolean("jqf.ei.run_patch")) {
+            Log.turnOffRunBuggyVersion();
             evaluatePatch((ReproGuidance) GuidedFuzzingForPatched.getCurrentGuidance(),
                     generators);
         } else {
-            evaluateOrg((ZestGuidance) GuidedFuzzing.getCurrentGuidance(),
+            Log.turnOnRunBuggyVersion();
+            evaluateOrg((ReachGuidance) GuidedFuzzing.getCurrentGuidance(),
                     generators);
         }
     }
 
-    private void evaluateOrg(ZestGuidance guidance, List<Generator<?>> generators) throws Throwable {
+    private void evaluateOrg(ReachGuidance guidance, List<Generator<?>> generators) throws Throwable {
         // Keep fuzzing until no more input or I/O error with guidance
         try {
             // Keep fuzzing as long as guidance wants to
@@ -270,6 +273,11 @@ public class FuzzStatement extends Statement {
                 Log.logOutIfCalled = false;
                 Result result = INVALID;
                 Throwable error = null;
+
+                if (guidance.isPlateauReached()) {
+                    System.out.println("Plateau is reached, and the range is widened");
+                    System.exit(2);
+                }
 
                 // Initialize guided fuzzing using a file-backed random number source
                 try {
@@ -337,16 +345,23 @@ public class FuzzStatement extends Statement {
                 }
 
                 // Inform guidance about the outcome of this trial
-                guidance.handleResult(result, error);
+                ReachGuidance.HandleResult info = guidance.handleResult2(result, error);
 
-                // run patched version
-                assert guidance.getSavedAllDirectory() != null;
-                assert guidance.getCurSaveFileName() != null;
-                File saveFile = new File(guidance.getSavedAllDirectory(), guidance.getCurSaveFileName());
-                ReproGuidance reproGuidance = new ReproGuidance(saveFile, null);
-                System.setProperty("jqf.ei.run_patch", "true");
-                GuidedFuzzingForPatched.run(testClass.getName(), method.getName(), this.loaderForPatch, reproGuidance, System.out);
-                System.setProperty("jqf.ei.run_patch", "false");
+                if (info.isInputAdded()) {
+                    System.out.println("Succeeded to log out actual");
+                    // run patched version
+                    assert guidance.getSavedAllDirectory() != null;
+                    assert guidance.getCurSaveFileName() != null;
+                    File saveFile = new File(guidance.getSavedAllDirectory(), guidance.getCurSaveFileName());
+                    ReproGuidance reproGuidance = new ReproGuidance(saveFile, null);
+
+                    System.setProperty("jqf.ei.run_patch", "true");
+                    Log.reset();
+                    GuidedFuzzingForPatched.run(testClass.getName(), method.getName(), this.loaderForPatch, reproGuidance, System.out);
+                    System.setProperty("jqf.ei.run_patch", "false");
+                } else {
+                    System.out.println("Failed to log out actual");
+                }
             }
         } catch (GuidanceException e) {
             System.err.println("Fuzzing stopped due to guidance exception: " + e.getMessage());

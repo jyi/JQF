@@ -581,6 +581,10 @@ public class ZestGuidance implements Guidance {
         };
     }
 
+    public boolean isPlateauReached() {
+        return isPlateauReached;
+    }
+
     @Override
     public InputStream getInput() throws GuidanceException {
         // Clear coverage stats for this run
