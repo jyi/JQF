@@ -21,13 +21,27 @@
     </repositories>
 
     <dependencies>
+<!--        <dependency>-->
+<!--            <groupId>com.pholser</groupId>-->
+<!--            <artifactId>junit-quickcheck-core</artifactId>-->
+<!--        </dependency>-->
         <dependency>
             <groupId>com.pholser</groupId>
             <artifactId>junit-quickcheck-core</artifactId>
+            <version>0.8</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/../../junit-quickcheck/core/target/junit-quickcheck-core-0.8.jar</systemPath>
         </dependency>
+<!--        <dependency>-->
+<!--            <groupId>com.pholser</groupId>-->
+<!--            <artifactId>junit-quickcheck-generators</artifactId>-->
+<!--        </dependency>-->
         <dependency>
             <groupId>com.pholser</groupId>
             <artifactId>junit-quickcheck-generators</artifactId>
+            <version>0.8</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/../../junit-quickcheck/generators/target/junit-quickcheck-generators-0.8.jar</systemPath>
         </dependency>
         <dependency>
             <groupId>org.jgrapht</groupId>
