@@ -114,7 +114,7 @@ public class FuzzStatement extends Statement {
     @Override
     public void evaluate() throws Throwable {
         if (this.loaderForPatch != null) {
-            evaluate2();
+            evaluateTwoVersions();
         }
         init();
 
@@ -240,7 +240,7 @@ public class FuzzStatement extends Statement {
         }
     }
 
-    private void evaluate2() throws Throwable {
+    private void evaluateTwoVersions() throws Throwable {
         init();
 
         // Construct generators for each parameter
@@ -512,7 +512,6 @@ public class FuzzStatement extends Statement {
                 }
             }
         }
-
     }
 
     private void updateRange(Generator<?> gen, InRange range) {
