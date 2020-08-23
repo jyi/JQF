@@ -312,7 +312,7 @@ public class JQF_HypergeometricDistributionTest extends IntegerDistributionAbstr
 
   @Fuzz
   public void testMath1021(@InRange(minInt = 42976355, maxInt = 42976375) int sampleSize,
-                           @InRange(minDouble = 0, maxDouble = 1) double p) {
+                           @InRange(minDouble = 0, maxDouble = 1, isFixed = true) double p) {
     int popSize = 43130568;
     int n = 50;
 
