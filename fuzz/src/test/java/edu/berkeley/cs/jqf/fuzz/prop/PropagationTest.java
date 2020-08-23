@@ -12,9 +12,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Comparator;
 
+@Ignore
 public class PropagationTest {
 
-    @Ignore
     @Test
     public void runZestCLI() throws IOException {
         Path fuzz_results_patch_dir = FileSystems.getDefault().getPath("..", "src", "test", "resources", "fuzz-results-patch");
@@ -46,7 +46,6 @@ public class PropagationTest {
                 "org.apache.commons.math3.distribution.JQF_HypergeometricDistributionTest", "testMath1021"});
     }
 
-    @Ignore
     @Test
     public void runZestCLI2() throws IOException {
         Path fuzz_results_patch_dir = FileSystems.getDefault().getPath("..", "src", "test", "resources", "fuzz-results-patch");
