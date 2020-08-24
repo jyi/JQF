@@ -63,6 +63,7 @@ import edu.berkeley.cs.jqf.fuzz.Fuzz;
 import edu.berkeley.cs.jqf.fuzz.junit.GuidedFuzzing;
 import edu.berkeley.cs.jqf.fuzz.junit.TrialRunner;
 import kr.ac.unist.cse.jqf.Log;
+import kr.ac.unist.cse.jqf.fuzz.generator.InRangeFactory;
 import org.junit.AssumptionViolatedException;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.MultipleFailureException;
@@ -87,6 +88,8 @@ public class FuzzStatement extends Statement {
     private final GeneratorRepository generatorRepository;
     private final List<Class<?>> expectedExceptions;
     private final List<Throwable> failures = new ArrayList<>();
+
+    private final InRangeFactory inRangeFactory = InRangeFactory.singleton();
 
     public FuzzStatement(FrameworkMethod method, TestClass testClass,
                          GeneratorRepository generatorRepository) {
@@ -114,10 +117,10 @@ public class FuzzStatement extends Statement {
      */
     @Override
     public void evaluate() throws Throwable {
+        init();
         if (this.loaderForPatch != null) {
             evaluateTwoVersions();
         }
-        init();
 
         // Construct generators for each parameter
         List<Generator<?>> generators = Arrays.stream(method.getMethod().getParameters())
@@ -242,8 +245,6 @@ public class FuzzStatement extends Statement {
     }
 
     private void evaluateTwoVersions() throws Throwable {
-        init();
-
         // Construct generators for each parameter
         List<Generator<?>> generators = Arrays.stream(method.getMethod().getParameters())
                 .map(this::createParameterTypeContext)
@@ -276,6 +277,7 @@ public class FuzzStatement extends Statement {
 
                 if (guidance.isPlateauReached()) {
                     System.out.println("Plateau is reached, and the range is widened");
+                    // TODO: instead of stop, we want to widen the range.
                     System.exit(2);
                 }
 
