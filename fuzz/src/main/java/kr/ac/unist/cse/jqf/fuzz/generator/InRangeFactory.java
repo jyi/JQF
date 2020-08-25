@@ -9,19 +9,24 @@ import java.lang.annotation.Annotation;
 public class InRangeFactory {
 
     private static InRangeFactory singleton = new InRangeFactory();
+    private final double widenProportion;
 
     public static InRangeFactory singleton() {
         return singleton;
     }
 
-    private InRangeFactory() { }
+    private InRangeFactory() {
+        if (System.getProperty("jqf.ei.widenProportion") != null) {
+            widenProportion = Double.parseDouble(System.getProperty("jqf.ei.widenProportion"));
+        } else {
+            widenProportion = 0;
+        }
+    }
 
-    public InRange generate(Generator<?> gen, InRange range) {
-        // TODO
+    public InRange generate(Generator<?> gen, InRange range, int wideningCount) {
         InRange rst = null;
-        double widenProportion =  Double.parseDouble(System.getProperty("jqf.ei.widenProportion"));
         if (gen instanceof IntegerGenerator) {
-            int diff = (int) ((range.maxInt()-range.minInt())*widenProportion/2);
+            int diff = wideningCount * (int) Math.pow(2, wideningCount - 1) * (int) ((range.maxInt()-range.minInt()) * widenProportion / 2);
             rst = new InRange() {
 
                 @Override
@@ -61,12 +66,22 @@ public class InRangeFactory {
 
                 @Override
                 public int minInt() {
-                    return range.minInt()-diff;
+                    int curMin = range.minInt();
+                    if (curMin - diff < Integer.MIN_VALUE) {
+                        return Integer.MIN_VALUE;
+                    } else {
+                        return curMin - diff;
+                    }
                 }
 
                 @Override
                 public int maxInt() {
-                    return range.maxInt()+diff;
+                    int curMax = range.maxInt();
+                    if (curMax + diff > Integer.MAX_VALUE) {
+                        return Integer.MAX_VALUE;
+                    } else {
+                        return curMax + diff;
+                    }
                 }
 
                 @Override
@@ -718,6 +733,7 @@ public class InRangeFactory {
             throw new RuntimeException("Unhandled generator: " + gen.getClass());
         }
 
+        assert rst != null;
         return rst;
     }
 }

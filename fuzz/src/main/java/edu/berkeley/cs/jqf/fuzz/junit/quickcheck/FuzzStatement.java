@@ -45,6 +45,7 @@ import java.util.stream.Collectors;
 import com.pholser.junit.quickcheck.generator.GenerationStatus;
 import com.pholser.junit.quickcheck.generator.Generator;
 import com.pholser.junit.quickcheck.generator.InRange;
+import com.pholser.junit.quickcheck.generator.java.lang.IntegerGenerator;
 import com.pholser.junit.quickcheck.internal.ParameterTypeContext;
 import com.pholser.junit.quickcheck.internal.generator.CompositeGenerator;
 import com.pholser.junit.quickcheck.internal.generator.GeneratorRepository;
@@ -90,6 +91,7 @@ public class FuzzStatement extends Statement {
     private final List<Throwable> failures = new ArrayList<>();
 
     private final InRangeFactory inRangeFactory = InRangeFactory.singleton();
+    private int wideningCount;
 
     public FuzzStatement(FrameworkMethod method, TestClass testClass,
                          GeneratorRepository generatorRepository) {
@@ -278,6 +280,7 @@ public class FuzzStatement extends Statement {
                 if (guidance.isPlateauReached()) {
                     System.out.println("Plateau is reached, and the range is widened");
                     updateInputRange(generators);
+                    wideningCount++;
                 }
 
                 // Initialize guided fuzzing using a file-backed random number source
@@ -533,10 +536,13 @@ public class FuzzStatement extends Statement {
     private void updateRange(Generator<?> gen, InRange range) {
         try {
             if(!range.isFixed()){
-                range = inRangeFactory.generate(gen, range);
+                range = inRangeFactory.generate(gen, range, wideningCount);
             }
             Method m = gen.getClass().getMethod("configure", InRange.class);
             m.invoke(gen, range);
+            if (gen instanceof IntegerGenerator) {
+                System.out.println("[" + range.minInt() + ", " + range.maxInt() + "]");
+            }
         } catch (NoSuchMethodException e) {
             System.err.println(String.format("Class %s does not have configure(InRange)", gen.getClass()));
         } catch (IllegalAccessException e) {
