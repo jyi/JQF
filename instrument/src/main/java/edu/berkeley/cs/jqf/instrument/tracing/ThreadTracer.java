@@ -37,7 +37,7 @@ import java.util.function.Consumer;
 
 import edu.berkeley.cs.jqf.instrument.tracing.events.*;
 import janala.logger.inst.*;
-import sun.security.util.ArrayUtil;
+//import sun.security.util.ArrayUtil;
 
 /**
  * This class is responsible for tracing for an instruction stream

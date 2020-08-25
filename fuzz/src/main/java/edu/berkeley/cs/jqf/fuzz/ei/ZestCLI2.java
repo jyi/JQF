@@ -222,6 +222,7 @@ public class ZestCLI2 implements Runnable {
         if (this.libFuzzerCompatOutput) {
             System.setProperty("jqf.ei.LIBFUZZER_COMPAT_OUTPUT", "true");
         }
+        System.setProperty("jqf.ei.widenProportion", String.valueOf(this.widenProportion));
 
 
         try {

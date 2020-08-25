@@ -277,8 +277,7 @@ public class FuzzStatement extends Statement {
 
                 if (guidance.isPlateauReached()) {
                     System.out.println("Plateau is reached, and the range is widened");
-                    // TODO: instead of stop, we want to widen the range.
-                    System.exit(2);
+                    updateInputRange(generators);
                 }
 
                 // Initialize guided fuzzing using a file-backed random number source
@@ -362,7 +361,7 @@ public class FuzzStatement extends Statement {
                     GuidedFuzzingForPatched.run(testClass.getName(), method.getName(), this.loaderForPatch, reproGuidance, System.out);
                     System.setProperty("jqf.ei.run_patch", "false");
                 } else {
-                    System.out.println("Failed to log out actual");
+                    // System.out.println("Failed to log out actual");
                 }
             }
         } catch (GuidanceException e) {
@@ -533,6 +532,9 @@ public class FuzzStatement extends Statement {
 
     private void updateRange(Generator<?> gen, InRange range) {
         try {
+            if(!range.isFixed()){
+                range = inRangeFactory.generate(gen, range);
+            }
             Method m = gen.getClass().getMethod("configure", InRange.class);
             m.invoke(gen, range);
         } catch (NoSuchMethodException e) {
