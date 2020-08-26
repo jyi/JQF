@@ -28,18 +28,21 @@
  */
 package edu.berkeley.cs.jqf.fuzz.reach;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.util.*;
 import java.util.function.Consumer;
 import java.time.Duration;
 
+import com.pholser.junit.quickcheck.generator.GenerationStatus;
+import com.pholser.junit.quickcheck.random.SourceOfRandomness;
+import de.hub.se.cfg.CFGBuilder;
 import edu.berkeley.cs.jqf.fuzz.ei.ZestGuidance;
 import edu.berkeley.cs.jqf.fuzz.guidance.GuidanceException;
 import edu.berkeley.cs.jqf.fuzz.guidance.Result;
+import edu.berkeley.cs.jqf.fuzz.guidance.StreamBackedRandom;
+import edu.berkeley.cs.jqf.fuzz.junit.quickcheck.FastSourceOfRandomness;
+import edu.berkeley.cs.jqf.fuzz.junit.quickcheck.NonTrackingGenerationStatus;
 import edu.berkeley.cs.jqf.fuzz.util.TargetCoverage;
-import edu.berkeley.cs.jqf.instrument.tracing.events.BranchEvent;
 import edu.berkeley.cs.jqf.instrument.tracing.events.TraceEvent;
 
 import de.hub.se.cfg.CFGAnalysis;
@@ -56,19 +59,25 @@ public class ReachGuidance extends ZestGuidance {
 
     private TargetCoverage targetCoverage = new TargetCoverage();
 
-    private CFGAnalysis cfga;
+    private CFGAnalysis cfga = null;
 
     private final List<Input<?>> inputs = new ArrayList<>();
 
     public class HandleResult {
+        private final Input<?> input;
         private boolean inputAdded;
 
-        public HandleResult(boolean inputAdded) {
+        public HandleResult(boolean inputAdded, Input<?> input) {
             this.inputAdded = inputAdded;
+            this.input = input;
         }
 
         public boolean isInputAdded() {
             return inputAdded;
+        }
+        
+        public Input<?> getInput() {
+            return this.input;
         }
     }
 
@@ -85,6 +94,7 @@ public class ReachGuidance extends ZestGuidance {
                          Duration duration, File outputDirectory) throws IOException {
         super(testName, duration, outputDirectory);
         if (seed != -1) this.random.setSeed(seed);
+        buildCFGAnalysis();
     }
 
     /**
@@ -102,6 +112,17 @@ public class ReachGuidance extends ZestGuidance {
                          File[] seedInputFiles) throws IOException {
         super(testName, duration, outputDirectory, seedInputFiles);
         if (seed != -1) this.random.setSeed(seed);
+        buildCFGAnalysis();
+    }
+
+    protected void buildCFGAnalysis() {
+        String classPathForPatch = System.getProperty("jqf.ei.CLASSPATH_FOR_PATCH");
+        if (classPathForPatch != null) {
+            Set<String> classes = CFGBuilder.loadInput(classPathForPatch);
+            Set<String> classesToSkip = new HashSet<>();
+            String additionalClasses = null;
+            cfga = CFGBuilder.genCFGForClasses(classes, classesToSkip, additionalClasses);
+        }
     }
 
     @Override
@@ -165,10 +186,10 @@ public class ReachGuidance extends ZestGuidance {
             int nonZeroAfter = totalCoverage.getNonZeroCount();
             if (nonZeroAfter > maxCoverage) {
                 maxCoverage = nonZeroAfter;
-                noProgress = 0; // reset
+                noProgressCount = 0; // reset
             } else {
-                noProgress++;
-                if (USE_PLATEAU_THRESHOLD && noProgress > plateauThreshold) {
+                noProgressCount++;
+                if (USE_PLATEAU_THRESHOLD && noProgressCount > plateauThreshold) {
                     System.out.println("A plateau is reached!!!");
                     isPlateauReached = true;
                 }
@@ -208,6 +229,19 @@ public class ReachGuidance extends ZestGuidance {
                 // update inputs
                 inputs.add(currentInput);
                 inputAdded = true;
+
+                // for debugging
+//                StreamBackedRandom randomFile = null;
+//                try {
+//                    randomFile = new StreamBackedRandom(new BufferedInputStream(new FileInputStream(currentInput.getSaveFile())), Long.BYTES);
+//                } catch (FileNotFoundException e) {
+//                    e.printStackTrace();
+//                }
+//                SourceOfRandomness random = new FastSourceOfRandomness(randomFile);
+//                GenerationStatus genStatus = new NonTrackingGenerationStatus(random);
+//                args = generators.stream()
+//                        .map(g -> g.generate(random, genStatus))
+//                        .toArray();
             }
         } else if (result == Result.FAILURE || result == Result.TIMEOUT) {
             String msg = error.getMessage();
@@ -260,7 +294,7 @@ public class ReachGuidance extends ZestGuidance {
             GuidanceException.wrap(() -> writeCurrentInputToFile(saveFile));
         }
 
-        return new HandleResult(inputAdded);
+        return new HandleResult(inputAdded, currentInput);
     }
 
     private boolean isTargetReached() {

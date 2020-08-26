@@ -50,7 +50,6 @@ import com.pholser.junit.quickcheck.internal.ParameterTypeContext;
 import com.pholser.junit.quickcheck.internal.generator.CompositeGenerator;
 import com.pholser.junit.quickcheck.internal.generator.GeneratorRepository;
 import com.pholser.junit.quickcheck.random.SourceOfRandomness;
-import edu.berkeley.cs.jqf.fuzz.ei.ZestGuidance;
 import edu.berkeley.cs.jqf.fuzz.guidance.Guidance;
 import edu.berkeley.cs.jqf.fuzz.guidance.GuidanceException;
 import edu.berkeley.cs.jqf.fuzz.guidance.TimeoutException;
@@ -103,7 +102,6 @@ public class FuzzStatement extends Statement {
                         .genericsMap();
         this.generatorRepository = generatorRepository;
         this.expectedExceptions = Arrays.asList(method.getMethod().getExceptionTypes());
-
     }
 
     public FuzzStatement(FrameworkMethod method, TestClass testClass,
@@ -356,7 +354,7 @@ public class FuzzStatement extends Statement {
                     // run patched version
                     assert guidance.getSavedAllDirectory() != null;
                     assert guidance.getCurSaveFileName() != null;
-                    File saveFile = new File(guidance.getSavedAllDirectory(), guidance.getCurSaveFileName());
+                    File saveFile = info.getInput().getSaveFile();
                     ReproGuidance reproGuidance = new ReproGuidance(saveFile, null);
 
                     System.setProperty("jqf.ei.run_patch", "true");

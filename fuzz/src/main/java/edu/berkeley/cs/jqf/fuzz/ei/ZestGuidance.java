@@ -163,7 +163,7 @@ public class ZestGuidance implements Guidance {
 
     protected boolean isPlateauReached = false;
 
-    protected int noProgress = 0;
+    protected int noProgressCount = 0;
 
     protected boolean USE_PLATEAU_THRESHOLD =
             System.getProperty("jqf.ei.PLATEAU_THRESHOLD") != null?
@@ -591,7 +591,7 @@ public class ZestGuidance implements Guidance {
         runCoverage.clear();
 
         // set inputID
-        String saveFileName = String.format("id_%09d", numTrials);
+        String saveFileName = String.format("id_%09d", numTrials + 1);
         System.setProperty("jqf.ei.inputID", saveFileName);
 
         // Choose an input to execute based on state of queues
@@ -705,10 +705,10 @@ public class ZestGuidance implements Guidance {
             int nonZeroAfter = totalCoverage.getNonZeroCount();
             if (nonZeroAfter > maxCoverage) {
                 maxCoverage = nonZeroAfter;
-                noProgress = 0; // reset
+                noProgressCount = 0; // reset
             } else if (USE_PLATEAU_THRESHOLD) {
-              noProgress++;
-              if (USE_PLATEAU_THRESHOLD && noProgress > plateauThreshold) {
+              noProgressCount++;
+              if (USE_PLATEAU_THRESHOLD && noProgressCount > plateauThreshold) {
                 System.out.println("A plateau is reached!!!\n");
                 isPlateauReached = true;
               }
@@ -1082,6 +1082,10 @@ public class ZestGuidance implements Guidance {
         public void setValid() { this.valid = true; }
 
         public String getDesc() { return this.desc; }
+
+        public File getSaveFile() {
+            return this.saveFile;
+        }
 
         /**
          * Returns whether this input should be favored for fuzzing.
