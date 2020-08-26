@@ -6,15 +6,15 @@
 package de.hub.se.cfg;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
+import java.io.IOException;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.*;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
+
 import org.apache.bcel.Repository;
 import org.apache.bcel.classfile.ClassParser;
 import org.apache.bcel.classfile.JavaClass;
@@ -377,6 +377,95 @@ public class CFGBuilder {
         this.cfgMap = cfgMap;
     }
 
+    public static Set<String> loadInput(String inputRawString) {
+        Set<String> inputClasses = new HashSet<>();
+        for (String input : inputRawString.split(":")) {
+            if (input.endsWith(".class")) {
+                // single class file, has to be a relative path from a directory on the class
+                // path
+                inputClasses.add(input);
+            } else if (input.endsWith(".jar")) {
+                // JAR file
+                extractJar(input, inputClasses);
+                addToClassPath(input);
+            } else {
+                // directory
+                System.out.println("Loading dir: " + input);
+                loadDirectory(input, inputClasses);
+                // addToClassPath(input);
+            }
+        }
+        return inputClasses;
+    }
+
+    private static void loadDirectory(String input, Set<String> inputClasses) {
+        final int dirprefix;
+        if (input.endsWith("/"))
+            dirprefix = input.length();
+        else
+            dirprefix = input.length() + 1;
+        try {
+            Files.walk(Paths.get(input)).filter(Files::isRegularFile).forEach(filePath -> {
+                String name = filePath.toString();
+                if (name.endsWith(".class")) {
+//                    inputClasses.add(name.substring(dirprefix));
+                    inputClasses.add(name);
+                }
+
+            });
+        } catch (IOException e) {
+            throw new RuntimeException("Error reading from directory: " + input);
+        }
+    }
+
+    private static void addToClassPath(String url) {
+        try {
+            File file = new File(url);
+            java.lang.reflect.Method method = URLClassLoader.class.getDeclaredMethod("addURL", new Class[]{URL.class});
+            method.setAccessible(true);
+            method.invoke(ClassLoader.getSystemClassLoader(), new Object[] { file.toURI().toURL() });
+        } catch (Exception e) {
+            throw new RuntimeException("Error adding location to class path: " + url);
+        }
+
+    }
+
+    /**
+     * Extracts all class file names from a JAR file (possibly nested with more JARs).
+     *
+     * @param file
+     *            The name of the file.
+     * @param classes
+     *            Class names will be stored in here.
+     */
+    public static void extractJar(String file, Set<String> classes) {
+        try {
+            // open JAR file
+            JarFile jarFile = new JarFile(file);
+            Enumeration<JarEntry> entries = jarFile.entries();
+
+            // iterate JAR entries
+            while (entries.hasMoreElements()) {
+                JarEntry entry = entries.nextElement();
+                String entryName = entry.getName();
+
+                if (entryName.endsWith(".class")) {
+                    entryName = entryName.substring(0, entryName.length()-6);
+                    classes.add(entryName);
+                } else if (entryName.endsWith(".jar")) {
+                    // load nested JAR
+                    // extractJar(entryName, classes); TODO YN: skip for now
+                }
+            }
+
+            // close JAR file
+            jarFile.close();
+
+        } catch (IOException e) {
+            throw new RuntimeException("Error reading from JAR file: " + file);
+        }
+    }
+
     public static CFGAnalysis genCFGForClasses(Set<String> classes, Set<String> classesToSkip, String additionalClasses) {
         Map<String, CFG> map = new HashMap();
         Set<String> skipped = new HashSet();
@@ -438,7 +527,8 @@ public class CFGBuilder {
             }
         }
 
-        return new CFGAnalysis(map, skipped);
+        CFGAnalysis analysis = new CFGAnalysis(map, skipped);
+        return analysis;
     }
 
     private class IHandleComparator implements Comparator<Object> {
