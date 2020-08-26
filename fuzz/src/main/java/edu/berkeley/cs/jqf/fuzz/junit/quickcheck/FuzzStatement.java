@@ -251,9 +251,6 @@ public class FuzzStatement extends Statement {
                 .map(this::produceGenerator)
                 .collect(Collectors.toList());
 
-        // update input range
-        updateInputRange(generators);
-
         // Get the currently registered fuzz guidance
         if (Boolean.getBoolean("jqf.ei.run_patch")) {
             Log.turnOffRunBuggyVersion();
@@ -269,6 +266,9 @@ public class FuzzStatement extends Statement {
     private void evaluateOrg(ReachGuidance guidance, List<Generator<?>> generators) throws Throwable {
         // Keep fuzzing until no more input or I/O error with guidance
         try {
+            // update input range
+            updateInputRange(generators);
+
             // Keep fuzzing as long as guidance wants to
             while (guidance.hasInput()) {
                 Log.logOutIfCalled = false;
@@ -384,6 +384,9 @@ public class FuzzStatement extends Statement {
     private void evaluatePatch(ReproGuidance guidance, List<Generator<?>> generators) throws Throwable {
         // Keep fuzzing until no more input or I/O error with guidance
         try {
+            // update input range
+            updateInputRange(generators);
+
             // Keep fuzzing as long as guidance wants to
             while (guidance.hasInput()) {
                 Log.logOutIfCalled = false;

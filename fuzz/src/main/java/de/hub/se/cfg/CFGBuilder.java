@@ -67,7 +67,7 @@ public class CFGBuilder {
         }
 
         if (this.javaClass.isInterface()) {
-            System.out.println("We cannot build CFG for interface: " + this.javaClass.getClassName());
+            // System.out.println("We cannot build CFG for interface: " + this.javaClass.getClassName());
             skipped.add(this.javaClass.getClassName());
             return false;
         } else {

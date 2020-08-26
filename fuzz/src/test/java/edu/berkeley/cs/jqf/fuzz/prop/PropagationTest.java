@@ -22,7 +22,7 @@ public class PropagationTest {
         ReproDriver2.main(new String[] {
                 "../src/test/resources/patches/Patch27/Math2b/target/test-classes:../src/test/resources/patches/Patch27/Math2b/target/classes",
                 "org.apache.commons.math3.distribution.JQF_HypergeometricDistributionTest", "testMath1021",
-                "../src/test/resources/fuzz-results-patch/all/id_000000020"});
+                "../src/test/resources/fuzz-results-patch/all/id_000000030"});
     }
 
     @Test

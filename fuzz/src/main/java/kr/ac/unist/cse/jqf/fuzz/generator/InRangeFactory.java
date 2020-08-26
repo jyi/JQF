@@ -67,20 +67,22 @@ public class InRangeFactory {
                 @Override
                 public int minInt() {
                     int curMin = range.minInt();
-                    if (curMin - diff < Integer.MIN_VALUE) {
+                    try {
+                        int newMin = Math.subtractExact(curMin, diff);
+                        return newMin;
+                    } catch (ArithmeticException e) {
                         return Integer.MIN_VALUE;
-                    } else {
-                        return curMin - diff;
                     }
                 }
 
                 @Override
                 public int maxInt() {
                     int curMax = range.maxInt();
-                    if (curMax + diff > Integer.MAX_VALUE) {
+                    try {
+                        int newMax = Math.addExact(curMax, diff);
+                        return newMax;
+                    } catch (ArithmeticException e) {
                         return Integer.MAX_VALUE;
-                    } else {
-                        return curMax + diff;
                     }
                 }
 
@@ -462,12 +464,22 @@ public class InRangeFactory {
 
                 @Override
                 public char minChar() {
-                    return (char) ((long)range.minChar()-(long)diff);
+                    char curMin = range.minChar();
+                    if (curMin - Character.MIN_VALUE > diff) {
+                        return (char) (curMin - diff);
+                    } else {
+                        return Character.MIN_VALUE;
+                    }
                 }
 
                 @Override
                 public char maxChar() {
-                    return (char) ((long)range.maxChar()+(long)diff);
+                    char curMax = range.maxChar();
+                    if (Character.MAX_VALUE - curMax > diff) {
+                        return (char) (curMax + diff);
+                    } else {
+                        return Character.MAX_VALUE;
+                    }
                 }
 
                 @Override

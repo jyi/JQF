@@ -116,13 +116,14 @@ public class ReachGuidance extends ZestGuidance {
     }
 
     protected void buildCFGAnalysis() {
-        String classPathForPatch = System.getProperty("jqf.ei.CLASSPATH_FOR_PATCH");
-        if (classPathForPatch != null) {
-            Set<String> classes = CFGBuilder.loadInput(classPathForPatch);
-            Set<String> classesToSkip = new HashSet<>();
-            String additionalClasses = null;
-            cfga = CFGBuilder.genCFGForClasses(classes, classesToSkip, additionalClasses);
-        }
+        // TODO: enable it
+//        String classPathForPatch = System.getProperty("jqf.ei.CLASSPATH_FOR_PATCH");
+//        if (classPathForPatch != null) {
+//            Set<String> classes = CFGBuilder.loadInput(classPathForPatch);
+//            Set<String> classesToSkip = new HashSet<>();
+//            String additionalClasses = null;
+//            cfga = CFGBuilder.genCFGForClasses(classes, classesToSkip, additionalClasses);
+//        }
     }
 
     @Override
@@ -229,19 +230,6 @@ public class ReachGuidance extends ZestGuidance {
                 // update inputs
                 inputs.add(currentInput);
                 inputAdded = true;
-
-                // for debugging
-//                StreamBackedRandom randomFile = null;
-//                try {
-//                    randomFile = new StreamBackedRandom(new BufferedInputStream(new FileInputStream(currentInput.getSaveFile())), Long.BYTES);
-//                } catch (FileNotFoundException e) {
-//                    e.printStackTrace();
-//                }
-//                SourceOfRandomness random = new FastSourceOfRandomness(randomFile);
-//                GenerationStatus genStatus = new NonTrackingGenerationStatus(random);
-//                args = generators.stream()
-//                        .map(g -> g.generate(random, genStatus))
-//                        .toArray();
             }
         } else if (result == Result.FAILURE || result == Result.TIMEOUT) {
             String msg = error.getMessage();
