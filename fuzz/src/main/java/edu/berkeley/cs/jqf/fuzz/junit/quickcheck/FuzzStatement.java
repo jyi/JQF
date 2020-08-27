@@ -265,19 +265,17 @@ public class FuzzStatement extends Statement {
     private void evaluateOrg(ReachGuidance guidance, List<Generator<?>> generators) throws Throwable {
         // Keep fuzzing until no more input or I/O error with guidance
         try {
-            // update input range
-            updateInputRange(generators);
-
             // Keep fuzzing as long as guidance wants to
             while (guidance.hasInput()) {
-                Log.logOutIfCalled = false;
+                Log.reset();
                 Result result = INVALID;
                 Throwable error = null;
 
                 if (guidance.isPlateauReached()) {
                     System.out.println("Plateau is reached, and the range is widened");
-                    updateInputRange(generators);
+                    // update input range
                     wideningCount++;
+                    updateInputRange(generators);
                 }
 
                 // Initialize guided fuzzing using a file-backed random number source
@@ -357,7 +355,6 @@ public class FuzzStatement extends Statement {
                     ReproGuidance reproGuidance = new ReproGuidance(saveFile, null);
 
                     System.setProperty("jqf.ei.run_patch", "true");
-                    Log.reset();
                     GuidedFuzzingForPatched.run(testClass.getName(), method.getName(), this.loaderForPatch, reproGuidance, System.out);
                     System.setProperty("jqf.ei.run_patch", "false");
                 } else {
@@ -382,16 +379,15 @@ public class FuzzStatement extends Statement {
 
     private void evaluatePatch(ReproGuidance guidance, List<Generator<?>> generators) throws Throwable {
         // Keep fuzzing until no more input or I/O error with guidance
-        wideningCount--;
         try {
-            // update input range
-            updateInputRange(generators);
-
             // Keep fuzzing as long as guidance wants to
             while (guidance.hasInput()) {
-                Log.logOutIfCalled = false;
+                Log.reset();
                 Result result = INVALID;
                 Throwable error = null;
+
+                // update input range
+                updateInputRange(generators);
 
                 // Initialize guided fuzzing using a file-backed random number source
                 try {
@@ -536,13 +532,14 @@ public class FuzzStatement extends Statement {
 
     private void updateRange(Generator<?> gen, InRange range) {
         try {
+            InRange newRange = range;
             if(!range.isFixed()){
-                range = inRangeFactory.generate(gen, range, wideningCount);
+                newRange = inRangeFactory.generate(gen, range, wideningCount);
             }
             Method m = gen.getClass().getMethod("configure", InRange.class);
-            m.invoke(gen, range);
+            m.invoke(gen, newRange);
             if (gen instanceof IntegerGenerator) {
-                System.out.println("[" + range.minInt() + ", " + range.maxInt() + "]");
+                System.out.println("[" + newRange.minInt() + ", " + newRange.maxInt() + "]");
             }
         } catch (NoSuchMethodException e) {
             System.err.println(String.format("Class %s does not have configure(InRange)", gen.getClass()));
