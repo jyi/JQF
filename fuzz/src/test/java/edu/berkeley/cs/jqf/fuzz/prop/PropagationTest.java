@@ -81,6 +81,7 @@ public class PropagationTest {
                 "--seed", "885441",
                 "--max-corpus-size", "10",
                 "--plateau-threshold", "10",
+                "--verbose",
                 "-o", "../src/test/resources/fuzz-results-patch",
                 "../src/test/resources/patches/Patch27/Math2b/target/test-classes:../src/test/resources/patches/Patch27/Math2b/target/classes",
                 "../src/test/resources/patches/Patch27/Math2p/target/test-classes:../src/test/resources/patches/Patch27/Math2p/target/classes",
