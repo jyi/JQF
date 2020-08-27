@@ -40,6 +40,7 @@ import java.net.URL;
 import java.net.URLClassLoader;
 
 import janala.instrument.SnoopInstructionTransformer;
+import org.aspectj.weaver.loadtime.ClassPreProcessorAgentAdapter;
 
 /**
  * @author Rohan Padhye
@@ -93,6 +94,10 @@ public class InstrumentingClassLoader extends URLClassLoader {
         byte[] transformedBytes;
         try {
             transformedBytes = transformer.transform(this, internalName, null, null, bytes);
+
+            // additional transformation to dump program states
+            ClassPreProcessorAgentAdapter adapter = new ClassPreProcessorAgentAdapter();
+            adapter.transform(this.getParent(), internalName, null, null, transformedBytes);
         } catch (IllegalClassFormatException e) {
             // Just use original bytes
             transformedBytes = null;

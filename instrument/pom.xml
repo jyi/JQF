@@ -14,11 +14,25 @@
     <description>JQF: Feedback-directed Quickcheck for Java - Instrumentation and event generation module</description>
     <packaging>jar</packaging>
 
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.ow2.asm</groupId>
             <artifactId>asm</artifactId>
             <version>7.2</version>
+        </dependency>
+        <dependency>
+            <groupId>org.aspectj</groupId>
+            <artifactId>aspectjrt</artifactId>
+            <version>1.8.9</version>
+        </dependency>
+        <dependency>
+            <groupId>org.aspectj</groupId>
+            <artifactId>aspectjweaver</artifactId>
+            <version>1.8.9</version>
         </dependency>
     </dependencies>
 
@@ -57,7 +71,7 @@
                                 </configuration> 
                         </execution> 
                 </executions> 
-            </plugin> 
+            </plugin>
         </plugins>
     </build>
 
