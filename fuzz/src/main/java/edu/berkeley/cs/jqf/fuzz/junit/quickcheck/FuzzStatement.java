@@ -344,7 +344,7 @@ public class FuzzStatement extends Statement {
                 }
 
                 // Inform guidance about the outcome of this trial
-                ReachGuidance.HandleResult info = guidance.handleResult2(result, error);
+                ReachGuidance.HandleResult info = guidance.handleResultOfOrg(result, error);
 
                 if (info.isInputAdded()) {
                     System.out.println("Succeeded to log out actual");

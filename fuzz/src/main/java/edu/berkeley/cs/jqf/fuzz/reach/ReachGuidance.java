@@ -149,7 +149,7 @@ public class ReachGuidance extends ZestGuidance {
         targetCoverage.handleEvent(e);
     }
 
-    public HandleResult handleResult2(Result result, Throwable error) throws GuidanceException {
+    public HandleResult handleResultOfOrg(Result result, Throwable error) throws GuidanceException {
         boolean inputAdded = false;
 
         // Stop timeout handling
@@ -202,7 +202,7 @@ public class ReachGuidance extends ZestGuidance {
             String why = "";
 
             // Save if the target is reached.
-            if (isTargetReached() && Log.getActualCount() > 0 && !isDuplicate()) {
+            if (Log.getActualCount() > 0 && !isDuplicate()) {
                 // Trim input (remove unused keys)
                 currentInput.gc();
 
