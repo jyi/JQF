@@ -88,9 +88,8 @@ public class FuzzStatement extends Statement {
     private final GeneratorRepository generatorRepository;
     private final List<Class<?>> expectedExceptions;
     private final List<Throwable> failures = new ArrayList<>();
-
     private final InRangeFactory inRangeFactory = InRangeFactory.singleton();
-    private int wideningCount;
+    private static int wideningCount;
 
     public FuzzStatement(FrameworkMethod method, TestClass testClass,
                          GeneratorRepository generatorRepository) {
@@ -383,6 +382,7 @@ public class FuzzStatement extends Statement {
 
     private void evaluatePatch(ReproGuidance guidance, List<Generator<?>> generators) throws Throwable {
         // Keep fuzzing until no more input or I/O error with guidance
+        wideningCount--;
         try {
             // update input range
             updateInputRange(generators);
