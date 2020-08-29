@@ -1,0 +1,7 @@
+<aspectj>
+    <aspects>
+        <aspect name="kr.ac.unist.cse.jqf.fuzz.aop.Tracing"/>
+        <weaver options="-verbose -showWeaveInfo">
+        </weaver>
+    </aspects>
+</aspectj>

@@ -2,7 +2,6 @@ package edu.berkeley.cs.jqf.fuzz.prop;
 
 import edu.berkeley.cs.jqf.fuzz.ei.ZestCLI;
 import edu.berkeley.cs.jqf.fuzz.ei.ZestCLI2;
-import edu.berkeley.cs.jqf.fuzz.repro.ReproDriver;
 import edu.berkeley.cs.jqf.fuzz.repro.ReproDriver2;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -58,6 +57,8 @@ public class PropagationTest {
 
     @Test
     public void runZestCLI2() throws IOException {
+        System.setProperty("org.aspectj.weaver.loadtime.configuration", "file:/home/jooyong/Remote/plase1/poracle/modules/JQF/aspect/aop.xml");
+
         Path fuzz_results_patch_dir = FileSystems.getDefault().getPath("..", "src", "test", "resources", "fuzz-results-patch");
         Path log_dir = FileSystems.getDefault().getPath("..", "src", "test", "resources", "log");
 
@@ -90,6 +91,8 @@ public class PropagationTest {
 
     @Test
     public void runZestCLI2_patch197() throws IOException {
+        System.setProperty("org.aspectj.weaver.loadtime.configuration", "aspect/aop.xml");
+
         Path fuzz_results_patch_dir = FileSystems.getDefault().getPath("..", "src", "test", "resources", "fuzz-results-patch");
         Path log_dir = FileSystems.getDefault().getPath("..", "src", "test", "resources", "log");
 
