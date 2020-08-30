@@ -63,6 +63,11 @@ public class ReachGuidance extends ZestGuidance {
 
     private final List<Input<?>> inputs = new ArrayList<>();
 
+    public void reset() {
+        this.isPlateauReached = false;
+        this.noProgressCount = 0;
+    }
+
     public class HandleResult {
         private final Input<?> input;
         private boolean inputAdded;

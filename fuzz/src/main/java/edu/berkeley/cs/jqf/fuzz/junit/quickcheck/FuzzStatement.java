@@ -119,6 +119,7 @@ public class FuzzStatement extends Statement {
         init();
         if (this.loaderForPatch != null) {
             evaluateTwoVersions();
+            return;
         }
 
         // Construct generators for each parameter
@@ -357,6 +358,7 @@ public class FuzzStatement extends Statement {
                     System.setProperty("jqf.ei.run_patch", "true");
                     GuidedFuzzingForPatched.run(testClass.getName(), method.getName(), this.loaderForPatch, reproGuidance, System.out);
                     System.setProperty("jqf.ei.run_patch", "false");
+                    guidance.reset();
                 } else {
                     // System.out.println("Failed to log out actual");
                 }
