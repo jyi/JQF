@@ -66,6 +66,10 @@ public class InRangeFactory {
 
                 @Override
                 public int minInt() {
+                    if (diff < 0) {
+                        return Integer.MIN_VALUE;
+                    }
+
                     int curMin = range.minInt();
                     try {
                         int newMin = Math.subtractExact(curMin, diff);
@@ -77,6 +81,10 @@ public class InRangeFactory {
 
                 @Override
                 public int maxInt() {
+                    if (diff < 0) {
+                        return Integer.MAX_VALUE;
+                    }
+
                     int curMax = range.maxInt();
                     try {
                         int newMax = Math.addExact(curMax, diff);
@@ -137,7 +145,7 @@ public class InRangeFactory {
                 }
             };
         } else if (gen instanceof LongGenerator) {
-            long diff = (long) ((range.maxLong()-range.minLong())*widenProportion/2);
+            long diff = wideningCount * (long) Math.pow(2, wideningCount - 1) * (long) ((range.maxLong()-range.minLong()) * widenProportion / 2);
             rst = new InRange() {
 
                 @Override
@@ -187,12 +195,32 @@ public class InRangeFactory {
 
                 @Override
                 public long minLong() {
-                    return range.minLong()-diff;
+                    if (diff < 0) {
+                        return Long.MIN_VALUE;
+                    }
+
+                    long curMin = range.minLong();
+                    try {
+                        long newMin = Math.subtractExact(curMin, diff);
+                        return newMin;
+                    } catch (ArithmeticException e) {
+                        return Long.MIN_VALUE;
+                    }
                 }
 
                 @Override
                 public long maxLong() {
-                    return range.maxLong()+diff;
+                    if (diff < 0) {
+                        return Long.MAX_VALUE;
+                    }
+
+                    long curMax = range.maxLong();
+                    try {
+                        long newMax = Math.addExact(curMax, diff);
+                        return newMax;
+                    } catch (ArithmeticException e) {
+                        return Long.MAX_VALUE;
+                    }
                 }
 
                 @Override
@@ -236,7 +264,7 @@ public class InRangeFactory {
                 }
             };
         } else if(gen instanceof ShortGenerator) {
-            short diff = (short) ((range.maxShort()-range.minShort())*widenProportion/2);
+            short diff = (short) (wideningCount * (short) Math.pow(2, wideningCount - 1) * (short) ((range.maxLong()-range.minLong()) * widenProportion / 2));
             rst = new InRange() {
 
                 @Override
@@ -256,12 +284,34 @@ public class InRangeFactory {
 
                 @Override
                 public short minShort() {
-                    return (short) (range.minShort()-diff);
+                    if (diff < 0) {
+                        return Short.MIN_VALUE;
+                    }
+
+                    short curMin = range.minShort();
+                    short newMin = (short) (curMin - diff);
+
+                    if (newMin <= curMin) {
+                        return newMin;
+                    } else {
+                        return Short.MIN_VALUE;
+                    }
                 }
 
                 @Override
                 public short maxShort() {
-                    return (short) (range.maxShort()+diff);
+                    if (diff < 0) {
+                        return Short.MAX_VALUE;
+                    }
+
+                    short curMax = range.maxShort();
+                    short newMax = (short) (curMax + diff);
+
+                    if (newMax >= curMax) {
+                        return newMax;
+                    } else {
+                        return Short.MAX_VALUE;
+                    }
                 }
 
                 @Override
@@ -335,7 +385,7 @@ public class InRangeFactory {
                 }
             };
         }else if (gen instanceof ByteGenerator){
-            byte diff = (byte) (((range.maxByte()-range.minByte()))*widenProportion/2);
+            byte diff = (byte) (wideningCount * (byte) Math.pow(2, wideningCount - 1) * (byte) ((range.maxLong()-range.minLong()) * widenProportion / 2));
             rst = new InRange() {
 
                 @Override
@@ -345,12 +395,34 @@ public class InRangeFactory {
 
                 @Override
                 public byte minByte() {
-                    return (byte) (range.minByte()-diff);
+                    if (diff < 0) {
+                        return Byte.MIN_VALUE;
+                    }
+
+                    byte curMin = range.minByte();
+                    byte newMin = (byte) (curMin - diff);
+
+                    if (newMin <= curMin) {
+                        return newMin;
+                    } else {
+                        return Byte.MIN_VALUE;
+                    }
                 }
 
                 @Override
                 public byte maxByte() {
-                    return (byte) (range.maxByte()+diff);
+                    if (diff < 0) {
+                        return Byte.MAX_VALUE;
+                    }
+
+                    byte curMax = range.maxByte();
+                    byte newMax = (byte) (curMax + diff);
+
+                    if (newMax >= curMax) {
+                        return newMax;
+                    } else {
+                        return Byte.MAX_VALUE;
+                    }
                 }
 
                 @Override
@@ -434,7 +506,7 @@ public class InRangeFactory {
                 }
             };
         }else if (gen instanceof CharacterGenerator){
-            char diff = (char) (((long)range.maxChar() - (long)range.minChar())*widenProportion/2);
+            char diff = (char) (wideningCount * (char) Math.pow(2, wideningCount - 1) * (char) ((range.maxLong()-range.minLong()) * widenProportion / 2));
             rst = new InRange() {
 
                 @Override
@@ -464,6 +536,10 @@ public class InRangeFactory {
 
                 @Override
                 public char minChar() {
+                    if (diff < 0) {
+                        return Character.MIN_VALUE;
+                    }
+
                     char curMin = range.minChar();
                     if (curMin - Character.MIN_VALUE > diff) {
                         return (char) (curMin - diff);
@@ -474,6 +550,10 @@ public class InRangeFactory {
 
                 @Override
                 public char maxChar() {
+                    if (diff < 0) {
+                        return Character.MAX_VALUE;
+                    }
+
                     char curMax = range.maxChar();
                     if (Character.MAX_VALUE - curMax > diff) {
                         return (char) (curMax + diff);
@@ -543,7 +623,7 @@ public class InRangeFactory {
                 }
             };
         } else if(gen instanceof FloatGenerator){
-            float diff = (float) ((range.maxFloat() - range.minFloat())*widenProportion/2);
+            float diff = (wideningCount * (float) Math.pow(2, wideningCount - 1) * (float) ((range.maxLong()-range.minLong()) * widenProportion / 2));
             rst = new InRange() {
 
                 @Override
@@ -603,12 +683,34 @@ public class InRangeFactory {
 
                 @Override
                 public float minFloat() {
-                    return range.minFloat()-diff;
+                    if (diff < 0) {
+                        return Float.MIN_VALUE;
+                    }
+
+                    float curMin = range.minFloat();
+                    float newMin = (float) (curMin - diff);
+
+                    if (newMin <= curMin) {
+                        return newMin;
+                    } else {
+                        return Float.MIN_VALUE;
+                    }
                 }
 
                 @Override
                 public float maxFloat() {
-                    return range.maxFloat()+diff;
+                    if (diff < 0) {
+                        return Float.MAX_VALUE;
+                    }
+
+                    float curMax = range.maxFloat();
+                    float newMax = (float) (curMax + diff);
+
+                    if (newMax >= curMax) {
+                        return newMax;
+                    } else {
+                        return Float.MAX_VALUE;
+                    }
                 }
 
                 @Override
@@ -642,7 +744,7 @@ public class InRangeFactory {
                 }
             };
         } else if(gen instanceof DoubleGenerator){
-            double diff = (range.maxDouble()-range.minDouble())*widenProportion/2;
+            double diff = (wideningCount * (double) Math.pow(2, wideningCount - 1) * (double) ((range.maxLong()-range.minLong()) * widenProportion / 2));
             rst = new InRange() {
 
                 @Override
@@ -712,12 +814,34 @@ public class InRangeFactory {
 
                 @Override
                 public double minDouble() {
-                    return range.minDouble()-diff;
+                    if (diff < 0) {
+                        return Double.MIN_VALUE;
+                    }
+
+                    double curMin = range.minDouble();
+                    double newMin = (double) (curMin - diff);
+
+                    if (newMin <= curMin) {
+                        return newMin;
+                    } else {
+                        return Double.MIN_VALUE;
+                    }
                 }
 
                 @Override
                 public double maxDouble() {
-                    return range.maxDouble()+diff;
+                    if (diff < 0) {
+                        return Double.MAX_VALUE;
+                    }
+
+                    double curMax = range.maxDouble();
+                    double newMax = (double) (curMax + diff);
+
+                    if (newMax >= curMax) {
+                        return newMax;
+                    } else {
+                        return Double.MAX_VALUE;
+                    }
                 }
 
                 @Override
