@@ -5,6 +5,7 @@ import com.pholser.junit.quickcheck.generator.InRange;
 import com.pholser.junit.quickcheck.generator.java.lang.*;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
 
 public class InRangeFactory {
 
@@ -21,6 +22,57 @@ public class InRangeFactory {
         } else {
             widenProportion = 0;
         }
+    }
+    //gen2 instanceof DoubleGenerator
+    public void generate(Generator<?>  gen2, int wideningCount) throws IllegalAccessException {
+        Class<? extends Generator> genClz = gen2.getClass();
+        Field[] fields = genClz.getDeclaredFields();
+        try {
+            if(gen2.getClass().getField("minDouble")!=null||gen2.getClass().getField("maxDouble")!=null) {
+                try {
+                    double minDouble = fields[0].getDouble(genClz);
+                    double maxDouble = fields[1].getDouble(genClz);
+                    double diff = wideningCount * Math.pow(2, wideningCount - 1) * (maxDouble - minDouble) * widenProportion / 2;
+                    fields[1].setDouble(genClz, maxDouble + diff);
+                    fields[0].setDouble(genClz, minDouble - diff);
+                    System.out.println(gen2.getClass().getField("minDouble").getDouble(gen2.getClass()) + " " + gen2.getClass().getField("maxDouble").getDouble(gen2.getClass()));
+                } catch (IllegalAccessException | NoSuchFieldException e) {
+                    e.printStackTrace();
+                }
+            }
+            else if (gen2.getClass().getField("minChar")!=null||gen2.getClass().getField("maxChar")!=null){
+
+                char minChar = fields[0].getChar(genClz);
+                char maxChar = fields[1].getChar(genClz);
+                char diff = (char) (wideningCount * (char) Math.pow(2, wideningCount - 1) * (char) ((maxChar-minChar) * widenProportion / 2));
+                fields[1].setChar(genClz, (char) (maxChar + diff));
+                fields[0].setChar(genClz, (char) (minChar - diff));
+                try {
+                    System.out.println(gen2.getClass().getField("minChar").getChar(gen2.getClass()) + " " + gen2.getClass().getField("maxChar").getChar(gen2.getClass()));
+                } catch (NoSuchFieldException e) {
+                    e.printStackTrace();
+                }
+
+            }
+            else if (gen2.getClass().getField("minInt")!=null||gen2.getClass().getField("maxInt")!=null){
+
+                int minInt = fields[0].getInt(genClz);
+                int maxInt = fields[1].getInt(genClz);
+                int diff = wideningCount * (int) Math.pow(2, wideningCount - 1) * (int) ((maxInt-minInt) * widenProportion / 2);
+                fields[1].setInt(genClz, maxInt + diff);
+                fields[0].setInt(genClz, minInt - diff);
+                try {
+                    System.out.println(gen2.getClass().getField("minInt").getInt(gen2.getClass()) + " " + gen2.getClass().getField("maxInt").getInt(gen2.getClass()));
+                } catch (NoSuchFieldException e) {
+                    e.printStackTrace();
+                }
+
+            }
+        } catch (NoSuchFieldException e) {
+            e.printStackTrace();
+        }
+
+
     }
 
     public InRange generate(Generator<?> gen, InRange range, int wideningCount) {
