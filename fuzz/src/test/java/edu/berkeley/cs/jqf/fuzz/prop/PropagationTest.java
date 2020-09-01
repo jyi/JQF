@@ -57,7 +57,7 @@ public class PropagationTest {
 
     @Test
     public void runZestCLI2() throws IOException {
-        System.setProperty("org.aspectj.weaver.loadtime.configuration", "file:/home/jooyong/Remote/plase1/poracle/modules/JQF/aspect/aop.xml");
+        System.setProperty("org.aspectj.weaver.loadtime.configuration", "file:/home/elkhan/Remote/poracle/modules/JQF/aspect/aop.xml");
 
         Path fuzz_results_patch_dir = FileSystems.getDefault().getPath("..", "src", "test", "resources", "fuzz-results-patch");
         Path log_dir = FileSystems.getDefault().getPath("..", "src", "test", "resources", "log");
@@ -80,12 +80,12 @@ public class PropagationTest {
                 "--save-all-inputs",
                 "--logdir", "../src/test/resources/log",
                 "--seed", "885441",
-                "--max-corpus-size", "10",
+                "--max-corpus-size", "15",
                 "--plateau-threshold", "10",
                 "--verbose",
                 "-o", "../src/test/resources/fuzz-results-patch",
-                "../src/test/resources/patches/Patch27/Math2b/target/test-classes:../src/test/resources/patches/Patch27/Math2b/target/classes",
-                "../src/test/resources/patches/Patch27/Math2p/target/test-classes:../src/test/resources/patches/Patch27/Math2p/target/classes",
+                "../src/test/resources/patches/Patch27/Math2b/target/test-classes:../src/test/resources/patches/Patch27/Math2b/target/classes:../../aspect/tracing.jar",
+                "../src/test/resources/patches/Patch27/Math2p/target/test-classes:../src/test/resources/patches/Patch27/Math2p/target/classes:../../aspect/tracing.jar",
                 "org.apache.commons.math3.distribution.JQF_HypergeometricDistributionTest", "testMath1021"});
     }
 
