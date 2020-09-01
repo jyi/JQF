@@ -23,12 +23,13 @@ public class InRangeFactory {
             widenProportion = 0;
         }
     }
+
     //gen2 instanceof DoubleGenerator
-    public void generate(Generator<?>  gen2, int wideningCount) throws IllegalAccessException {
+    public void generate(Generator<?> gen2, int wideningCount) throws IllegalAccessException {
         Class<? extends Generator> genClz = gen2.getClass();
         Field[] fields = genClz.getDeclaredFields();
         try {
-            if(gen2.getClass().getField("minDouble")!=null||gen2.getClass().getField("maxDouble")!=null) {
+            if (gen2.getClass().getField("minDouble") != null || gen2.getClass().getField("maxDouble") != null) {
                 try {
                     double minDouble = fields[0].getDouble(genClz);
                     double maxDouble = fields[1].getDouble(genClz);
@@ -36,15 +37,17 @@ public class InRangeFactory {
                     fields[1].setDouble(genClz, maxDouble + diff);
                     fields[0].setDouble(genClz, minDouble - diff);
                     System.out.println(gen2.getClass().getField("minDouble").getDouble(gen2.getClass()) + " " + gen2.getClass().getField("maxDouble").getDouble(gen2.getClass()));
-                } catch (IllegalAccessException | NoSuchFieldException e) {
-                    e.printStackTrace();
+                } catch (NoSuchFieldException e) {
+                    // ignore
+                } catch (IllegalAccessException e) {
+                    System.err.println(e.toString());
                 }
             }
-            else if (gen2.getClass().getField("minChar")!=null||gen2.getClass().getField("maxChar")!=null){
+            if (gen2.getClass().getField("minChar") != null || gen2.getClass().getField("maxChar") != null) {
 
                 char minChar = fields[0].getChar(genClz);
                 char maxChar = fields[1].getChar(genClz);
-                char diff = (char) (wideningCount * (char) Math.pow(2, wideningCount - 1) * (char) ((maxChar-minChar) * widenProportion / 2));
+                char diff = (char) (wideningCount * (char) Math.pow(2, wideningCount - 1) * (char) ((maxChar - minChar) * widenProportion / 2));
                 fields[1].setChar(genClz, (char) (maxChar + diff));
                 fields[0].setChar(genClz, (char) (minChar - diff));
                 try {
@@ -54,11 +57,11 @@ public class InRangeFactory {
                 }
 
             }
-            else if (gen2.getClass().getField("minInt")!=null||gen2.getClass().getField("maxInt")!=null){
+            if (gen2.getClass().getField("minInt") != null || gen2.getClass().getField("maxInt") != null) {
 
                 int minInt = fields[0].getInt(genClz);
                 int maxInt = fields[1].getInt(genClz);
-                int diff = wideningCount * (int) Math.pow(2, wideningCount - 1) * (int) ((maxInt-minInt) * widenProportion / 2);
+                int diff = wideningCount * (int) Math.pow(2, wideningCount - 1) * (int) ((maxInt - minInt) * widenProportion / 2);
                 fields[1].setInt(genClz, maxInt + diff);
                 fields[0].setInt(genClz, minInt - diff);
                 try {
@@ -69,7 +72,7 @@ public class InRangeFactory {
 
             }
         } catch (NoSuchFieldException e) {
-            e.printStackTrace();
+            // e.printStackTrace();
         }
 
 
@@ -78,7 +81,7 @@ public class InRangeFactory {
     public InRange generate(Generator<?> gen, InRange range, int wideningCount) {
         InRange rst = null;
         if (gen instanceof IntegerGenerator) {
-            int diff = wideningCount * (int) Math.pow(2, wideningCount - 1) * (int) ((range.maxInt()-range.minInt()) * widenProportion / 2);
+            int diff = wideningCount * (int) Math.pow(2, wideningCount - 1) * (int) ((range.maxInt() - range.minInt()) * widenProportion / 2);
             rst = new InRange() {
 
                 @Override
@@ -197,7 +200,7 @@ public class InRangeFactory {
                 }
             };
         } else if (gen instanceof LongGenerator) {
-            long diff = wideningCount * (long) Math.pow(2, wideningCount - 1) * (long) ((range.maxLong()-range.minLong()) * widenProportion / 2);
+            long diff = wideningCount * (long) Math.pow(2, wideningCount - 1) * (long) ((range.maxLong() - range.minLong()) * widenProportion / 2);
             rst = new InRange() {
 
                 @Override
@@ -315,8 +318,8 @@ public class InRangeFactory {
                     return range.isFixed();
                 }
             };
-        } else if(gen instanceof ShortGenerator) {
-            short diff = (short) (wideningCount * (short) Math.pow(2, wideningCount - 1) * (short) ((range.maxLong()-range.minLong()) * widenProportion / 2));
+        } else if (gen instanceof ShortGenerator) {
+            short diff = (short) (wideningCount * (short) Math.pow(2, wideningCount - 1) * (short) ((range.maxLong() - range.minLong()) * widenProportion / 2));
             rst = new InRange() {
 
                 @Override
@@ -436,8 +439,8 @@ public class InRangeFactory {
                     return range.isFixed();
                 }
             };
-        }else if (gen instanceof ByteGenerator){
-            byte diff = (byte) (wideningCount * (byte) Math.pow(2, wideningCount - 1) * (byte) ((range.maxLong()-range.minLong()) * widenProportion / 2));
+        } else if (gen instanceof ByteGenerator) {
+            byte diff = (byte) (wideningCount * (byte) Math.pow(2, wideningCount - 1) * (byte) ((range.maxLong() - range.minLong()) * widenProportion / 2));
             rst = new InRange() {
 
                 @Override
@@ -557,8 +560,8 @@ public class InRangeFactory {
                     return range.isFixed();
                 }
             };
-        }else if (gen instanceof CharacterGenerator){
-            char diff = (char) (wideningCount * (char) Math.pow(2, wideningCount - 1) * (char) ((range.maxLong()-range.minLong()) * widenProportion / 2));
+        } else if (gen instanceof CharacterGenerator) {
+            char diff = (char) (wideningCount * (char) Math.pow(2, wideningCount - 1) * (char) ((range.maxLong() - range.minLong()) * widenProportion / 2));
             rst = new InRange() {
 
                 @Override
@@ -674,8 +677,8 @@ public class InRangeFactory {
                     return range.isFixed();
                 }
             };
-        } else if(gen instanceof FloatGenerator){
-            float diff = (wideningCount * (float) Math.pow(2, wideningCount - 1) * (float) ((range.maxLong()-range.minLong()) * widenProportion / 2));
+        } else if (gen instanceof FloatGenerator) {
+            float diff = (wideningCount * (float) Math.pow(2, wideningCount - 1) * (float) ((range.maxLong() - range.minLong()) * widenProportion / 2));
             rst = new InRange() {
 
                 @Override
@@ -795,8 +798,8 @@ public class InRangeFactory {
                     return range.isFixed();
                 }
             };
-        } else if(gen instanceof DoubleGenerator){
-            double diff = (wideningCount * (double) Math.pow(2, wideningCount - 1) * (double) ((range.maxLong()-range.minLong()) * widenProportion / 2));
+        } else if (gen instanceof DoubleGenerator) {
+            double diff = (wideningCount * (double) Math.pow(2, wideningCount - 1) * (double) ((range.maxLong() - range.minLong()) * widenProportion / 2));
             rst = new InRange() {
 
                 @Override
@@ -916,8 +919,7 @@ public class InRangeFactory {
                     return range.isFixed();
                 }
             };
-        }
-        else {
+        } else {
             throw new RuntimeException("Unhandled generator: " + gen.getClass());
         }
 
