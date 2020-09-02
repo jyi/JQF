@@ -538,6 +538,15 @@ public class FuzzStatement extends Statement {
                         updateRange(gen2, (InRange) ann);
                     }
                 }
+
+                // TODO: update the range of custom generators
+                //boolean contains = Arrays.toString(fields).contains("double");
+                //System.out.println(contains);
+                try {
+                    inRangeFactory.generate(gen2, wideningCount);
+                } catch (IllegalAccessException e) {
+                    e.printStackTrace();
+                }
             }
         }
     }
