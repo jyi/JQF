@@ -66,6 +66,7 @@ public class ReachGuidance extends ZestGuidance {
     public void reset() {
         this.isPlateauReached = false;
         this.noProgressCount = 0;
+        Log.turnOnRunBuggyVersion();
     }
 
     public class HandleResult {
