@@ -359,6 +359,7 @@ public class FuzzStatement extends Statement {
                     GuidedFuzzingForPatched.run(testClass.getName(), method.getName(), this.loaderForPatch, reproGuidance, System.out);
                     System.setProperty("jqf.ei.run_patch", "false");
                     guidance.reset();
+                    compareOutput();
                 } else {
                     // System.out.println("Failed to log out actual");
                 }
@@ -377,6 +378,15 @@ public class FuzzStatement extends Statement {
                 throw new MultipleFailureException(failures);
             }
         }
+    }
+
+    private void compareOutput() {
+        // TODO:
+        //  1. find out the output for ORG/${inputID}/OUT.log
+        //  2. find out the output for PATCH/${inputID}/OUT.log
+        //  3. Compare the output
+        //  For the moment, you just print out whether the output is the same or not (true or false)
+        String inputID = System.getProperty("jqf.ei.inputID");
     }
 
     private void evaluatePatch(ReproGuidance guidance, List<Generator<?>> generators) throws Throwable {
