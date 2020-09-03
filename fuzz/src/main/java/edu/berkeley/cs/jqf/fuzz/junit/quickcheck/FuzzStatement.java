@@ -27,7 +27,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 package edu.berkeley.cs.jqf.fuzz.junit.quickcheck;
-
+import java.io.*;
 import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
@@ -72,6 +72,7 @@ import org.junit.runners.model.TestClass;
 import ru.vyarus.java.generics.resolver.GenericsResolver;
 
 import static edu.berkeley.cs.jqf.fuzz.guidance.Result.*;
+//import org.apache.commons.io.FileUtils;
 
 /**
  *
@@ -359,7 +360,8 @@ public class FuzzStatement extends Statement {
                     GuidedFuzzingForPatched.run(testClass.getName(), method.getName(), this.loaderForPatch, reproGuidance, System.out);
                     System.setProperty("jqf.ei.run_patch", "false");
                     guidance.reset();
-                    compareOutput();
+                    guidance.setOutputCmpResult(compareOutput());
+
                 } else {
                     // System.out.println("Failed to log out actual");
                 }
@@ -380,13 +382,51 @@ public class FuzzStatement extends Statement {
         }
     }
 
-    private void compareOutput() {
+    private boolean compareOutput() throws Exception{
         // TODO:
         //  1. find out the output for ORG/${inputID}/OUT.log
         //  2. find out the output for PATCH/${inputID}/OUT.log
         //  3. Compare the output
         //  For the moment, you just print out whether the output is the same or not (true or false)
         String inputID = System.getProperty("jqf.ei.inputID");
+        System.out.println(inputID);
+        String currentDir = System.getProperty("user.dir");
+        //System.out.println("Current dir using System:" +currentDir);
+        File f1 = new File("/home/mazba/remote_new/poracle/modules/JQF/src/test/resources/log/ORG/"+inputID+"/OUT.log");
+        File f2 = new File("/home/mazba/remote_new/poracle/modules/JQF/src/test/resources/log/PATCH/"+inputID+"/OUT.log");
+
+
+        InputStream is = new FileInputStream(f1);
+        BufferedReader buf = new BufferedReader(new InputStreamReader(is));
+
+        String line = buf.readLine();
+        StringBuilder sb = new StringBuilder();
+
+        while(line != null){
+            sb.append(line).append("\n");
+            line = buf.readLine();
+        }
+
+        String fileAsString_ORG = sb.toString();
+        //System.out.println("Contents_of_ORG : " + fileAsString_ORG);
+
+        InputStream isnew = new FileInputStream(f2);
+        BufferedReader buf1 = new BufferedReader(new InputStreamReader(isnew));
+
+        String line1 = buf1.readLine();
+        StringBuilder sb1 = new StringBuilder();
+
+        while(line1 != null){
+            sb1.append(line1).append("\n");
+            line1 = buf1.readLine();
+        }
+
+        String fileAsString_Patch = sb1.toString();
+        //System.out.println("Contents_of_Patch : " + fileAsString_Patch);
+        //comparison
+        System.out.println(fileAsString_ORG+ "      " + fileAsString_Patch);
+
+        return fileAsString_ORG.equals(fileAsString_Patch);
     }
 
     private void evaluatePatch(ReproGuidance guidance, List<Generator<?>> generators) throws Throwable {

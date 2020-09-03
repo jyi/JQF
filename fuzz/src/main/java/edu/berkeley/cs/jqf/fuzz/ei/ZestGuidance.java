@@ -181,7 +181,7 @@ public class ZestGuidance implements Guidance {
             System.getProperty("jqf.ei.MAX_CORPUS_SIZE") != null?
                     Integer.getInteger("jqf.ei.MAX_CORPUS_SIZE") : 10;
 
-    private int curCorpusSize = 0;
+    protected int curCorpusSize = 0;
 
     // ---------- LOGGING / STATS OUTPUT ------------
 
@@ -230,10 +230,10 @@ public class ZestGuidance implements Guidance {
     protected long branchCount;
 
     /** Whether to stop/exit once a crash is found. **/
-    static final boolean EXIT_ON_CRASH = Boolean.getBoolean("jqf.ei.EXIT_ON_CRASH");
+    protected static final boolean EXIT_ON_CRASH = Boolean.getBoolean("jqf.ei.EXIT_ON_CRASH");
 
     /** Whether to stop/exit once a plateau is reached. **/
-    static final boolean EXIT_ON_PLATEAU = Boolean.getBoolean("jqf.ei.EXIT_ON_PLATEAU");
+    protected static final boolean EXIT_ON_PLATEAU = Boolean.getBoolean("jqf.ei.EXIT_ON_PLATEAU");
 
     // ------------- FUZZING HEURISTICS ------------
 
