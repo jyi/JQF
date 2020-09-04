@@ -135,7 +135,7 @@ public class ReachGuidance extends ZestGuidance {
 
     public void setOutputCmpResult(boolean cmpResult) {
         this.outputCmpResult = cmpResult;
-        System.out.println("I am true..................."+cmpResult);
+        System.out.println(cmpResult);
     }
 
     @Override

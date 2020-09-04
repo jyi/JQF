@@ -392,9 +392,13 @@ public class FuzzStatement extends Statement {
         System.out.println(inputID);
         String currentDir = System.getProperty("user.dir");
         //System.out.println("Current dir using System:" +currentDir);
-        File f1 = new File("/home/mazba/remote_new/poracle/modules/JQF/src/test/resources/log/ORG/"+inputID+"/OUT.log");
-        File f2 = new File("/home/mazba/remote_new/poracle/modules/JQF/src/test/resources/log/PATCH/"+inputID+"/OUT.log");
-
+        String result = null;
+        if ((currentDir != null) && (currentDir.length() > 0)) {
+            result = currentDir.substring(0, currentDir.length() - 4);
+        }
+        //System.out.println("strip"+result);
+        File f1 = new File(result+"src/test/resources/log/ORG/"+inputID+"/OUT.log");
+        File f2 = new File(result+"src/test/resources/log/PATCH/"+inputID+"/OUT.log");
 
         InputStream is = new FileInputStream(f1);
         BufferedReader buf = new BufferedReader(new InputStreamReader(is));
@@ -424,7 +428,7 @@ public class FuzzStatement extends Statement {
         String fileAsString_Patch = sb1.toString();
         //System.out.println("Contents_of_Patch : " + fileAsString_Patch);
         //comparison
-        System.out.println(fileAsString_ORG+ "      " + fileAsString_Patch);
+        System.out.println(fileAsString_ORG +"  "+ fileAsString_Patch);
 
         return fileAsString_ORG.equals(fileAsString_Patch);
     }
