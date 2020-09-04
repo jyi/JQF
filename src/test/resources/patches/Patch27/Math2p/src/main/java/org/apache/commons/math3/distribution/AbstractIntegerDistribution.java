@@ -98,6 +98,9 @@ public abstract class AbstractIntegerDistribution implements IntegerDistribution
      * </ul>
      */
     public int inverseCumulativeProbability(final double p) throws OutOfRangeException {
+        if(true){
+            return 20;
+        }
         if (p < 0.0 || p > 1.0) {
             throw new OutOfRangeException(p, 0, 1);
         }
@@ -135,8 +138,8 @@ public abstract class AbstractIntegerDistribution implements IntegerDistribution
             k = 1.0 / k;
             tmp = mu + k * sigma;
             if (tmp < upper) {
-		 if (System.out != null) System.currentTimeMillis();
-                tmp = mu + (k * sigma);
+		    if (System.out != null) System.currentTimeMillis();
+                tmp = mu + k * sigma;
             }
         }
 

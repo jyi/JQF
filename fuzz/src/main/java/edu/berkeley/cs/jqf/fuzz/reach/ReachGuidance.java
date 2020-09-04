@@ -62,10 +62,12 @@ public class ReachGuidance extends ZestGuidance {
     private CFGAnalysis cfga = null;
 
     private final List<Input<?>> inputs = new ArrayList<>();
+    private boolean outputCmpResult=true;
 
     public void reset() {
         this.isPlateauReached = false;
         this.noProgressCount = 0;
+        Log.turnOnRunBuggyVersion();
     }
 
     public class HandleResult {
@@ -129,6 +131,30 @@ public class ReachGuidance extends ZestGuidance {
 //            String additionalClasses = null;
 //            cfga = CFGBuilder.genCFGForClasses(classes, classesToSkip, additionalClasses);
 //        }
+    }
+
+    public void setOutputCmpResult(boolean cmpResult) {
+        this.outputCmpResult = cmpResult;
+        System.out.println(cmpResult);
+    }
+
+    @Override
+    public boolean hasInput() {
+        Date now = new Date();
+        long elapsedMilliseconds = now.getTime() - startTime.getTime();
+
+        if (EXIT_ON_PLATEAU && isPlateauReached) {
+            return false;
+        }
+
+        if (USE_CORPUS_SIZE && this.curCorpusSize > this.maxCorpusSize) {
+            return false;
+        }
+        // TODO: return false when the two outputs differ from each other
+        if (!this.outputCmpResult) {
+            return false;
+        }
+        return elapsedMilliseconds < maxDurationMillis;
     }
 
     @Override

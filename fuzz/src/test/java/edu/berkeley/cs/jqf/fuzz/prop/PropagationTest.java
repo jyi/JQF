@@ -124,4 +124,37 @@ public class PropagationTest {
                 "../src/test/resources/patches/Patch197/Math25p/target/test-classes:../src/test/resources/patches/Patch197/Math25p/target/classes",
                 "org.apache.commons.math3.optimization.fitting.JQF_HarmonicFitterTest", "testMath844"});
     }
+    @Test
+    public void runZestCLI2_patch32() throws IOException {
+        System.setProperty("org.aspectj.weaver.loadtime.configuration", "aspect/aop.xml");
+
+        Path fuzz_results_patch_dir = FileSystems.getDefault().getPath("..", "src", "test", "resources", "fuzz-results-patch");
+        Path log_dir = FileSystems.getDefault().getPath("..", "src", "test", "resources", "log");
+
+        if (fuzz_results_patch_dir.toFile().exists()) {
+            Files.walk(fuzz_results_patch_dir)
+                    .sorted(Comparator.reverseOrder())
+                    .map(Path::toFile)
+                    .forEach(File::delete);
+        }
+        if (log_dir.toFile().exists()) {
+            Files.walk(log_dir)
+                    .sorted(Comparator.reverseOrder())
+                    .map(Path::toFile)
+                    .forEach(File::delete);
+        }
+
+        ZestCLI2.main(new String[] {
+                "--target", "org/apache/commons/math3/optimization/linear/SimplexSolver.java:124",
+                "--save-all-inputs",
+                "--logdir", "../src/test/resources/log",
+                "--seed", "885441",
+                "--max-corpus-size", "10",
+                "--plateau-threshold", "10",
+                "--verbose",
+                "-o", "../src/test/resources/fuzz-results-patch",
+                "../src/test/resources/patches/Patch32/Math28b/target/test-classes:../src/test/resources/patches/Patch32/Math28b/target/classes",
+                "../src/test/resources/patches/Patch32/Math28p/target/test-classes:../src/test/resources/patches/Patch32/Math28p/target/classes",
+                "org.apache.commons.math3.optimization.linear.JQF_SimplexSolverTest", "testMath828Cycle"});
+    }
 }
