@@ -98,7 +98,8 @@ public class InstrumentingClassLoader extends URLClassLoader {
 
             // additional transformation to dump program states
             ClassPreProcessorAgentAdapter adapter = new ClassPreProcessorAgentAdapter();
-            transformedBytes2 = adapter.transform(this.getParent(), internalName, null, null,
+            // TODO: should we use this or this.getParent() as the first parmater of transform?
+            transformedBytes2 = adapter.transform(this, internalName, null, null,
                     transformedBytes != null ? transformedBytes : bytes);
         } catch (IllegalClassFormatException e) {
             // Just use original bytes
@@ -106,11 +107,11 @@ public class InstrumentingClassLoader extends URLClassLoader {
             transformedBytes2 = null;
         }
 
-
         // Load the class with transformed bytes, if possible
         if (transformedBytes2 != null) {
             bytes = transformedBytes2;
         }
+
         return defineClass(name, bytes,
                 0, bytes.length);
     }
