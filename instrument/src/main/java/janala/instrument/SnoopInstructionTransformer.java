@@ -12,6 +12,7 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.TreeMap;
 
+import org.eclipse.core.runtime.Path;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
@@ -88,6 +89,11 @@ public class SnoopInstructionTransformer implements ClassFileTransformer {
   synchronized public byte[] transform(ClassLoader loader, String cname, Class<?> classBeingRedefined,
       ProtectionDomain d, byte[] cbuf)
     throws IllegalClassFormatException {
+    if (Boolean.getBoolean("jqf.ei.run_patch")) {
+      cname = "patched" + Path.SEPARATOR + cname;
+    } else {
+      cname = "original" + Path.SEPARATOR + cname;
+    }
 
     boolean toInstrument = !shouldExclude(cname);
 
@@ -98,6 +104,7 @@ public class SnoopInstructionTransformer implements ClassFileTransformer {
       }
       print("Instrumenting: " + cname + "... ");
       GlobalStateForInstrumentation.instance.setCid(cname.hashCode());
+
 
       if (instrumentedBytes.containsKey(cname)) {
         println(" Found in fast-cache!");
