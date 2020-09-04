@@ -46,7 +46,14 @@
             <artifactId>aspectjtools</artifactId>
             <version>1.9.6</version>
         </dependency>
-<!--        <dependency>-->
+        <!-- https://mvnrepository.com/artifact/com.thoughtworks.xstream/xstream -->
+        <dependency>
+            <groupId>com.thoughtworks.xstream</groupId>
+            <artifactId>xstream</artifactId>
+            <version>1.4.12</version>
+        </dependency>
+
+        <!--        <dependency>-->
 <!--            <groupId>org.aspectj</groupId>-->
 <!--            <artifactId>aspectjtools</artifactId>-->
 <!--            <version>1.9.7</version>-->
@@ -56,6 +63,11 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>edu.berkeley.cs.jqf</groupId>
+            <artifactId>jqf-fuzz</artifactId>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 

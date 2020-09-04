@@ -115,6 +115,10 @@
             <artifactId>bcel</artifactId>
             <version>6.3</version>
         </dependency>
+        <dependency>
+            <groupId>edu.berkeley.cs.jqf</groupId>
+            <artifactId>jqf-instrument</artifactId>
+        </dependency>
     </dependencies>
 
 
