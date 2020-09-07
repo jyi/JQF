@@ -24,6 +24,7 @@ import org.apache.commons.math3.exception.NumberIsTooLargeException;
 import org.apache.commons.math3.util.Precision;
 import org.junit.Assert;
 import org.junit.Test;
+import java.net.URL;
 
 // PORACLE: Additional packages
 import org.junit.runner.RunWith;
@@ -45,6 +46,8 @@ import kr.ac.unist.cse.jqf.Log;
  */
 @RunWith(JQF.class)
 public class JQF_HypergeometricDistributionTest extends IntegerDistributionAbstractTest {
+
+  int tmp = 1234;
   
   //-------------- Implementations for abstract methods -----------------------
 
@@ -320,9 +323,13 @@ public class JQF_HypergeometricDistributionTest extends IntegerDistributionAbstr
 
     // the original test stmt: int sample = dist.sample();
     // the body of sample(): inverseCumulativeProbability(random.nextDouble());
-    int actual = dist.inverseCumulativeProbability(p);
+    // int actual = dist.inverseCumulativeProbability(p);
+    int actual = -10000;
+
+    //URL tmp = this.getClass().getClassLoader().getResource(this.getClass().getName().replace(".", "/") + ".class");
 
     Log.logOutIf((actual >= 0) && (actual <= n), () -> new Integer[] { actual });
+    //Log.logOutIf((actual >= 0) && (actual <= n), () -> new String[] { tmp.toString() });
   }
 
 }

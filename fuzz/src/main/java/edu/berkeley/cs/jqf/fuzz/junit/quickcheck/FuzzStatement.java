@@ -27,7 +27,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 package edu.berkeley.cs.jqf.fuzz.junit.quickcheck;
-import java.io.*;
 import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
@@ -382,55 +381,8 @@ public class FuzzStatement extends Statement {
         }
     }
 
-    private boolean compareOutput() throws Exception{
-        // TODO:
-        //  1. find out the output for ORG/${inputID}/OUT.log
-        //  2. find out the output for PATCH/${inputID}/OUT.log
-        //  3. Compare the output
-        //  For the moment, you just print out whether the output is the same or not (true or false)
-        String inputID = System.getProperty("jqf.ei.inputID");
-        System.out.println(inputID);
-        String currentDir = System.getProperty("user.dir");
-        //System.out.println("Current dir using System:" +currentDir);
-        String result = null;
-        if ((currentDir != null) && (currentDir.length() > 0)) {
-            result = currentDir.substring(0, currentDir.length() - 4);
-        }
-        //System.out.println("strip"+result);
-        File f1 = new File(result+"src/test/resources/log/ORG/"+inputID+"/OUT.log");
-        File f2 = new File(result+"src/test/resources/log/PATCH/"+inputID+"/OUT.log");
-
-        InputStream is = new FileInputStream(f1);
-        BufferedReader buf = new BufferedReader(new InputStreamReader(is));
-
-        String line = buf.readLine();
-        StringBuilder sb = new StringBuilder();
-
-        while(line != null){
-            sb.append(line).append("\n");
-            line = buf.readLine();
-        }
-
-        String fileAsString_ORG = sb.toString();
-        //System.out.println("Contents_of_ORG : " + fileAsString_ORG);
-
-        InputStream isnew = new FileInputStream(f2);
-        BufferedReader buf1 = new BufferedReader(new InputStreamReader(isnew));
-
-        String line1 = buf1.readLine();
-        StringBuilder sb1 = new StringBuilder();
-
-        while(line1 != null){
-            sb1.append(line1).append("\n");
-            line1 = buf1.readLine();
-        }
-
-        String fileAsString_Patch = sb1.toString();
-        //System.out.println("Contents_of_Patch : " + fileAsString_Patch);
-        //comparison
-        System.out.println(fileAsString_ORG +"  "+ fileAsString_Patch);
-
-        return fileAsString_ORG.equals(fileAsString_Patch);
+    private boolean compareOutput() {
+        return Log.LogResult.hasEqualOutput();
     }
 
     private void evaluatePatch(ReproGuidance guidance, List<Generator<?>> generators) throws Throwable {

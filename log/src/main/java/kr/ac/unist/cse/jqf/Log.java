@@ -6,9 +6,41 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.util.ArrayList;
 import java.util.Arrays;
 
 public class Log {
+
+    public static class LogResult {
+        private static String outputForOrg = null;
+        private static String outputForPatch = null;
+
+        public static void clear() {
+            if (Boolean.getBoolean("jqf.ei.run_patch")) {
+                outputForPatch = null;
+            } else {
+                outputForOrg = null;
+            }
+        }
+
+        public static void addOutput(String out) {
+            String realOut = null;
+            if (!out.equals("IGNORE_OUTPUT"))
+                realOut = out;
+
+            if (Boolean.getBoolean("jqf.ei.run_patch")) {
+                outputForPatch = realOut;
+            } else {
+                outputForOrg = realOut;
+            }
+        }
+
+        public static boolean hasEqualOutput() {
+            if (outputForOrg == null || outputForPatch == null) return false;
+            else return outputForOrg.equals(outputForPatch);
+        }
+    }
+
     public static boolean logOutIfCalled = false;
     public static boolean runBuggyVersion = false;
 
@@ -27,6 +59,7 @@ public class Log {
         logOutIfCalled = false;
         ignoreCount = 0;
         actualCount = 0;
+        LogResult.clear();
     }
 
     public static int getIgnoreCount() {
@@ -38,6 +71,7 @@ public class Log {
     }
 
     protected static void logOut(String msg) {
+        LogResult.addOutput(msg);
         String logDir = System.getProperty("jqf.ei.logDir");
         if (logDir == null) {
             System.out.println("out: " + msg);
