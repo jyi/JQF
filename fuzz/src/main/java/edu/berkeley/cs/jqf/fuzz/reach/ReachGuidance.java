@@ -57,7 +57,7 @@ import kr.ac.unist.cse.jqf.Log;
  */
 public class ReachGuidance extends ZestGuidance {
 
-    private TargetCoverage targetCoverage = new TargetCoverage();
+    private TargetCoverage targetCoverage = TargetCoverage.getTargetCoverage();
 
     private CFGAnalysis cfga = null;
 

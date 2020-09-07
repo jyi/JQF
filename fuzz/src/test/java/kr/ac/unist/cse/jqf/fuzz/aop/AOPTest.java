@@ -1,6 +1,5 @@
-package kr.ac.unist.cse.instrument.aop;
+package kr.ac.unist.cse.jqf.fuzz.aop;
 
-import org.eclipse.core.runtime.Path;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -18,7 +17,7 @@ public class AOPTest {
     @Test
     public void ajcTest() throws IOException {
         String[] args = new String[] {"-outjar", "../aspect/tracing.jar",
-                System.getProperty("user.dir") + "/src/test/java/kr/ac/unist/cse/instrument/aop/" + "Tracing.aj",
+                System.getProperty("user.dir") + "/src/test/java/kr/ac/unist/cse/jqf/fuzz/aop/" + "Tracing.aj",
                 "-outxmlfile", "../aspect/aop.xml"
         };
         org.aspectj.tools.ajc.Main.main(args);

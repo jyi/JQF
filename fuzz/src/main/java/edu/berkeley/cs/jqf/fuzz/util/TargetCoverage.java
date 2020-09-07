@@ -19,6 +19,15 @@ public class TargetCoverage implements TraceEventVisitor {
         e.applyVisitor(this);
     }
 
+    private static TargetCoverage singleton = new TargetCoverage();
+
+    private TargetCoverage() {
+    }
+
+    public static TargetCoverage getTargetCoverage() {
+        return singleton;
+    }
+
     @Override
     public void visitTargetEvent(TargetEvent e) {
         infoLog("Target is hit at %s: %d", e.getFileName(), e.getLineNumber());
