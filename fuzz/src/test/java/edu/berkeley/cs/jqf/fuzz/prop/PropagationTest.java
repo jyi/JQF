@@ -57,6 +57,8 @@ public class PropagationTest {
 
     @Test
     public void runZestCLI2() throws IOException {
+        // turn on the following to see instrumentation log
+        // System.setProperty("janala.verbose", "true");
         // String currentDir = System.getProperty("user.dir");
         System.setProperty("org.aspectj.weaver.loadtime.configuration", "file:../aspect/aop.xml");
         // System.setProperty("org.aspectj.weaver.loadtime.configuration", "file:/home/elkhan/Remote/poracle/modules/JQF/aspect/aop.xml");
