@@ -85,15 +85,19 @@ public class SnoopInstructionTransformer implements ClassFileTransformer {
 
   static Map<String, byte[]> instrumentedBytes = new TreeMap<>();
 
-  @Override
-  synchronized public byte[] transform(ClassLoader loader, String cname, Class<?> classBeingRedefined,
-      ProtectionDomain d, byte[] cbuf)
-    throws IllegalClassFormatException {
+  private String getKey(String cname) {
     if (Boolean.getBoolean("jqf.ei.run_patch")) {
       cname = "patched" + Path.SEPARATOR + cname;
     } else {
       cname = "original" + Path.SEPARATOR + cname;
     }
+    return cname;
+  }
+
+  @Override
+  synchronized public byte[] transform(ClassLoader loader, String cname, Class<?> classBeingRedefined,
+      ProtectionDomain d, byte[] cbuf)
+    throws IllegalClassFormatException {
 
     boolean toInstrument = !shouldExclude(cname);
 
@@ -106,9 +110,9 @@ public class SnoopInstructionTransformer implements ClassFileTransformer {
       GlobalStateForInstrumentation.instance.setCid(cname.hashCode());
 
 
-      if (instrumentedBytes.containsKey(cname)) {
+      if (instrumentedBytes.containsKey(getKey(cname))) {
         println(" Found in fast-cache!");
-        return instrumentedBytes.get(cname);
+        return instrumentedBytes.get(getKey(cname));
       }
 
       if (instDir != null) {
@@ -120,7 +124,7 @@ public class SnoopInstructionTransformer implements ClassFileTransformer {
             if (Arrays.equals(cbuf, origBytes)) {
               byte[] instBytes = Files.readAllBytes(cachedFile.toPath());
               println(" Found in disk-cache!");
-              instrumentedBytes.put(cname, instBytes);
+              instrumentedBytes.put(getKey(cname), instBytes);
               return instBytes;
             }
           } catch (IOException e) {
@@ -149,7 +153,7 @@ public class SnoopInstructionTransformer implements ClassFileTransformer {
       }
 
       println("Done!");
-      instrumentedBytes.put(cname, ret);
+      instrumentedBytes.put(getKey(cname), ret);
 
       if (instDir != null) {
         try {
