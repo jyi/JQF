@@ -162,10 +162,10 @@ public class ReachGuidance extends ZestGuidance {
             String val = getInput().toString();
             String currentDir = System.getProperty("user.dir");
             System.out.println("Current dir using System:" +currentDir);
-            String path = "../src/test/resources/fuzz-results-patch/diff_out";
+            String path = outputDirectory.getPath()+"/diff_out";
 
             try {
-                Files.createDirectories(Paths.get(currentDir,path));
+                Files.createDirectories(Paths.get(path));
                 Path inFile = Paths.get(path, inputID);
                 Files.createFile(inFile);
                 Files.write(inFile, val.getBytes(),StandardOpenOption.APPEND);
