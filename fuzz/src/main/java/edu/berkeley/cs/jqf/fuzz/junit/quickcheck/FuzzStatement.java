@@ -361,6 +361,7 @@ public class FuzzStatement extends Statement {
                     guidance.reset();
                     guidance.setOutputCmpResult(compareOutput());
 
+                    guidance.handleResult();
                 } else {
                     // System.out.println("Failed to log out actual");
                 }

@@ -70,6 +70,10 @@ public class ReachGuidance extends ZestGuidance {
         Log.turnOnRunBuggyVersion();
     }
 
+    public void handleResult() {
+        // TODO: compute the difference between the two xml files
+    }
+
     public class HandleResult {
         private final Input<?> input;
         private boolean inputAdded;
