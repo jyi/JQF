@@ -29,6 +29,10 @@
 package edu.berkeley.cs.jqf.fuzz.reach;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.*;
 import java.util.function.Consumer;
 import java.time.Duration;
@@ -154,8 +158,24 @@ public class ReachGuidance extends ZestGuidance {
         if (USE_CORPUS_SIZE && this.curCorpusSize > this.maxCorpusSize) {
             return false;
         }
-        // TODO: return false when the two outputs differ from each other
+        // return false when the two outputs differ from each other
         if (!this.outputCmpResult) {
+            // TODO: save the current input into diff_out dir
+            String inputID = System.getProperty("jqf.ei.inputID");
+            //System.out.println(getInput());
+            String val = getInput().toString();
+            String currentDir = System.getProperty("user.dir");
+            System.out.println("Current dir using System:" +currentDir);
+            String path = outputDirectory.getPath()+"/diff_out";
+
+            try {
+                Files.createDirectories(Paths.get(path));
+                Path inFile = Paths.get(path, inputID);
+                Files.createFile(inFile);
+                Files.write(inFile, val.getBytes(),StandardOpenOption.APPEND);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
             return false;
         }
         return elapsedMilliseconds < maxDurationMillis;
