@@ -25,7 +25,8 @@ public class Log {
 
         public static void addOutput(String out) {
             String realOut = null;
-            if (!out.equals("IGNORE_OUTPUT"))
+            if (!(out.equals("IGNORE_OUTPUT") ||
+                    out.contains("edu.berkeley.cs.jqf.fuzz.guidance.TimeoutException")))
                 realOut = out;
 
             if (Boolean.getBoolean("jqf.ei.run_patch")) {
@@ -37,7 +38,17 @@ public class Log {
 
         public static boolean hasEqualOutput() {
             if (outputForOrg == null || outputForPatch == null) return false;
-            else return outputForOrg.equals(outputForPatch);
+            else {
+                try{
+                    double delta = Double.parseDouble(System.getProperty("jqf.ei.delta"));
+                    if(Math.abs(Double.parseDouble(outputForOrg) - Double.parseDouble(outputForPatch))>delta){
+                        return false;
+                    }else
+                        return true;
+                }catch (NumberFormatException e){
+                }
+                return outputForOrg.equals(outputForPatch);
+            }
         }
     }
 
