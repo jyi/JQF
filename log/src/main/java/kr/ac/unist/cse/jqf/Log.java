@@ -55,6 +55,52 @@ public class Log {
         Log.runBuggyVersion = false;
     }
 
+    public static void writeToFile(String xml) {
+        String logDir = System.getProperty("jqf.ei.logDir");
+        if (logDir == null) {
+            System.out.println("out: " + xml);
+            return;
+        }
+
+        if (Boolean.getBoolean("jqf.ei.run_two_versions")) {
+            if (Log.runBuggyVersion) {
+                logDir += File.separator + "ORG";
+            } else {
+                logDir += File.separator + "PATCH";
+            }
+        }
+
+        Path outFile;
+        String inputID = System.getProperty("jqf.ei.inputID");
+        if (inputID == null) {
+            outFile = Paths.get(logDir, "dump.xml");
+        } else {
+            try {
+                Files.createDirectories(Paths.get(logDir, inputID));
+            } catch (IOException e) {
+                System.err.println("Failed to create directory " + Paths.get(logDir, inputID));
+                e.printStackTrace();
+            }
+            outFile = Paths.get(logDir, inputID, "dump.xml");
+        }
+
+        if (!Files.exists(outFile)) {
+            try {
+                Files.createFile(outFile);
+            } catch (IOException e) {
+                System.err.println("Failed to create a file: " + outFile);
+                e.printStackTrace();
+            }
+        }
+
+        try {
+            Files.write(outFile, xml.getBytes(),
+                    StandardOpenOption.APPEND);
+        } catch (IOException e) {
+            System.err.println("Failed to write output due to IOException");
+        }
+    }
+
     public static void reset() {
         logOutIfCalled = false;
         ignoreCount = 0;
@@ -210,13 +256,13 @@ public class Log {
                     logOut(actual.values());
                     actualCount++;
                 } catch (Exception e) {
-                    ignoreOut("exception occurred: " + e.getClass());
+                    ignoreOut();
                 }
             } else {
                 if (expected != null) {
                     logOut(expected);
                 } else {
-                    ignoreOut(Arrays.deepToString(actual.values()));
+                    ignoreOut();
                 }
             }
         } else {
