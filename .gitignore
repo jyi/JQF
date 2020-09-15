@@ -19,3 +19,9 @@ GRTAGS
 GTAGS
 *.bak
 src/test/resources/fuzz-results-patch/*
+/.metadata/
+*.jar
+.project
+.classpath
+.settings
+src/test/resources/log/*
