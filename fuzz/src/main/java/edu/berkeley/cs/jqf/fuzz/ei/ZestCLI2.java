@@ -95,7 +95,11 @@ public class ZestCLI2 implements Runnable {
 
     @Option(names = { "--timeout" },
             description = "Timeout")
-    int timeout = 1000;
+    int timeout = 10;
+
+    @Option(names = { "--delta" },
+            description = "Delta")
+    double delta = 0;
 
     @Option(names = { "--widening-proportion" },
     description = "widening proportion")
@@ -223,7 +227,7 @@ public class ZestCLI2 implements Runnable {
             System.setProperty("jqf.ei.LIBFUZZER_COMPAT_OUTPUT", "true");
         }
         System.setProperty("jqf.ei.widenProportion", String.valueOf(this.widenProportion));
-
+        System.setProperty("jqf.ei.delta", String.valueOf(delta));
 
         try {
             ClassLoader loaderForOrg = new InstrumentingClassLoader(

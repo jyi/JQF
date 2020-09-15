@@ -359,6 +359,9 @@ public class FuzzStatement extends Statement {
                     System.setProperty("jqf.ei.run_patch", "false");
                     guidance.reset();
                     guidance.setOutputCmpResult(compareOutput());
+
+                    guidance.handleResult();
+
                 } else {
                     // System.out.println("Failed to log out actual");
                 }
