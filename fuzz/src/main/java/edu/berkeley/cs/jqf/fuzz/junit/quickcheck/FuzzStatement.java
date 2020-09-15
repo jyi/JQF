@@ -283,7 +283,6 @@ public class FuzzStatement extends Statement {
                 try {
                     Object[] args;
                     try {
-
                         // Generate input values
                         StreamBackedRandom randomFile = new StreamBackedRandom(guidance.getInput(), Long.BYTES);
                         SourceOfRandomness random = new FastSourceOfRandomness(randomFile);
@@ -361,6 +360,7 @@ public class FuzzStatement extends Statement {
                     guidance.setOutputCmpResult(compareOutput());
 
                     guidance.handleResult();
+
                 } else {
                     // System.out.println("Failed to log out actual");
                 }

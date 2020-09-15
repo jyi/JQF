@@ -278,21 +278,26 @@ public class ReachGuidance extends ZestGuidance {
         if (USE_CORPUS_SIZE && this.curCorpusSize > this.maxCorpusSize) {
             return false;
         }
-        // return false when the two outputs differ from each other
-        if (!this.outputCmpResult) {
-            // TODO: save the current input into diff_out dir
-            String inputID = System.getProperty("jqf.ei.inputID");
-            //System.out.println(getInput());
-            String val = getInput().toString();
-            String currentDir = System.getProperty("user.dir");
-            System.out.println("Current dir using System:" +currentDir);
-            String path = outputDirectory.getPath()+"/diff_out";
-
+        String inputID = System.getProperty("jqf.ei.inputID");
+        String currentDir = System.getProperty("user.dir");
+        String path = outputDirectory.getPath()+"/diff_out";
+        if(!Files.exists(Paths.get(path))) {
+//            System.out.println("Current dir using System:" +currentDir);
             try {
                 Files.createDirectories(Paths.get(path));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        // return false when the two outputs differ from each other
+        if (!this.outputCmpResult) {
+            // save the current input into diff_out dir
+            try {
+
                 Path inFile = Paths.get(path, inputID);
                 Files.createFile(inFile);
-                Files.write(inFile, val.getBytes(),StandardOpenOption.APPEND);
+                String msg = "diff_output is found";
+                Files.write(inFile, msg.getBytes(), StandardOpenOption.APPEND);
             } catch (IOException e) {
                 e.printStackTrace();
             }
