@@ -340,7 +340,7 @@ public class ZestGuidance implements Guidance {
     }
 
 
-    private void prepareOutputDirectory() throws IOException {
+    protected void prepareOutputDirectory() throws IOException {
 
         // Create the output directory if it does not exist
         if (!outputDirectory.exists()) {
@@ -670,6 +670,7 @@ public class ZestGuidance implements Guidance {
 
     @Override
     public void handleResult(Result result, Throwable error) throws GuidanceException {
+
         // Stop timeout handling
         this.runStart = null;
 

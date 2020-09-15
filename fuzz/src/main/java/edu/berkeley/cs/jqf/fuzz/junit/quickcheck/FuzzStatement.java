@@ -352,8 +352,7 @@ public class FuzzStatement extends Statement {
                     // run patched version
                     assert guidance.getSavedAllDirectory() != null;
                     assert guidance.getCurSaveFileName() != null;
-                    File saveFile = info.getInput().getSaveFile();
-                    ReproGuidance reproGuidance = new ReproGuidance(saveFile, null);
+                    ReproGuidance reproGuidance = new ReproGuidance(info.getInputFile(), null);
 
                     System.setProperty("jqf.ei.run_patch", "true");
                     GuidedFuzzingForPatched.run(testClass.getName(), method.getName(), this.loaderForPatch, reproGuidance, System.out);

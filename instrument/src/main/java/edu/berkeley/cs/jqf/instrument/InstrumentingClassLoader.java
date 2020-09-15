@@ -92,24 +92,22 @@ public class InstrumentingClassLoader extends URLClassLoader {
         assert (bytes != null);
 
         byte[] transformedBytes;
-        byte[] transformedBytes2;
         try {
             transformedBytes = transformer.transform(this, internalName, null, null, bytes);
 
             // additional transformation to dump program states
             ClassPreProcessorAgentAdapter adapter = new ClassPreProcessorAgentAdapter();
             // TODO: should we use this or this.getParent() as the first parmater of transform?
-            transformedBytes2 = adapter.transform(this, internalName, null, null,
+            transformedBytes = adapter.transform(this, internalName, null, null,
                     transformedBytes != null ? transformedBytes : bytes);
         } catch (IllegalClassFormatException e) {
             // Just use original bytes
             transformedBytes = null;
-            transformedBytes2 = null;
         }
 
         // Load the class with transformed bytes, if possible
-        if (transformedBytes2 != null) {
-            bytes = transformedBytes2;
+        if (transformedBytes != null) {
+            bytes = transformedBytes;
         }
 
         return defineClass(name, bytes,

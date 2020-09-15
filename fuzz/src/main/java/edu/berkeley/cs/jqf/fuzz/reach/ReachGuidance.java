@@ -37,20 +37,20 @@ import java.util.*;
 import java.util.function.Consumer;
 import java.time.Duration;
 
-import com.pholser.junit.quickcheck.generator.GenerationStatus;
-import com.pholser.junit.quickcheck.random.SourceOfRandomness;
-import de.hub.se.cfg.CFGBuilder;
 import edu.berkeley.cs.jqf.fuzz.ei.ZestGuidance;
 import edu.berkeley.cs.jqf.fuzz.guidance.GuidanceException;
 import edu.berkeley.cs.jqf.fuzz.guidance.Result;
-import edu.berkeley.cs.jqf.fuzz.guidance.StreamBackedRandom;
-import edu.berkeley.cs.jqf.fuzz.junit.quickcheck.FastSourceOfRandomness;
-import edu.berkeley.cs.jqf.fuzz.junit.quickcheck.NonTrackingGenerationStatus;
 import edu.berkeley.cs.jqf.fuzz.util.TargetCoverage;
 import edu.berkeley.cs.jqf.instrument.tracing.events.TraceEvent;
 
 import de.hub.se.cfg.CFGAnalysis;
 import kr.ac.unist.cse.jqf.Log;
+import org.apache.commons.text.similarity.LevenshteinDistance;
+import org.magicwerk.brownies.collections.BigList;
+import org.xmlunit.builder.DiffBuilder;
+import org.xmlunit.diff.Comparison;
+import org.xmlunit.diff.Diff;
+import org.xmlunit.diff.Difference;
 
 /**
  * A front-end that only generates random inputs.
@@ -67,6 +67,8 @@ public class ReachGuidance extends ZestGuidance {
 
     private final List<Input<?>> inputs = new ArrayList<>();
     private boolean outputCmpResult=true;
+    private BigList<BigList<Double>> stateDiffCoverage = new BigList<>();
+    private File notIgnoreDirectory;
 
     public void reset() {
         this.isPlateauReached = false;
@@ -74,17 +76,131 @@ public class ReachGuidance extends ZestGuidance {
         Log.turnOnRunBuggyVersion();
     }
 
+    private double getDiffVal(Object v) {
+        double val = Double.NaN;
+        if (v instanceof String) {
+            boolean done = true;
+            String s = (String) v;
+            try {
+                val = Double.parseDouble(s);
+            } catch (NumberFormatException e) {
+                done = false;
+            }
+
+            if (!done) {
+                if(s.equals("true")||s.equals("false")){
+                    val = s.equals("true")?1:0;
+                }
+            }
+        }
+        return val;
+    }
+
+    @Override
+    protected void prepareOutputDirectory() throws IOException {
+        super.prepareOutputDirectory();
+
+        this.notIgnoreDirectory = new File(outputDirectory, "not_ignore");
+        this.notIgnoreDirectory.mkdirs();
+    }
+
+    private boolean shouldKeep(BigList<Double> currentStateDiff) {
+        System.out.println("|stateDiffCoverage| = " + stateDiffCoverage.size());
+        if (stateDiffCoverage.isEmpty()) {
+            stateDiffCoverage.add(currentStateDiff);
+            return true;
+        }
+
+        // TODO: try with various options.
+        // Currently, we accumulate distances
+        BigList<Double> last = stateDiffCoverage.peekLast();
+        double distOfLast = totalDistance(last);
+        double distOfCur = totalDistance(currentStateDiff);
+        System.out.println("distOfLast = " + distOfLast);
+        System.out.println("distOfCur = " + distOfCur);
+        if (distOfLast < distOfCur) {
+            stateDiffCoverage.add(currentStateDiff);
+            return true;
+        }
+
+        System.out.println("The current state diff is not interesting");
+        return false;
+    }
+
+    private double totalDistance(BigList<Double> list) {
+        int sum = 0;
+        for (double d : list) {
+            sum += d;
+        }
+        return sum;
+    }
+
+
+    private void saveInputs() {
+        boolean valid = true;
+        Set<Object> responsibilities = computeResponsibilities(valid);
+        String reason = "+valid";
+        GuidanceException.wrap(() -> saveCurrentInput(responsibilities, reason));
+
+    }
     public void handleResult() {
         // TODO: compute the difference between the two xml files
+        String logDir = System.getProperty("jqf.ei.logDir");
+        String inputID = System.getProperty("jqf.ei.inputID");
+        Path orgD = Paths.get(logDir + File.separator + "ORG", inputID, "dump.xml");
+        Path patchD = Paths.get(logDir + File.separator + "PATCH", inputID, "dump.xml");
+        if(!Files.exists(orgD)||!Files.exists(patchD)){ saveInputs(); return;}
+        try {
+            String orgContents = new String(Files.readAllBytes(orgD));
+            String patchContents = new String(Files.readAllBytes(patchD));
+            Diff myDiff = DiffBuilder.compare(orgContents).withTest(patchContents).build();
+            BigList<Double> currentStateDiff = new BigList<>();
+            for (Difference diff : myDiff.getDifferences()) {
+                double distance = 0d;
+                Comparison cmp = diff.getComparison();
+
+                // TODO: this is temporary code to ignore random variables
+                if (cmp.getControlDetails().getParentXPath().contains("random"))
+                    continue;
+
+                Comparison.Detail control = cmp.getControlDetails();
+                Object v1 = control.getValue();
+                double val1 = getDiffVal(v1);
+                Comparison.Detail test = cmp.getTestDetails();
+                Object v2 = test.getValue();
+                double val2 = getDiffVal(v2);
+                if(Double.isNaN(val1)||Double.isNaN(val2)){
+                    String s1 = (String) v1;
+                    String s2 = (String) v2;
+                    LevenshteinDistance levenshteinDistance = new LevenshteinDistance();
+                    distance = levenshteinDistance.apply(s1,s2);
+                }else {
+                    distance = Math.abs(val1 - val2);
+                }
+                currentStateDiff.add(distance);
+            }
+            // TODO: we decide whether to keep the current input
+            // We can save the current input by calling saveCurrentInput method
+            if(shouldKeep(currentStateDiff)){
+                saveInputs();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
+
+
+
 
     public class HandleResult {
         private final Input<?> input;
+        private final File inputFile;
         private boolean inputAdded;
-
-        public HandleResult(boolean inputAdded, Input<?> input) {
+        
+        public HandleResult(boolean inputAdded, Input<?> input, File inputFile) {
             this.inputAdded = inputAdded;
             this.input = input;
+            this.inputFile = inputFile;
         }
 
         public boolean isInputAdded() {
@@ -93,6 +209,10 @@ public class ReachGuidance extends ZestGuidance {
         
         public Input<?> getInput() {
             return this.input;
+        }
+
+        public File getInputFile() {
+            return this.inputFile;
         }
     }
 
@@ -264,24 +384,6 @@ public class ReachGuidance extends ZestGuidance {
                 // It must still be non-empty
                 assert(currentInput.size() > 0) : String.format("Empty input: %s", currentInput.getDesc());
 
-                // libFuzzerCompat stats are only displayed when they hit new coverage
-                if (console != null && LIBFUZZER_COMPAT_OUTPUT) {
-                    displayStats();
-                }
-
-                infoLog("Saving new input (at run %d): " +
-                                "input #%d " +
-                                "of size %d; " +
-                                "total coverage = %d",
-                        numTrials,
-                        savedInputs.size(),
-                        currentInput.size(),
-                        nonZeroAfter);
-
-                // Save input to queue and to disk
-                final String reason = why;
-                GuidanceException.wrap(() -> saveCurrentInput(responsibilities, reason));
-
                 // update inputs
                 inputs.add(currentInput);
                 inputAdded = true;
@@ -337,7 +439,15 @@ public class ReachGuidance extends ZestGuidance {
             GuidanceException.wrap(() -> writeCurrentInputToFile(saveFile));
         }
 
-        return new HandleResult(inputAdded, currentInput);
+        File inputFile = null;
+        if (inputAdded) {
+            this.curSaveFileName = String.format("id_%09d", numTrials);
+            inputFile = new File(notIgnoreDirectory, this.curSaveFileName);
+            final File saved = inputFile;
+            GuidanceException.wrap(() -> writeCurrentInputToFile(saved));
+        }
+
+        return new HandleResult(inputAdded, currentInput, inputFile);
     }
 
     private boolean isTargetReached() {
