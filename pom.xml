@@ -66,9 +66,10 @@
     </properties>
 
     <modules>
+        <module>log</module>
+        <module>aspect</module>
         <module>fuzz</module>
         <module>instrument</module>
-        <module>log</module>
         <module>examples</module>
         <module>maven-plugin</module>
     </modules>
