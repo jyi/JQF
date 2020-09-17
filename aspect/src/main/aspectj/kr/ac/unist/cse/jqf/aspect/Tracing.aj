@@ -6,13 +6,16 @@ import kr.ac.unist.cse.jqf.Log;
 
 public aspect Tracing {
     private pointcut methodPC () :
-        execution(* *(..));
+            execution(* *(..)) && within(org.apache.commons.math3.distribution..*);
 
-    after () returning (Object o): methodPC() {
-            if (thisJoinPoint.toString().contains("inverseCumulativeProbability")) {
-                System.out.println("< target method is called");
-                StateHandler.dump(o, thisJoinPoint.getTarget());
-            }
-    }
+        after () returning (Object o): methodPC() {
+                if (!thisJoinPoint.getTarget().getClass().toString().contains("JQF_") &&
+                    DumpUtil.isInteresting(thisJoinPoint.getSignature())) {
+                    System.out.println("< target method is called");
+                    System.out.println(thisJoinPoint.getTarget().getClass());
+                    System.out.println("Method "+thisJoinPoint.toString()+ " is called ");
 
+                    DumpUtil.dump(o, thisJoinPoint.getTarget());
+                }
+        }
 }
