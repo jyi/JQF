@@ -1,20 +1,21 @@
 package kr.ac.unist.cse.jqf.aspect;
 
 import java.util.List;
-import java.util.Set;
+
 import com.thoughtworks.xstream.XStream;
 import kr.ac.unist.cse.jqf.Log;
+import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.Signature;
 
 public class DumpUtil {
 
-    private static List<StackTraceElement> methods;
+    private static List<MethodInfo> methods;
 
-    public static List<StackTraceElement> getInterestingMethods() {
+    public static List<MethodInfo> getInterestingMethods() {
         return methods;
     }
 
-    public static void setInterestingMethods(List<StackTraceElement> methods) {
+    public static void setInterestingMethods(List<MethodInfo> methods) {
         DumpUtil.methods = methods;
     }
 
@@ -25,10 +26,14 @@ public class DumpUtil {
         Log.writeToFile(xml);
     }
 
-    public static boolean isInteresting(Signature signature) {
-        signature.getDeclaringTypeName();
+    public static boolean isInteresting(JoinPoint jp) {
+        Signature signature = jp.getSignature();
         signature.getName();
-        System.out.println(signature);
-        return true;
+        signature.toLongString();
+        signature.toString();
+        if (methods != null && methods.contains(signature.getDeclaringTypeName()))
+           return true;
+        else
+            return false;
     }
 }
