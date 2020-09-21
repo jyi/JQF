@@ -370,6 +370,10 @@ public class FuzzStatement extends Statement {
             e.printStackTrace();
         }
 
+        if (guidance.isDiffOutFound()) {
+            guidance.saveInputs();
+        }
+
         if (failures.size() > 0) {
             if (failures.size() == 1) {
                 throw failures.get(0);

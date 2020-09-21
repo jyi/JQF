@@ -39,19 +39,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.time.Duration;
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Date;
-import java.util.Deque;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
@@ -73,200 +62,140 @@ import static java.lang.Math.log;
  */
 public class ZestGuidance implements Guidance {
 
+    /** save crash to specific location (should be used with EXIT_ON_CRASH) **/
+    protected static final String EXACT_CRASH_PATH = System.getProperty("jqf.ei.EXACT_CRASH_PATH");
+    /** Minimum amount of time (in millis) between two stats refreshes. */
+    protected static final long STATS_REFRESH_TIME_PERIOD = 300;
+    /** Use libFuzzer like output instead of AFL like stats screen (https://llvm.org/docs/LibFuzzer.html#output) **/
+    protected static final boolean LIBFUZZER_COMPAT_OUTPUT = Boolean.getBoolean("jqf.ei.LIBFUZZER_COMPAT_OUTPUT");
+
+    // ------------ ALGORITHM BOOKKEEPING ------------
+    /** Whether to stop/exit once a crash is found. **/
+    protected static final boolean EXIT_ON_CRASH = Boolean.getBoolean("jqf.ei.EXIT_ON_CRASH");
+    /** Whether to stop/exit once a plateau is reached. **/
+    protected static final boolean EXIT_ON_PLATEAU = Boolean.getBoolean("jqf.ei.EXIT_ON_PLATEAU");
+    /** Whether to save inputs that only add new coverage bits (but no new responsibilities). */
+    protected static final boolean SAVE_NEW_COUNTS = true;
+    /** Whether to hide fuzzing statistics **/
+    static final boolean QUIET_MODE = Boolean.getBoolean("jqf.ei.QUIET_MODE");
+    /** Whether to save only valid inputs **/
+    static final boolean SAVE_ONLY_VALID = Boolean.getBoolean("jqf.ei.SAVE_ONLY_VALID");
+    /** Max input size to generate. */
+    static final int MAX_INPUT_SIZE = Integer.getInteger("jqf.ei.MAX_INPUT_SIZE", 10240);
+    /** Whether to generate EOFs when we run out of bytes in the input, instead of randomly generating new bytes. **/
+    static final boolean GENERATE_EOF_WHEN_OUT = Boolean.getBoolean("jqf.ei.GENERATE_EOF_WHEN_OUT");
+    /** Baseline number of mutated children to produce from a given parent input. */
+    static final int NUM_CHILDREN_BASELINE = 50;
+    /** Multiplication factor for number of children to produce for favored inputs. */
+    static final int NUM_CHILDREN_MULTIPLIER_FAVORED = 20;
+    /** Mean number of mutations to perform in each round. */
+    static final double MEAN_MUTATION_COUNT = 8.0;
+    /** Mean number of contiguous bytes to mutate in each mutation. */
+    static final double MEAN_MUTATION_SIZE = 4.0; // Bytes
+    /** Whether to steal responsibility from old inputs (this increases computation cost). */
+    static final boolean STEAL_RESPONSIBILITY = Boolean.getBoolean("jqf.ei.STEAL_RESPONSIBILITY");
+    static final boolean SAVE_ALL_INPUTS =
+      Boolean.getBoolean("jqf.ei.SAVE_ALL_INPUTS");
+    /** The name of the test for display purposes. */
+    protected final String testName;
+    /** The max amount of time to run for, in milli-seconds */
+    protected final long maxDurationMillis;
+    /** The directory where fuzzing results are produced. */
+    protected final File outputDirectory;
+    /** Whether to print log statements to stderr (debug option; manually edit). */
+    protected final boolean verbose = true;
+    /** A system console, which is non-null only if STDOUT is a console. */
+    protected final Console console = System.console();
+    /** Time since this guidance instance was created. */
+    protected final Date startTime = new Date();
     // Currently, we only support single-threaded applications
     // This field is used to ensure that
     protected Thread appThread;
-
     /** A pseudo-random number generator for generating fresh values. */
     protected Random random = new Random();
-
-    /** The name of the test for display purposes. */
-    protected final String testName;
-
-    // ------------ ALGORITHM BOOKKEEPING ------------
-
-    /** The max amount of time to run for, in milli-seconds */
-    protected final long maxDurationMillis;
-
     /** The number of trials completed. */
     protected long numTrials = 0;
-
     /** The number of valid inputs. */
     protected long numValid = 0;
-
-    /** The directory where fuzzing results are produced. */
-    protected final File outputDirectory;
-
     /** The directory where interesting inputs are saved. */
     protected File savedCorpusDirectory;
-
     /** The directory where saved inputs are saved. */
     protected File savedFailuresDirectory;
-
     /** The directory where all inputs are saved (if enabled). */
     protected File savedAllDirectory;
-
     /** Set of saved inputs to fuzz. */
     protected ArrayList<Input> savedInputs = new ArrayList<>();
-
     /** Queue of seeds to fuzz. */
     protected Deque<Input> seedInputs = new ArrayDeque<>();
-
     /** Current input that's running -- valid after getInput() and before handleResult(). */
     protected Input<?> currentInput;
-
     /** Index of currentInput in the savedInputs -- valid after seeds are processed (OK if this is inaccurate). */
     protected int currentParentInputIdx = 0;
-
     /** Number of mutated inputs generated from currentInput. */
     protected int numChildrenGeneratedForCurrentParentInput = 0;
 
+    // ---------- LOGGING / STATS OUTPUT ------------
     /** Number of cycles completed (i.e. how many times we've reset currentParentInputIdx to 0. */
     protected int cyclesCompleted = 0;
-
     /** Number of favored inputs in the last cycle. */
     protected int numFavoredLastCycle = 0;
-
     /** Blind fuzzing -- if true then the queue is always empty. */
     protected boolean blind;
-
     /** Validity fuzzing -- if true then save valid inputs that increase valid coverage */
     protected boolean validityFuzzing;
-
     /** Number of saved inputs.
      *
      * This is usually the same as savedInputs.size(),
      * but we do not really save inputs in TOTALLY_RANDOM mode.
      */
     protected int numSavedInputs = 0;
-
     /** Coverage statistics for a single run. */
     protected Coverage runCoverage = new Coverage();
-
     /** Cumulative coverage statistics. */
     protected Coverage totalCoverage = new Coverage();
-
     /** Cumulative coverage for valid inputs. */
     protected Coverage validCoverage = new Coverage();
-
     /** The maximum number of keys covered by any single input found so far. */
     protected int maxCoverage = 0;
-
     /** A mapping of coverage keys to inputs that are responsible for them. */
     protected Map<Object, Input> responsibleInputs = new HashMap<>(totalCoverage.size());
-
     /** The set of unique failures found so far. */
     protected Set<List<StackTraceElement>> uniqueFailures = new HashSet<>();
 
-    /** save crash to specific location (should be used with EXIT_ON_CRASH) **/
-    protected static final String EXACT_CRASH_PATH = System.getProperty("jqf.ei.EXACT_CRASH_PATH");
-
+    // ------------- TIMEOUT HANDLING ------------
     protected boolean isPlateauReached = false;
-
     protected int noProgressCount = 0;
-
     protected boolean USE_PLATEAU_THRESHOLD =
             System.getProperty("jqf.ei.PLATEAU_THRESHOLD") != null?
                     true : false;
-
     protected int plateauThreshold =
             System.getProperty("jqf.ei.PLATEAU_THRESHOLD") != null?
                     Integer.getInteger("jqf.ei.PLATEAU_THRESHOLD") : 10;
-
     protected boolean USE_CORPUS_SIZE =
             System.getProperty("jqf.ei.MAX_CORPUS_SIZE") != null?
                     true : false;
 
+    // ------------- FUZZING HEURISTICS ------------
     protected int maxCorpusSize =
             System.getProperty("jqf.ei.MAX_CORPUS_SIZE") != null?
                     Integer.getInteger("jqf.ei.MAX_CORPUS_SIZE") : 10;
-
     protected int curCorpusSize = 0;
-
-    // ---------- LOGGING / STATS OUTPUT ------------
-
-    /** Whether to print log statements to stderr (debug option; manually edit). */
-    protected final boolean verbose = true;
-
-    /** A system console, which is non-null only if STDOUT is a console. */
-    protected final Console console = System.console();
-
-    /** Time since this guidance instance was created. */
-    protected final Date startTime = new Date();
-
     /** Time at last stats refresh. */
     protected Date lastRefreshTime = startTime;
-
     /** Total execs at last stats refresh. */
     protected long lastNumTrials = 0;
-
-    /** Minimum amount of time (in millis) between two stats refreshes. */
-    protected static final long STATS_REFRESH_TIME_PERIOD = 300;
-
     /** The file where log data is written. */
     protected File logFile;
-
     /** The file where saved plot data is written. */
     protected File statsFile;
-
     /** The currently executing input (for debugging purposes). */
     protected File currentInputFile;
-
-    /** Use libFuzzer like output instead of AFL like stats screen (https://llvm.org/docs/LibFuzzer.html#output) **/
-    protected static final boolean LIBFUZZER_COMPAT_OUTPUT = Boolean.getBoolean("jqf.ei.LIBFUZZER_COMPAT_OUTPUT");
-
-    /** Whether to hide fuzzing statistics **/
-    static final boolean QUIET_MODE = Boolean.getBoolean("jqf.ei.QUIET_MODE");
-
-    // ------------- TIMEOUT HANDLING ------------
-
     /** Timeout for an individual run. */
     protected long singleRunTimeoutMillis;
-
     /** Date when last run was started. */
     protected Date runStart;
-
     /** Number of conditional jumps since last run was started. */
     protected long branchCount;
-
-    /** Whether to stop/exit once a crash is found. **/
-    protected static final boolean EXIT_ON_CRASH = Boolean.getBoolean("jqf.ei.EXIT_ON_CRASH");
-
-    /** Whether to stop/exit once a plateau is reached. **/
-    protected static final boolean EXIT_ON_PLATEAU = Boolean.getBoolean("jqf.ei.EXIT_ON_PLATEAU");
-
-    // ------------- FUZZING HEURISTICS ------------
-
-    /** Whether to save only valid inputs **/
-    static final boolean SAVE_ONLY_VALID = Boolean.getBoolean("jqf.ei.SAVE_ONLY_VALID");
-
-    /** Max input size to generate. */
-    static final int MAX_INPUT_SIZE = Integer.getInteger("jqf.ei.MAX_INPUT_SIZE", 10240);
-
-    /** Whether to generate EOFs when we run out of bytes in the input, instead of randomly generating new bytes. **/
-    static final boolean GENERATE_EOF_WHEN_OUT = Boolean.getBoolean("jqf.ei.GENERATE_EOF_WHEN_OUT");
-
-    /** Baseline number of mutated children to produce from a given parent input. */
-    static final int NUM_CHILDREN_BASELINE = 50;
-
-    /** Multiplication factor for number of children to produce for favored inputs. */
-    static final int NUM_CHILDREN_MULTIPLIER_FAVORED = 20;
-
-    /** Mean number of mutations to perform in each round. */
-    static final double MEAN_MUTATION_COUNT = 8.0;
-
-    /** Mean number of contiguous bytes to mutate in each mutation. */
-    static final double MEAN_MUTATION_SIZE = 4.0; // Bytes
-
-    /** Whether to save inputs that only add new coverage bits (but no new responsibilities). */
-    protected static final boolean SAVE_NEW_COUNTS = true;
-
-    /** Whether to steal responsibility from old inputs (this increases computation cost). */
-    static final boolean STEAL_RESPONSIBILITY = Boolean.getBoolean("jqf.ei.STEAL_RESPONSIBILITY");
-
-    static final boolean SAVE_ALL_INPUTS =
-      Boolean.getBoolean("jqf.ei.SAVE_ALL_INPUTS");
-
     protected String curSaveFileName;
 
     /**
@@ -767,7 +696,6 @@ public class ZestGuidance implements Guidance {
                 // Save input to queue and to disk
                 final String reason = why;
                 GuidanceException.wrap(() -> saveCurrentInput(responsibilities, reason));
-
             }
         } else if (result == Result.FAILURE || result == Result.TIMEOUT) {
             String msg = error.getMessage();
@@ -826,7 +754,7 @@ public class ZestGuidance implements Guidance {
 
     // Compute a set of branches for which the current input may assume responsibility
     protected Set<Object> computeResponsibilities(boolean valid) {
-        Set<Object> result = new HashSet<>();
+        Set<Object> result = Collections.newSetFromMap(new ConcurrentHashMap<Object, Boolean>());
 
         // This input is responsible for all new coverage
         Collection<?> newCoverage = runCoverage.computeNewCoverage(totalCoverage);
@@ -896,7 +824,6 @@ public class ZestGuidance implements Guidance {
 
     /* Saves an interesting input to the queue. */
     protected void saveCurrentInput(Set<Object> responsibilities, String why) throws IOException {
-
         this.curCorpusSize++;
 
         // First, save to disk (note: we issue IDs to everyone, but only write to disk  if valid)
@@ -927,6 +854,7 @@ public class ZestGuidance implements Guidance {
 
         // Fourth, assume responsibility for branches
         currentInput.responsibilities = responsibilities;
+
         for (Object b : responsibilities) {
             // If there is an old input that is responsible,
             // subsume it
@@ -940,7 +868,6 @@ public class ZestGuidance implements Guidance {
             // We are now responsible
             responsibleInputs.put(b, currentInput);
         }
-
     }
 
 
@@ -1074,12 +1001,31 @@ public class ZestGuidance implements Guidance {
             desc = String.format("src:%06d", toClone.id);
         }
 
+        /**
+         * Sample from a geometric distribution with given mean.
+         *
+         * Utility method used in implementing mutation operations.
+         *
+         * @param random a pseudo-random number generator
+         * @param mean the mean of the distribution
+         * @return a randomly sampled value
+         */
+        public static int sampleGeometric(Random random, double mean) {
+            double p = 1 / mean;
+            double uniform = random.nextDouble();
+            return (int) ceil(log(1 - uniform) / log(1 - p));
+        }
+
         public abstract int getOrGenerateFresh(K key, Random random);
+
         public abstract int size();
+
         public abstract Input fuzz(Random random);
+
         public abstract void gc();
 
         public boolean isValid() { return this.valid; }
+
         public void setValid() { this.valid = true; }
 
         public String getDesc() { return this.desc; }
@@ -1098,22 +1044,6 @@ public class ZestGuidance implements Guidance {
          */
         public boolean isFavored() {
             return responsibilities.size() > 0;
-        }
-
-
-        /**
-         * Sample from a geometric distribution with given mean.
-         *
-         * Utility method used in implementing mutation operations.
-         *
-         * @param random a pseudo-random number generator
-         * @param mean the mean of the distribution
-         * @return a randomly sampled value
-         */
-        public static int sampleGeometric(Random random, double mean) {
-            double p = 1 / mean;
-            double uniform = random.nextDouble();
-            return (int) ceil(log(1 - uniform) / log(1 - p));
         }
     }
 

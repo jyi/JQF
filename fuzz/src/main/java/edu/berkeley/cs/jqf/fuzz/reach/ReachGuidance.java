@@ -69,6 +69,7 @@ public class ReachGuidance extends ZestGuidance {
     private boolean outputCmpResult=true;
     private BigList<BigList<Double>> stateDiffCoverage = new BigList<>();
     private File notIgnoreDirectory;
+    private boolean diffOutFound;
 
     public void reset() {
         this.isPlateauReached = false;
@@ -135,21 +136,23 @@ public class ReachGuidance extends ZestGuidance {
         return sum;
     }
 
-
-    private void saveInputs() {
+    public void saveInputs() {
         boolean valid = true;
         Set<Object> responsibilities = computeResponsibilities(valid);
         String reason = "+valid";
         GuidanceException.wrap(() -> saveCurrentInput(responsibilities, reason));
-
     }
+
     public void handleResult() {
         // TODO: compute the difference between the two xml files
         String logDir = System.getProperty("jqf.ei.logDir");
         String inputID = System.getProperty("jqf.ei.inputID");
         Path orgD = Paths.get(logDir + File.separator + "ORG", inputID, "dump.xml");
         Path patchD = Paths.get(logDir + File.separator + "PATCH", inputID, "dump.xml");
-        if(!Files.exists(orgD)||!Files.exists(patchD)){ saveInputs(); return;}
+        if (!Files.exists(orgD) || !Files.exists(patchD)){
+            saveInputs();
+            return;
+        }
         try {
             String orgContents = new String(Files.readAllBytes(orgD));
             String patchContents = new String(Files.readAllBytes(patchD));
@@ -189,8 +192,9 @@ public class ReachGuidance extends ZestGuidance {
         }
     }
 
-
-
+    public boolean isDiffOutFound() {
+        return this.diffOutFound;
+    }
 
     public class HandleResult {
         private final Input<?> input;
@@ -268,6 +272,7 @@ public class ReachGuidance extends ZestGuidance {
 
     @Override
     public boolean hasInput() {
+        diffOutFound = false;
         Date now = new Date();
         long elapsedMilliseconds = now.getTime() - startTime.getTime();
 
@@ -293,14 +298,15 @@ public class ReachGuidance extends ZestGuidance {
         if (!this.outputCmpResult) {
             // save the current input into diff_out dir
             try {
-
                 Path inFile = Paths.get(path, inputID);
                 Files.createFile(inFile);
                 String msg = "diff_output is found";
                 Files.write(inFile, msg.getBytes(), StandardOpenOption.APPEND);
+                diffOutFound = true;
             } catch (IOException e) {
                 e.printStackTrace();
             }
+
             return false;
         }
         return elapsedMilliseconds < maxDurationMillis;
@@ -350,12 +356,6 @@ public class ReachGuidance extends ZestGuidance {
             // Coverage before
             int nonZeroBefore = totalCoverage.getNonZeroCount();
             int validNonZeroBefore = validCoverage.getNonZeroCount();
-
-            // Compute a list of keys for which this input can assume responsiblity.
-            // Newly covered branches are always included.
-            // Existing branches *may* be included, depending on the heuristics used.
-            // A valid input will steal responsibility from invalid inputs
-            Set<Object> responsibilities = computeResponsibilities(valid);
 
             // Update total coverage
             boolean coverageBitsUpdated = totalCoverage.updateBits(runCoverage);
