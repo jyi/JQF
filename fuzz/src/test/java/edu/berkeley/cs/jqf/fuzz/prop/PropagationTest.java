@@ -186,7 +186,7 @@ public class PropagationTest {
                 "--logdir", "../src/test/resources/log",
                 "--seed", "885441",
                 "--max-corpus-size", "10",
-                "--plateau-threshold", "10",
+                "--widening-plateau-threshold", "10",
                 "--verbose",
                 "-o", "../src/test/resources/fuzz-results-patch",
                 "../src/test/resources/patches/Patch172/Math80b/target/test-classes:../src/test/resources/patches/Patch172/Math80b/target/classes",
