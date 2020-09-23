@@ -9,12 +9,13 @@ public aspect Tracing {
             execution(* *(..));
 
         after () returning (Object o): methodPC() {
-                if (!thisJoinPoint.getTarget().getClass().toString().contains("JQF_") &&
-                    DumpUtil.isInteresting(thisJoinPoint)) {
+                if (DumpUtil.isInteresting(thisJoinPoint)&&
+                        !thisJoinPoint.getTarget().getClass().toString().contains("JQF_")
+                    ) {
                     System.out.println("< target method is called");
                     System.out.println(thisJoinPoint.getTarget().getClass());
                     System.out.println("Method "+thisJoinPoint.toString()+ " is called ");
-                    DumpUtil.dump(o, thisJoinPoint.getTarget());
+                    DumpUtil.dump(o, thisJoinPoint);
                 }
         }
 }
