@@ -71,9 +71,18 @@ public class ReachGuidance extends ZestGuidance {
     private boolean outputCmpResult=true;
     private BigList<BigList<Double>> stateDiffCoverage = new BigList<>();
     private File notIgnoreDirectory;
+    private boolean diffOutFound;
+
+    protected boolean USE_WIDENING_PLATEAU_THRESHOLD =
+            System.getProperty("jqf.ei.WIDENING_PLATEAU_THRESHOLD") != null?
+                    true : false;
+    protected int wideningPlateauThreshold =
+            System.getProperty("jqf.ei.WIDENING_PLATEAU_THRESHOLD") != null?
+                    Integer.getInteger("jqf.ei.WIDENING_PLATEAU_THRESHOLD") : 10;
+    private boolean isWideningPlateauReached = false;
 
     public void reset() {
-        this.isPlateauReached = false;
+        this.isWideningPlateauReached = false;
         this.noProgressCount = 0;
         Log.turnOnRunBuggyVersion();
     }
@@ -138,26 +147,50 @@ public class ReachGuidance extends ZestGuidance {
         return sum;
     }
 
-
-    private void saveInputs() {
+    public void saveInputs() {
         boolean valid = true;
         Set<Object> responsibilities = computeResponsibilities(valid);
         String reason = "+valid";
         GuidanceException.wrap(() -> saveCurrentInput(responsibilities, reason));
-
     }
+
     public void handleResult() {
-        // TODO: compute the difference between the two xml files
+        // compute the difference between the two xml files
         String logDir = System.getProperty("jqf.ei.logDir");
         String inputID = System.getProperty("jqf.ei.inputID");
-        List<MethodInfo> methods = DumpUtil.getInterestingMethods();
-        if(methods==null||methods.isEmpty()) return;
-        for(MethodInfo m: methods){
-            Path orgD = Paths.get(logDir + File.separator + "ORG", inputID, m.getMethodName()+".xml");
-            Path patchD = Paths.get(logDir + File.separator + "PATCH", inputID, m.getMethodName()+".xml");
-            if(!Files.exists(orgD)||!Files.exists(patchD)){
-                System.out.println("No matching method exists");
-                continue;
+        Path orgD = Paths.get(logDir + File.separator + "ORG", inputID, "dump.xml");
+        Path patchD = Paths.get(logDir + File.separator + "PATCH", inputID, "dump.xml");
+        if (!Files.exists(orgD) || !Files.exists(patchD)) {
+            return;
+        }
+        try {
+            String orgContents = new String(Files.readAllBytes(orgD));
+            String patchContents = new String(Files.readAllBytes(patchD));
+            Diff myDiff = DiffBuilder.compare(orgContents).withTest(patchContents).build();
+            BigList<Double> currentStateDiff = new BigList<>();
+            for (Difference diff : myDiff.getDifferences()) {
+                double distance = 0d;
+                Comparison cmp = diff.getComparison();
+
+                // TODO: this is temporary code to ignore random variables
+                if (cmp.getControlDetails().getParentXPath().contains("random"))
+                    continue;
+
+                Comparison.Detail control = cmp.getControlDetails();
+                Object v1 = control.getValue();
+                double val1 = getDiffVal(v1);
+                Comparison.Detail test = cmp.getTestDetails();
+                Object v2 = test.getValue();
+                double val2 = getDiffVal(v2);
+                if(Double.isNaN(val1)||Double.isNaN(val2)){
+                    String s1 = (String) v1;
+                    String s2 = (String) v2;
+                    LevenshteinDistance levenshteinDistance = new LevenshteinDistance();
+                    distance = levenshteinDistance.apply(s1,s2);
+                }else {
+                    distance = Math.abs(val1 - val2);
+                }
+                currentStateDiff.add(distance);
             }
             try {
                 String orgContents = new String(Files.readAllBytes(orgD));
@@ -197,6 +230,10 @@ public class ReachGuidance extends ZestGuidance {
                 e.printStackTrace();
             }
         }
+    }
+
+    public boolean isDiffOutFound() {
+        return this.diffOutFound;
     }
 
     public class HandleResult {
@@ -275,6 +312,7 @@ public class ReachGuidance extends ZestGuidance {
 
     @Override
     public boolean hasInput() {
+        diffOutFound = false;
         Date now = new Date();
         long elapsedMilliseconds = now.getTime() - startTime.getTime();
 
@@ -304,9 +342,11 @@ public class ReachGuidance extends ZestGuidance {
                 Files.createFile(inFile);
                 String msg = "diff_output is found";
                 Files.write(inFile, msg.getBytes(), StandardOpenOption.APPEND);
+                diffOutFound = true;
             } catch (IOException e) {
                 e.printStackTrace();
             }
+
             return false;
         }
         return elapsedMilliseconds < maxDurationMillis;
@@ -357,12 +397,6 @@ public class ReachGuidance extends ZestGuidance {
             int nonZeroBefore = totalCoverage.getNonZeroCount();
             int validNonZeroBefore = validCoverage.getNonZeroCount();
 
-            // Compute a list of keys for which this input can assume responsiblity.
-            // Newly covered branches are always included.
-            // Existing branches *may* be included, depending on the heuristics used.
-            // A valid input will steal responsibility from invalid inputs
-            Set<Object> responsibilities = computeResponsibilities(valid);
-
             // Update total coverage
             boolean coverageBitsUpdated = totalCoverage.updateBits(runCoverage);
             if (valid) {
@@ -376,9 +410,9 @@ public class ReachGuidance extends ZestGuidance {
                 noProgressCount = 0; // reset
             } else {
                 noProgressCount++;
-                if (USE_PLATEAU_THRESHOLD && noProgressCount > plateauThreshold) {
-                    System.out.println("A plateau is reached!!!");
-                    isPlateauReached = true;
+                if (USE_WIDENING_PLATEAU_THRESHOLD && noProgressCount > wideningPlateauThreshold) {
+                    System.out.println("A widening plateau is reached!!!");
+                    isWideningPlateauReached = true;
                 }
             }
             int validNonZeroAfter = validCoverage.getNonZeroCount();
@@ -459,6 +493,10 @@ public class ReachGuidance extends ZestGuidance {
         }
 
         return new HandleResult(inputAdded, currentInput, inputFile);
+    }
+
+    public boolean isWideningPlateauReached() {
+        return isWideningPlateauReached;
     }
 
     private boolean isTargetReached() {

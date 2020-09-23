@@ -131,9 +131,6 @@ public class FuzzStatement extends Statement {
                 .map(this::produceGenerator)
                 .collect(Collectors.toList());
 
-        // update input range
-        updateInputRange(generators);
-
         // Get the currently registered fuzz guidance
         Guidance guidance = GuidedFuzzing.getCurrentGuidance();
 
@@ -275,11 +272,11 @@ public class FuzzStatement extends Statement {
                 Result result = INVALID;
                 Throwable error = null;
 
-                if (guidance.isPlateauReached()) {
+                if (guidance.isWideningPlateauReached()) {
                     System.out.println("Plateau is reached, and the range is widened");
                     // update input range
                     wideningCount++;
-                    updateInputRange(generators);
+                    updateInputRange(generators, wideningCount);
                 }
 
                 // Initialize guided fuzzing using a file-backed random number source
@@ -352,7 +349,6 @@ public class FuzzStatement extends Statement {
                 if (info.isInputAdded()) {
                     System.out.println("Succeeded to log out actual");
                     // run patched version
-                    assert guidance.getSavedAllDirectory() != null;
                     assert guidance.getCurSaveFileName() != null;
                     ReproGuidance reproGuidance = new ReproGuidance(info.getInputFile(), null);
 
@@ -375,6 +371,10 @@ public class FuzzStatement extends Statement {
         } catch (GuidanceException e) {
             System.err.println("Fuzzing stopped due to guidance exception: " + e.getMessage());
             e.printStackTrace();
+        }
+
+        if (guidance.isDiffOutFound()) {
+            guidance.saveInputs();
         }
 
         if (failures.size() > 0) {
@@ -401,8 +401,8 @@ public class FuzzStatement extends Statement {
                 Result result = INVALID;
                 Throwable error = null;
 
-                // update input range
-                updateInputRange(generators);
+                // update input range based on the current wideningCount
+                updateInputRange(generators, wideningCount);
 
                 // Initialize guided fuzzing using a file-backed random number source
                 try {
@@ -526,7 +526,7 @@ public class FuzzStatement extends Statement {
         }
     }
 
-    private void updateInputRange(List<Generator<?>> generators) {
+    private void updateInputRange(List<Generator<?>> generators, int wideningCount) {
         for (int i = 0; i < method.getMethod().getParameterCount(); i++) {
             Generator<?> gen = generators.get(i);
             if (!(gen instanceof CompositeGenerator)) {
@@ -542,9 +542,7 @@ public class FuzzStatement extends Statement {
                     }
                 }
 
-                // TODO: update the range of custom generators
-                //boolean contains = Arrays.toString(fields).contains("double");
-                //System.out.println(contains);
+                // update the range of custom generators
                 try {
                     inRangeFactory.generate(gen2, wideningCount);
                 } catch (IllegalAccessException e) {
