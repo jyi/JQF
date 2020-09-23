@@ -45,6 +45,8 @@ import edu.berkeley.cs.jqf.instrument.tracing.events.TraceEvent;
 
 import de.hub.se.cfg.CFGAnalysis;
 import kr.ac.unist.cse.jqf.Log;
+import kr.ac.unist.cse.jqf.aspect.DumpUtil;
+import kr.ac.unist.cse.jqf.aspect.MethodInfo;
 import org.apache.commons.text.similarity.LevenshteinDistance;
 import org.magicwerk.brownies.collections.BigList;
 import org.xmlunit.builder.DiffBuilder;
@@ -106,6 +108,7 @@ public class ReachGuidance extends ZestGuidance {
 
     private boolean shouldKeep(BigList<Double> currentStateDiff) {
         System.out.println("|stateDiffCoverage| = " + stateDiffCoverage.size());
+        System.out.println("|currentStateDiff| = " + currentStateDiff.size());
         if (stateDiffCoverage.isEmpty()) {
             stateDiffCoverage.add(currentStateDiff);
             return true;
@@ -147,50 +150,54 @@ public class ReachGuidance extends ZestGuidance {
         // TODO: compute the difference between the two xml files
         String logDir = System.getProperty("jqf.ei.logDir");
         String inputID = System.getProperty("jqf.ei.inputID");
-        Path orgD = Paths.get(logDir + File.separator + "ORG", inputID, "dump.xml");
-        Path patchD = Paths.get(logDir + File.separator + "PATCH", inputID, "dump.xml");
-        if(!Files.exists(orgD)||!Files.exists(patchD)){ saveInputs(); return;}
-        try {
-            String orgContents = new String(Files.readAllBytes(orgD));
-            String patchContents = new String(Files.readAllBytes(patchD));
-            Diff myDiff = DiffBuilder.compare(orgContents).withTest(patchContents).build();
-            BigList<Double> currentStateDiff = new BigList<>();
-            for (Difference diff : myDiff.getDifferences()) {
-                double distance = 0d;
-                Comparison cmp = diff.getComparison();
+        List<MethodInfo> methods = DumpUtil.getInterestingMethods();
+        if(methods==null||methods.isEmpty()) return;
+        for(MethodInfo m: methods){
+            Path orgD = Paths.get(logDir + File.separator + "ORG", inputID, m.getMethodName()+".xml");
+            Path patchD = Paths.get(logDir + File.separator + "PATCH", inputID, m.getMethodName()+".xml");
+            if(!Files.exists(orgD)||!Files.exists(patchD)){
+                System.out.println("No matching method exists");
+                continue;
+            }
+            try {
+                String orgContents = new String(Files.readAllBytes(orgD));
+                String patchContents = new String(Files.readAllBytes(patchD));
+                Diff myDiff = DiffBuilder.compare(orgContents).withTest(patchContents).build();
+                BigList<Double> currentStateDiff = new BigList<>();
+                for (Difference diff : myDiff.getDifferences()) {
+                    double distance = 0d;
+                    Comparison cmp = diff.getComparison();
 
-                // TODO: this is temporary code to ignore random variables
-                if (cmp.getControlDetails().getParentXPath().contains("random"))
-                    continue;
+                    // TODO: this is temporary code to ignore random variables
+                    if (cmp.getControlDetails().getParentXPath().contains("random"))
+                        continue;
 
-                Comparison.Detail control = cmp.getControlDetails();
-                Object v1 = control.getValue();
-                double val1 = getDiffVal(v1);
-                Comparison.Detail test = cmp.getTestDetails();
-                Object v2 = test.getValue();
-                double val2 = getDiffVal(v2);
-                if(Double.isNaN(val1)||Double.isNaN(val2)){
-                    String s1 = (String) v1;
-                    String s2 = (String) v2;
-                    LevenshteinDistance levenshteinDistance = new LevenshteinDistance();
-                    distance = levenshteinDistance.apply(s1,s2);
-                }else {
-                    distance = Math.abs(val1 - val2);
+                    Comparison.Detail control = cmp.getControlDetails();
+                    Object v1 = control.getValue();
+                    double val1 = getDiffVal(v1);
+                    Comparison.Detail test = cmp.getTestDetails();
+                    Object v2 = test.getValue();
+                    double val2 = getDiffVal(v2);
+                    if(Double.isNaN(val1)||Double.isNaN(val2)){
+                        String s1 = (String) v1;
+                        String s2 = (String) v2;
+                        LevenshteinDistance levenshteinDistance = new LevenshteinDistance();
+                        distance = levenshteinDistance.apply(s1,s2);
+                    }else {
+                        distance = Math.abs(val1 - val2);
+                    }
+                    currentStateDiff.add(distance);
                 }
-                currentStateDiff.add(distance);
+                // TODO: we decide whether to keep the current input
+                // We can save the current input by calling saveCurrentInput method
+                if(shouldKeep(currentStateDiff)){
+                    saveInputs();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-            // TODO: we decide whether to keep the current input
-            // We can save the current input by calling saveCurrentInput method
-            if(shouldKeep(currentStateDiff)){
-                saveInputs();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
         }
     }
-
-
-
 
     public class HandleResult {
         private final Input<?> input;
@@ -293,7 +300,6 @@ public class ReachGuidance extends ZestGuidance {
         if (!this.outputCmpResult) {
             // save the current input into diff_out dir
             try {
-
                 Path inFile = Paths.get(path, inputID);
                 Files.createFile(inFile);
                 String msg = "diff_output is found";

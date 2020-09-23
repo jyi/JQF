@@ -81,13 +81,13 @@ public class PropagationTest {
 
         ZestCLI2.main(new String[] {
                 "--target", "org/apache/commons/math3/distribution/AbstractIntegerDistribution.java:138",
-                "--save-all-inputs",
+                // "--save-all-inputs",
                 "--logdir", "../src/test/resources/log",
                 "--seed", "885441",
 //                "--max-corpus-size", "15",
 //                "--plateau-threshold", "10",
                 "--verbose",
-                "--delta", "1e-6",
+                //"--delta", "1e-6",
                 "-o", "../src/test/resources/fuzz-results-patch",
                 "../src/test/resources/patches/Patch27/Math2b/target/test-classes:../src/test/resources/patches/Patch27/Math2b/target/classes:../../aspect/tracing.jar",
                 "../src/test/resources/patches/Patch27/Math2p/target/test-classes:../src/test/resources/patches/Patch27/Math2p/target/classes:../../aspect/tracing.jar",
@@ -149,6 +149,39 @@ public class PropagationTest {
 
         ZestCLI2.main(new String[] {
                 "--target", "org/apache/commons/math3/optimization/linear/SimplexSolver.java:124",
+                //"--save-all-inputs",
+                "--logdir", "../src/test/resources/log",
+                "--seed", "885441",
+                //"--max-corpus-size", "10",
+               // "--plateau-threshold", "10",
+                "--verbose",
+                "-o", "../src/test/resources/fuzz-results-patch",
+                "../src/test/resources/patches/Patch32/Math28b/target/test-classes:../src/test/resources/patches/Patch32/Math28b/target/classes",
+                "../src/test/resources/patches/Patch32/Math28p/target/test-classes:../src/test/resources/patches/Patch32/Math28p/target/classes",
+                "org.apache.commons.math3.optimization.linear.JQF_SimplexSolverTest", "testMath828Cycle"});
+    }
+    @Test
+    public void runZestCLI2_patch172() throws IOException {
+        System.setProperty("org.aspectj.weaver.loadtime.configuration", "file:../aspect/aop.xml");
+
+        Path fuzz_results_patch_dir = FileSystems.getDefault().getPath("..", "src", "test", "resources", "fuzz-results-patch");
+        Path log_dir = FileSystems.getDefault().getPath("..", "src", "test", "resources", "log");
+
+        if (fuzz_results_patch_dir.toFile().exists()) {
+            Files.walk(fuzz_results_patch_dir)
+                    .sorted(Comparator.reverseOrder())
+                    .map(Path::toFile)
+                    .forEach(File::delete);
+        }
+        if (log_dir.toFile().exists()) {
+            Files.walk(log_dir)
+                    .sorted(Comparator.reverseOrder())
+                    .map(Path::toFile)
+                    .forEach(File::delete);
+        }
+
+        ZestCLI2.main(new String[] {
+                "--target", "org/apache/commons/math/linear/EigenDecompositionImpl.java:1139",
                 "--save-all-inputs",
                 "--logdir", "../src/test/resources/log",
                 "--seed", "885441",
@@ -156,9 +189,9 @@ public class PropagationTest {
                 "--plateau-threshold", "10",
                 "--verbose",
                 "-o", "../src/test/resources/fuzz-results-patch",
-                "../src/test/resources/patches/Patch32/Math28b/target/test-classes:../src/test/resources/patches/Patch32/Math28b/target/classes",
-                "../src/test/resources/patches/Patch32/Math28p/target/test-classes:../src/test/resources/patches/Patch32/Math28p/target/classes",
-                "org.apache.commons.math3.optimization.linear.JQF_SimplexSolverTest", "testMath828Cycle"});
+                "../src/test/resources/patches/Patch172/Math80b/target/test-classes:../src/test/resources/patches/Patch172/Math80b/target/classes",
+                "../src/test/resources/patches/Patch172/Math80p/target/test-classes:../src/test/resources/patches/Patch172/Math80p/target/classes",
+                "org.apache.commons.math.linear.JQF_EigenDecompositionImplTest", "testMathpbx02"});
     }
 //    @Test
 //    public void runZestCLI2_patch157() throws IOException {

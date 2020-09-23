@@ -66,7 +66,7 @@ public class Log {
         Log.runBuggyVersion = false;
     }
 
-    public static void writeToFile(String xml) {
+    public static void writeToFile(String xml, String filename) {
         String logDir = System.getProperty("jqf.ei.logDir");
         if (logDir == null) {
             System.out.println("out: " + xml);
@@ -84,7 +84,7 @@ public class Log {
         Path outFile;
         String inputID = System.getProperty("jqf.ei.inputID");
         if (inputID == null) {
-            outFile = Paths.get(logDir, "dump.xml");
+            outFile = Paths.get(logDir, filename);
         } else {
             try {
                 Files.createDirectories(Paths.get(logDir, inputID));
@@ -92,25 +92,32 @@ public class Log {
                 System.err.println("Failed to create directory " + Paths.get(logDir, inputID));
                 e.printStackTrace();
             }
-            outFile = Paths.get(logDir, inputID, "dump.xml");
+            outFile = Paths.get(logDir, inputID, filename);
         }
-
-        if (!Files.exists(outFile)) {
+        if (Files.exists(outFile)) {
+            try {
+                Files.delete(outFile);
+            } catch (IOException e) {
+                System.err.println("Failed to delete a file: " + outFile);
+                e.printStackTrace();
+            }
+        }
             try {
                 Files.createFile(outFile);
             } catch (IOException e) {
                 System.err.println("Failed to create a file: " + outFile);
                 e.printStackTrace();
             }
+
+
+            try {
+                Files.write(outFile, xml.getBytes(),
+                        StandardOpenOption.WRITE);
+            } catch (IOException e) {
+                System.err.println("Failed to write output due to IOException");
+            }
         }
 
-        try {
-            Files.write(outFile, xml.getBytes(),
-                    StandardOpenOption.APPEND);
-        } catch (IOException e) {
-            System.err.println("Failed to write output due to IOException");
-        }
-    }
 
     public static void reset() {
         logOutIfCalled = false;

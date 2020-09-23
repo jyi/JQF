@@ -49,6 +49,7 @@ import com.pholser.junit.quickcheck.internal.ParameterTypeContext;
 import com.pholser.junit.quickcheck.internal.generator.CompositeGenerator;
 import com.pholser.junit.quickcheck.internal.generator.GeneratorRepository;
 import com.pholser.junit.quickcheck.random.SourceOfRandomness;
+import edu.berkeley.cs.jqf.fuzz.ei.ZestCLI2;
 import edu.berkeley.cs.jqf.fuzz.guidance.Guidance;
 import edu.berkeley.cs.jqf.fuzz.guidance.GuidanceException;
 import edu.berkeley.cs.jqf.fuzz.guidance.TimeoutException;
@@ -61,6 +62,8 @@ import edu.berkeley.cs.jqf.fuzz.guidance.StreamBackedRandom;
 import edu.berkeley.cs.jqf.fuzz.Fuzz;
 import edu.berkeley.cs.jqf.fuzz.junit.GuidedFuzzing;
 import edu.berkeley.cs.jqf.fuzz.junit.TrialRunner;
+import edu.berkeley.cs.jqf.fuzz.util.TargetCoverage;
+import edu.berkeley.cs.jqf.instrument.InstrumentingClassLoader;
 import kr.ac.unist.cse.jqf.Log;
 import kr.ac.unist.cse.jqf.fuzz.generator.InRangeFactory;
 import org.junit.AssumptionViolatedException;
@@ -280,8 +283,8 @@ public class FuzzStatement extends Statement {
                 }
 
                 // Initialize guided fuzzing using a file-backed random number source
+                Object[] args = null;
                 try {
-                    Object[] args;
                     try {
                         // Generate input values
                         StreamBackedRandom randomFile = new StreamBackedRandom(guidance.getInput(), Long.BYTES);
@@ -353,12 +356,16 @@ public class FuzzStatement extends Statement {
                     assert guidance.getCurSaveFileName() != null;
                     ReproGuidance reproGuidance = new ReproGuidance(info.getInputFile(), null);
 
+                    // we call the patched version
                     System.setProperty("jqf.ei.run_patch", "true");
                     GuidedFuzzingForPatched.run(testClass.getName(), method.getName(), this.loaderForPatch, reproGuidance, System.out);
                     System.setProperty("jqf.ei.run_patch", "false");
                     guidance.reset();
                     guidance.setOutputCmpResult(compareOutput());
 
+                    // we call the original version again
+                    // we should retrieve the class loader for the buggy version
+                    new TrialRunner(testClass.getJavaClass(), method, args).run();
                     guidance.handleResult();
 
                 } else {
