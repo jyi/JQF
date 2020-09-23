@@ -81,11 +81,11 @@ public class PropagationTest {
 
         ZestCLI2.main(new String[] {
                 "--target", "org/apache/commons/math3/distribution/AbstractIntegerDistribution.java:138",
-                "--save-all-inputs",
+//                "--save-all-inputs",
                 "--logdir", "../src/test/resources/log",
                 "--seed", "885441",
-//                "--max-corpus-size", "15",
-//                "--plateau-threshold", "10",
+                "--max-corpus-size", "15",
+                "--widening-plateau-threshold", "10",
                 "--verbose",
                 "--delta", "1e-6",
                 "-o", "../src/test/resources/fuzz-results-patch",

@@ -85,10 +85,6 @@ public class ZestCLI2 implements Runnable {
             description = "verbose")
     boolean verbose = false;
 
-    @Option(names = { "--plateau-threshold" },
-            description = "Plateau threshold")
-    int plateauThreshold = -1; // negative to denote that the option is not used
-
     @Option(names = { "--max-corpus-size" },
             description = "Max Corpus size")
     int maxCorpusSize = 10;
@@ -100,6 +96,10 @@ public class ZestCLI2 implements Runnable {
     @Option(names = { "--delta" },
             description = "Delta")
     double delta = 0;
+
+    @Option(names = { "--widening-plateau-threshold" },
+            description = "Widening plateau threshold")
+    int wideningPlateauThreshold = -1; // negative to denote that the option is not used
 
     @Option(names = { "--widening-proportion" },
     description = "widening proportion")
@@ -190,9 +190,9 @@ public class ZestCLI2 implements Runnable {
         if (logDir != null)
             System.setProperty("jqf.ei.logDir", logDir);
 
-        if (this.plateauThreshold >= 0) {
-            System.setProperty("jqf.ei.PLATEAU_THRESHOLD",
-                    String.valueOf(this.plateauThreshold));
+        if (this.wideningPlateauThreshold >= 0) {
+            System.setProperty("jqf.ei.WIDENING_PLATEAU_THRESHOLD",
+                    String.valueOf(this.wideningPlateauThreshold));
         }
 
         if (this.maxCorpusSize >= 0) {

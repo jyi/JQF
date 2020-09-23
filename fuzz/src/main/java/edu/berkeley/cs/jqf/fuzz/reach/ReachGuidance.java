@@ -71,8 +71,16 @@ public class ReachGuidance extends ZestGuidance {
     private File notIgnoreDirectory;
     private boolean diffOutFound;
 
+    protected boolean USE_WIDENING_PLATEAU_THRESHOLD =
+            System.getProperty("jqf.ei.WIDENING_PLATEAU_THRESHOLD") != null?
+                    true : false;
+    protected int wideningPlateauThreshold =
+            System.getProperty("jqf.ei.WIDENING_PLATEAU_THRESHOLD") != null?
+                    Integer.getInteger("jqf.ei.WIDENING_PLATEAU_THRESHOLD") : 10;
+    private boolean isWideningPlateauReached = false;
+
     public void reset() {
-        this.isPlateauReached = false;
+        this.isWideningPlateauReached = false;
         this.noProgressCount = 0;
         Log.turnOnRunBuggyVersion();
     }
@@ -370,9 +378,9 @@ public class ReachGuidance extends ZestGuidance {
                 noProgressCount = 0; // reset
             } else {
                 noProgressCount++;
-                if (USE_PLATEAU_THRESHOLD && noProgressCount > plateauThreshold) {
-                    System.out.println("A plateau is reached!!!");
-                    isPlateauReached = true;
+                if (USE_WIDENING_PLATEAU_THRESHOLD && noProgressCount > wideningPlateauThreshold) {
+                    System.out.println("A widening plateau is reached!!!");
+                    isWideningPlateauReached = true;
                 }
             }
             int validNonZeroAfter = validCoverage.getNonZeroCount();
@@ -453,6 +461,10 @@ public class ReachGuidance extends ZestGuidance {
         }
 
         return new HandleResult(inputAdded, currentInput, inputFile);
+    }
+
+    public boolean isWideningPlateauReached() {
+        return isWideningPlateauReached;
     }
 
     private boolean isTargetReached() {
