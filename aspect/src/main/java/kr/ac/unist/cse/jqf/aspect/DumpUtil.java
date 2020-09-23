@@ -19,21 +19,22 @@ public class DumpUtil {
         DumpUtil.methods = methods;
     }
 
-    public static void dump(Object returnVal, Object target) {
+    public static void dump(Object returnVal, JoinPoint target) {
         XStream stream = new XStream();
-        String xml = stream.toXML(target);
-        xml = String.format("<values>\n<return>\n%s\n</return>\n%s\n</values>", returnVal.toString(), xml);
-        Log.writeToFile(xml);
+        String xml = stream.toXML(target.getTarget());
+        if(returnVal!=null)
+            xml = String.format("<values>\n<return>\n%s\n</return>\n%s\n</values>", returnVal.toString(), xml);
+        Log.writeToFile(xml,target.getSignature().getName()+".xml");
     }
 
     public static boolean isInteresting(JoinPoint jp) {
         Signature signature = jp.getSignature();
-        signature.getName();
-        signature.toLongString();
-        signature.toString();
-        if (methods != null && methods.contains(signature.getDeclaringTypeName()))
-           return true;
-        else
+        if(methods != null) {
+            for (MethodInfo method : methods) {
+                if (method.equals(new MethodInfo(signature.getDeclaringTypeName(), signature.getName())))
+                    return true;
+            }
+        }
             return false;
     }
 }
