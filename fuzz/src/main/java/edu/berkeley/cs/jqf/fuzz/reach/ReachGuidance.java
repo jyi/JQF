@@ -152,13 +152,12 @@ public class ReachGuidance extends ZestGuidance {
     }
 
     public void handleResult() {
-        // TODO: compute the difference between the two xml files
+        // compute the difference between the two xml files
         String logDir = System.getProperty("jqf.ei.logDir");
         String inputID = System.getProperty("jqf.ei.inputID");
         Path orgD = Paths.get(logDir + File.separator + "ORG", inputID, "dump.xml");
         Path patchD = Paths.get(logDir + File.separator + "PATCH", inputID, "dump.xml");
-        if (!Files.exists(orgD) || !Files.exists(patchD)){
-            saveInputs();
+        if (!Files.exists(orgD) || !Files.exists(patchD)) {
             return;
         }
         try {
