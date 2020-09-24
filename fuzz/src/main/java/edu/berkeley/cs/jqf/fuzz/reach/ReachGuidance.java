@@ -116,7 +116,6 @@ public class ReachGuidance extends ZestGuidance {
     }
 
     private boolean shouldKeep(BigList<Double> currentStateDiff) {
-
         System.out.println("|stateDiffCoverage| = " + stateDiffCoverage.size());
         System.out.println("|currentStateDiff| = " + currentStateDiff.size());
         if (stateDiffCoverage.isEmpty()) {
@@ -136,7 +135,11 @@ public class ReachGuidance extends ZestGuidance {
             return true;
         }
 
-        System.out.println("The current state diff is not interesting");
+        if (TargetCoverage.isTargetHit() && Log.getActualCount() > 0) {
+           TargetCoverage.resetHit();
+           return true;
+        }
+
         return false;
     }
 
@@ -293,10 +296,12 @@ public class ReachGuidance extends ZestGuidance {
         long elapsedMilliseconds = now.getTime() - startTime.getTime();
 
         if (EXIT_ON_PLATEAU && isPlateauReached) {
+            System.out.println("stop because plateau is reached");
             return false;
         }
 
         if (USE_CORPUS_SIZE && this.curCorpusSize > this.maxCorpusSize) {
+            System.out.println("stop because corpus size exceeds the max");
             return false;
         }
         String inputID = System.getProperty("jqf.ei.inputID");
@@ -323,6 +328,7 @@ public class ReachGuidance extends ZestGuidance {
                 e.printStackTrace();
             }
 
+            System.out.println("stop because diff out is found");
             return false;
         }
         return elapsedMilliseconds < maxDurationMillis;

@@ -13,15 +13,25 @@ import java.util.List;
 
 public class TargetCoverage implements TraceEventVisitor {
 
+    private static TargetCoverage singleton = new TargetCoverage();
+
     private List<Target> covered = new ArrayList<>();
 
     protected final boolean verbose = Boolean.getBoolean("jqf.ei.verbose");
 
+    private static boolean isTargetHit = false;
+
+    public static boolean isTargetHit() {
+        return isTargetHit;
+    }
+
+    public static void resetHit() {
+        TargetCoverage.isTargetHit = false;
+    }
+
     public void handleEvent(TraceEvent e) {
         e.applyVisitor(this);
     }
-
-    private static TargetCoverage singleton = new TargetCoverage();
 
     private TargetCoverage() {
     }
@@ -29,6 +39,7 @@ public class TargetCoverage implements TraceEventVisitor {
     public static TargetCoverage getTargetCoverage() {
         return singleton;
     }
+
     public void dumpState(){
         try {
             throw new RuntimeException();
@@ -57,6 +68,7 @@ public class TargetCoverage implements TraceEventVisitor {
     @Override
     public void visitTargetEvent(TargetEvent e) {
         infoLog("Target is hit at %s: %d", e.getFileName(), e.getLineNumber());
+        isTargetHit = true;
         covered.add(new Target(e.getFileName(), e.getLineNumber()));
         dumpState();
     }
