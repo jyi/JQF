@@ -558,7 +558,7 @@ public class ZestGuidance implements Guidance {
             Input parent = savedInputs.get(currentParentInputIdx);
 
             // Fuzz it to get a new input
-            // infoLog("Mutating input: %s", parent.desc);
+            infoLog("Mutating input: %s", parent.desc);
             currentInput = parent.fuzz(random);
             numChildrenGeneratedForCurrentParentInput++;
 
@@ -571,7 +571,6 @@ public class ZestGuidance implements Guidance {
             this.runStart = new Date();
             this.branchCount = 0;
         }
-
 
         return createParameterStream();
     }
