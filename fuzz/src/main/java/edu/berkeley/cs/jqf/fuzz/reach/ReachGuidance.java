@@ -161,6 +161,8 @@ public class ReachGuidance extends ZestGuidance {
     public boolean isDiffOutFound() {
         return this.diffOutFound;
     }
+
+
     public void addDifferences(String logDir, String inputID, BigList<Double> currentStateDiff, List<MethodInfo> methods){
         if(methods==null) return;
         for(MethodInfo m: methods){
@@ -213,7 +215,7 @@ public class ReachGuidance extends ZestGuidance {
         String inputID = System.getProperty("jqf.ei.inputID");
         List<MethodInfo> callers = DumpUtil.getCallers();
         List<MethodInfo> callees = DumpUtil.getCallees();
-        if(callers==null&&callees==null||callers.isEmpty()&&callees.isEmpty()) return;
+        if((callers==null&&callees==null)) return;
         BigList<Double> currentStateDiff = new BigList<>();
         addDifferences(logDir,inputID,currentStateDiff,callers);
         addDifferences(logDir,inputID,currentStateDiff,callees);
