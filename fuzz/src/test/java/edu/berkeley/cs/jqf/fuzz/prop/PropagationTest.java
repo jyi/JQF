@@ -84,7 +84,7 @@ public class PropagationTest {
 //                "--save-all-inputs",
                 "--logdir", "../src/test/resources/log",
                 "--seed", "885441",
-                "--max-corpus-size", "15",
+//                "--max-corpus-size", "15",
                 "--widening-plateau-threshold", "10",
                 "--verbose",
                 //"--delta", "1e-6",
