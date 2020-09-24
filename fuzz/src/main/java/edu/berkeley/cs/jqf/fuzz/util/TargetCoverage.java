@@ -40,29 +40,27 @@ public class TargetCoverage implements TraceEventVisitor {
         return singleton;
     }
 
-    public void dumpState(){
+    public void extractCallers(){
         try {
             throw new RuntimeException();
         } catch (RuntimeException re) {
             StackTraceElement[] stackTrace = re.getStackTrace();
-            List<MethodInfo> interestingMethods = new ArrayList();
+            List<MethodInfo> callers = new ArrayList();
             String s = System.getProperty("jqf.ei.targets");
             List<String> temp = Arrays.asList(s.substring(1, s.length() - 1).split(", "));
             List<String> targets = new ArrayList<>();
-            for(String t: temp){
+            for (String t: temp){
                 String z = t.substring(0,t.lastIndexOf('/'));
                 z  = z.replace('/','.');
                 targets.add(z);
 
             }
-            for(StackTraceElement method: stackTrace){
+            for (StackTraceElement method: stackTrace){
                 String className= method.getClassName();
-                if(targets.contains(className.substring(0,className.lastIndexOf('.')))&&!className.contains("JQF"))
-                    interestingMethods.add(new MethodInfo(method.getClassName(), method.getMethodName()));
+                if (targets.contains(className.substring(0,className.lastIndexOf('.')))&&!className.contains("JQF"))
+                    callers.add(new MethodInfo(method.getClassName(), method.getMethodName()));
             }
-            DumpUtil.setInterestingMethods(interestingMethods);
-
-            // TODO: extract the target method and its callers
+            DumpUtil.setCallers(callers);
         }
     }
     @Override
@@ -70,7 +68,7 @@ public class TargetCoverage implements TraceEventVisitor {
         infoLog("Target is hit at %s: %d", e.getFileName(), e.getLineNumber());
         isTargetHit = true;
         covered.add(new Target(e.getFileName(), e.getLineNumber()));
-        dumpState();
+        extractCallers();
     }
 
     public List<Target> getCoveredTargets() {
