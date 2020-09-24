@@ -145,6 +145,8 @@ public class ZestCLI2 implements Runnable {
     @Parameters(index="3", paramLabel = "TEST_METHOD", description = "fuzz function name")
     private String testMethodName;
 
+    public static ClassLoader loaderForOrg;
+
     private File[] readSeedFiles() {
         if (this.inputDirectory == null) {
             return new File[0];
@@ -233,6 +235,7 @@ public class ZestCLI2 implements Runnable {
             ClassLoader loaderForOrg = new InstrumentingClassLoader(
                     this.classPathForOrg.split(File.pathSeparator),
                     ZestCLI2.class.getClassLoader());
+            ZestCLI2.loaderForOrg = loaderForOrg;
 
             // Load the guidance
             String title = this.testClassName +"#"+this.testMethodName;

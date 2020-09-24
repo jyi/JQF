@@ -9,17 +9,17 @@ import org.aspectj.lang.Signature;
 
 public class DumpUtil {
 
-    private static List<MethodInfo> callers;
+    private static List<MethodInfo> methods;
     private static boolean isTheTargetHit = false;
     private static boolean isCallChainReady = false;
     private static boolean isTheTargetReturned = false;
 
     public static List<MethodInfo> getInterestingMethods() {
-        return callers;
+        return methods;
     }
 
-    public static void setCallers(List<MethodInfo> callers) {
-        DumpUtil.callers = callers;
+    public static void setMethods(List<MethodInfo> methods) {
+        DumpUtil.methods = methods;
     }
 
     public static void dump(Object returnVal, JoinPoint target) {
@@ -32,8 +32,8 @@ public class DumpUtil {
 
     public static boolean isInteresting(JoinPoint jp) {
         Signature signature = jp.getSignature();
-        if(callers != null) {
-            for (MethodInfo method : callers) {
+        if(methods != null) {
+            for (MethodInfo method : methods) {
                 if (method.equals(new MethodInfo(signature.getDeclaringTypeName(), signature.getName())))
                     return true;
             }

@@ -36,7 +36,7 @@ import edu.berkeley.cs.jqf.instrument.tracing.SingleSnoop;
 import org.junit.internal.TextListener;
 import org.junit.runner.*;
 
-public class GuidedFuzzingForPatched {
+public class ReproRun {
 
     private static Guidance guidance;
 

@@ -30,6 +30,7 @@ package edu.berkeley.cs.jqf.fuzz.junit.quickcheck;
 import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
 import java.nio.file.Files;
@@ -53,7 +54,7 @@ import edu.berkeley.cs.jqf.fuzz.ei.ZestCLI2;
 import edu.berkeley.cs.jqf.fuzz.guidance.Guidance;
 import edu.berkeley.cs.jqf.fuzz.guidance.GuidanceException;
 import edu.berkeley.cs.jqf.fuzz.guidance.TimeoutException;
-import edu.berkeley.cs.jqf.fuzz.junit.GuidedFuzzingForPatched;
+import edu.berkeley.cs.jqf.fuzz.junit.ReproRun;
 import edu.berkeley.cs.jqf.fuzz.random.NoGuidance;
 import edu.berkeley.cs.jqf.fuzz.reach.ReachGuidance;
 import edu.berkeley.cs.jqf.fuzz.repro.ReproGuidance;
@@ -62,8 +63,6 @@ import edu.berkeley.cs.jqf.fuzz.guidance.StreamBackedRandom;
 import edu.berkeley.cs.jqf.fuzz.Fuzz;
 import edu.berkeley.cs.jqf.fuzz.junit.GuidedFuzzing;
 import edu.berkeley.cs.jqf.fuzz.junit.TrialRunner;
-import edu.berkeley.cs.jqf.fuzz.util.TargetCoverage;
-import edu.berkeley.cs.jqf.instrument.InstrumentingClassLoader;
 import kr.ac.unist.cse.jqf.Log;
 import kr.ac.unist.cse.jqf.fuzz.generator.InRangeFactory;
 import org.junit.AssumptionViolatedException;
@@ -93,6 +92,7 @@ public class FuzzStatement extends Statement {
     private final List<Throwable> failures = new ArrayList<>();
     private final InRangeFactory inRangeFactory = InRangeFactory.singleton();
     private static int wideningCount;
+    private static boolean useRepro = false;
 
     public FuzzStatement(FrameworkMethod method, TestClass testClass,
                          GeneratorRepository generatorRepository) {
@@ -254,10 +254,14 @@ public class FuzzStatement extends Statement {
         // Get the currently registered fuzz guidance
         if (Boolean.getBoolean("jqf.ei.run_patch")) {
             Log.turnOffRunBuggyVersion();
-            evaluatePatch((ReproGuidance) GuidedFuzzingForPatched.getCurrentGuidance(),
-                    generators);
         } else {
             Log.turnOnRunBuggyVersion();
+        }
+
+        if (useRepro) {
+            evaluatePatch((ReproGuidance) ReproRun.getCurrentGuidance(),
+                    generators);
+        } else {
             evaluateOrg((ReachGuidance) GuidedFuzzing.getCurrentGuidance(),
                     generators);
         }
@@ -345,7 +349,6 @@ public class FuzzStatement extends Statement {
 
                 // Inform guidance about the outcome of this trial
                 ReachGuidance.HandleResult info = guidance.handleResultOfOrg(result, error);
-
                 if (info.isInputAdded()) {
                     System.out.println("Succeeded to log out actual");
                     // run patched version
@@ -354,16 +357,20 @@ public class FuzzStatement extends Statement {
 
                     // we call the patched version
                     System.setProperty("jqf.ei.run_patch", "true");
-                    GuidedFuzzingForPatched.run(testClass.getName(), method.getName(), this.loaderForPatch, reproGuidance, System.out);
+                    run(testClass.getName(), method.getName(), this.loaderForPatch, reproGuidance, System.out);
                     System.setProperty("jqf.ei.run_patch", "false");
                     guidance.reset();
                     guidance.setOutputCmpResult(compareOutput());
 
-                    // we call the original version again
-                    // we should retrieve the class loader for the buggy version
-                    new TrialRunner(testClass.getJavaClass(), method, args).run();
-                    guidance.handleResult();
+                    if (compareOutput()) {
+                        // we call the original version again
+                        // we should retrieve the class loader for the buggy version
+                        // TODO: replace the following with reproGuidance
+                        run(testClass.getName(), method.getName(), ZestCLI2.loaderForOrg,
+                                reproGuidance, System.out);
+                    }
 
+                    guidance.handleResult();
                 } else {
                     // System.out.println("Failed to log out actual");
                 }
@@ -388,6 +395,13 @@ public class FuzzStatement extends Statement {
         }
     }
 
+    private void run(String className, String methodName, ClassLoader loader, ReproGuidance reproGuidance, PrintStream out) throws ClassNotFoundException {
+        useRepro = true;
+        ReproRun.run(className, methodName, loader, reproGuidance, out);
+        useRepro = false;
+    }
+
+    // return true when outputs are equal to each other
     private boolean compareOutput() {
         return Log.LogResult.hasEqualOutput();
     }

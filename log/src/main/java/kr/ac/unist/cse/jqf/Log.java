@@ -36,12 +36,13 @@ public class Log {
             }
         }
 
+        // return true when outputs are equal to each other
         public static boolean hasEqualOutput() {
             if (outputForOrg == null || outputForPatch == null) return false;
             else {
                 try{
                     double delta = Double.parseDouble(System.getProperty("jqf.ei.delta"));
-                    if(Math.abs(Double.parseDouble(outputForOrg) - Double.parseDouble(outputForPatch))>delta){
+                    if(Math.abs(Double.parseDouble(outputForOrg) - Double.parseDouble(outputForPatch)) > delta){
                         return false;
                     }else
                         return true;
