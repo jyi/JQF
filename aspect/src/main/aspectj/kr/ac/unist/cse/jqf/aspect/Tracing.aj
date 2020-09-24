@@ -9,7 +9,7 @@ public aspect Tracing {
             execution(* *(..));
 
         after () returning (Object o): methodPC() {
-                if (DumpUtil.isInteresting(thisJoinPoint)&&
+                if (DumpUtil.isInteresting(thisJoinPoint) &&
                         !thisJoinPoint.getTarget().getClass().toString().contains("JQF_")
                     ) {
                     System.out.println("< target method is called");
