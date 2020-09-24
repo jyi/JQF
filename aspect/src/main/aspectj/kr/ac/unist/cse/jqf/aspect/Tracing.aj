@@ -9,13 +9,20 @@ public aspect Tracing {
             execution(* *(..));
 
         after () returning (Object o): methodPC() {
-                if (DumpUtil.isInteresting(thisJoinPoint) &&
-                        !thisJoinPoint.getTarget().getClass().toString().contains("JQF_")
-                    ) {
-                    System.out.println("< target method is called");
-                    System.out.println(thisJoinPoint.getTarget().getClass());
-                    System.out.println("Method "+thisJoinPoint.toString()+ " is called ");
-                    DumpUtil.dump(o, thisJoinPoint);
-                }
+            if (DumpUtil.isInteresting(thisJoinPoint) &&
+                !thisJoinPoint.getTarget().getClass().toString().contains("JQF_")) {
+                 System.out.println("< target method is called");
+                 System.out.println(thisJoinPoint.getTarget().getClass());
+                 System.out.println("Method " + thisJoinPoint.toString() + " is called ");
+                 DumpUtil.dump(o, thisJoinPoint);
+               }
+        }
+
+        before (): methodPC() {
+            if (!DumpUtil.isCallChainReady() &&
+                DumpUtil.isTheTargetHit() &&
+                !DumpUtil.isTheTargetReturned()) {
+                DumpUtil.addCallee(thisJoinPoint);
+            }
         }
 }

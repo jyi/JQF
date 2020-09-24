@@ -57,7 +57,8 @@ public class TargetCoverage implements TraceEventVisitor {
             }
             for (StackTraceElement method: stackTrace){
                 String className= method.getClassName();
-                if (targets.contains(className.substring(0,className.lastIndexOf('.')))&&!className.contains("JQF"))
+                if (targets.contains(className.substring(0,className.lastIndexOf('.')))
+                        && !className.contains("JQF"))
                     callers.add(new MethodInfo(method.getClassName(), method.getMethodName()));
             }
             DumpUtil.setCallers(callers);
@@ -69,6 +70,7 @@ public class TargetCoverage implements TraceEventVisitor {
         isTargetHit = true;
         covered.add(new Target(e.getFileName(), e.getLineNumber()));
         extractCallers();
+        DumpUtil.setTargetHit(true);
     }
 
     public List<Target> getCoveredTargets() {

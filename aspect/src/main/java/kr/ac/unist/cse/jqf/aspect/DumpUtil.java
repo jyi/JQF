@@ -10,6 +10,9 @@ import org.aspectj.lang.Signature;
 public class DumpUtil {
 
     private static List<MethodInfo> callers;
+    private static boolean isTheTargetHit = false;
+    private static boolean isCallChainReady = false;
+    private static boolean isTheTargetReturned = false;
 
     public static List<MethodInfo> getInterestingMethods() {
         return callers;
@@ -36,5 +39,25 @@ public class DumpUtil {
             }
         }
         return false;
+    }
+
+    public static void addCallee(JoinPoint jp) {
+
+    }
+
+    public static boolean isTheTargetHit() {
+        return DumpUtil.isTheTargetHit;
+    }
+
+    public static void setTargetHit(boolean val) {
+        DumpUtil.isTheTargetHit = val;
+    }
+
+    public static boolean isCallChainReady() {
+        return DumpUtil.isCallChainReady;
+    }
+
+    public static boolean isTheTargetReturned() {
+        return DumpUtil.isTheTargetReturned;
     }
 }
