@@ -61,7 +61,7 @@ public class TargetCoverage implements TraceEventVisitor {
                         && !className.contains("JQF"))
                     callers.add(new MethodInfo(method.getClassName(), method.getMethodName()));
             }
-            DumpUtil.setMethods(callers);
+            DumpUtil.setCallers(callers);
         }
     }
     @Override

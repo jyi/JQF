@@ -319,7 +319,7 @@ public class InRangeFactory {
                 }
             };
         } else if (gen instanceof ShortGenerator) {
-            short diff = (short) (wideningCount * (short) Math.pow(2, wideningCount - 1) * (short) ((range.maxLong() - range.minLong()) * widenProportion / 2));
+            short diff = (short) (wideningCount * (short) Math.pow(2, wideningCount - 1) * (short) ((range.maxShort() - range.minShort()) * widenProportion / 2));
             rst = new InRange() {
 
                 @Override
@@ -440,7 +440,7 @@ public class InRangeFactory {
                 }
             };
         } else if (gen instanceof ByteGenerator) {
-            byte diff = (byte) (wideningCount * (byte) Math.pow(2, wideningCount - 1) * (byte) ((range.maxLong() - range.minLong()) * widenProportion / 2));
+            byte diff = (byte) (wideningCount * (byte) Math.pow(2, wideningCount - 1) * (byte) ((range.maxByte() - range.minByte()) * widenProportion / 2));
             rst = new InRange() {
 
                 @Override
@@ -561,7 +561,7 @@ public class InRangeFactory {
                 }
             };
         } else if (gen instanceof CharacterGenerator) {
-            char diff = (char) (wideningCount * (char) Math.pow(2, wideningCount - 1) * (char) ((range.maxLong() - range.minLong()) * widenProportion / 2));
+            char diff = (char) (wideningCount * (char) Math.pow(2, wideningCount - 1) * (char) ((range.maxChar() - range.minChar()) * widenProportion / 2));
             rst = new InRange() {
 
                 @Override
@@ -678,7 +678,7 @@ public class InRangeFactory {
                 }
             };
         } else if (gen instanceof FloatGenerator) {
-            float diff = (wideningCount * (float) Math.pow(2, wideningCount - 1) * (float) ((range.maxLong() - range.minLong()) * widenProportion / 2));
+            float diff = (wideningCount * (float) Math.pow(2, wideningCount - 1) * (float) ((range.maxFloat() - range.minFloat()) * widenProportion / 2));
             rst = new InRange() {
 
                 @Override
@@ -799,7 +799,7 @@ public class InRangeFactory {
                 }
             };
         } else if (gen instanceof DoubleGenerator) {
-            double diff = (wideningCount * (double) Math.pow(2, wideningCount - 1) * (double) ((range.maxLong() - range.minLong()) * widenProportion / 2));
+            double diff = (wideningCount * (double) Math.pow(2, wideningCount - 1) * (double) ((range.maxDouble() - range.minDouble()) * widenProportion / 2));
             rst = new InRange() {
 
                 @Override

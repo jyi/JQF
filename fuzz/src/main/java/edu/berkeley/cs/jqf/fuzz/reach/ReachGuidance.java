@@ -161,13 +161,8 @@ public class ReachGuidance extends ZestGuidance {
     public boolean isDiffOutFound() {
         return this.diffOutFound;
     }
-
-    public void handleResult() {
-        // TODO: compute the difference between the two xml files
-        String logDir = System.getProperty("jqf.ei.logDir");
-        String inputID = System.getProperty("jqf.ei.inputID");
-        List<MethodInfo> methods = DumpUtil.getInterestingMethods();
-        if(methods==null||methods.isEmpty()) return;
+    public void addDifferences(String logDir, String inputID, BigList<Double> currentStateDiff, List<MethodInfo> methods){
+        if(methods==null) return;
         for(MethodInfo m: methods){
             Path orgD = Paths.get(logDir + File.separator + "ORG", inputID, m.getMethodName()+".xml");
             Path patchD = Paths.get(logDir + File.separator + "PATCH", inputID, m.getMethodName()+".xml");
@@ -179,7 +174,7 @@ public class ReachGuidance extends ZestGuidance {
                 String orgContents = new String(Files.readAllBytes(orgD));
                 String patchContents = new String(Files.readAllBytes(patchD));
                 Diff myDiff = DiffBuilder.compare(orgContents).withTest(patchContents).build();
-                BigList<Double> currentStateDiff = new BigList<>();
+
                 for (Difference diff : myDiff.getDifferences()) {
                     double distance = 0d;
                     Comparison cmp = diff.getComparison();
@@ -206,12 +201,24 @@ public class ReachGuidance extends ZestGuidance {
                 }
                 // TODO: we decide whether to keep the current input
                 // We can save the current input by calling saveCurrentInput method
-                if(shouldKeep(currentStateDiff)){
-                    saveInputs();
-                }
+
             } catch (IOException e) {
                 e.printStackTrace();
             }
+        }
+    }
+    public void handleResult() {
+        // TODO: compute the difference between the two xml files
+        String logDir = System.getProperty("jqf.ei.logDir");
+        String inputID = System.getProperty("jqf.ei.inputID");
+        List<MethodInfo> callers = DumpUtil.getCallers();
+        List<MethodInfo> callees = DumpUtil.getCallees();
+        if(callers==null&&callees==null||callers.isEmpty()&&callees.isEmpty()) return;
+        BigList<Double> currentStateDiff = new BigList<>();
+        addDifferences(logDir,inputID,currentStateDiff,callers);
+        addDifferences(logDir,inputID,currentStateDiff,callees);
+        if(shouldKeep(currentStateDiff)){
+            saveInputs();
         }
     }
 
