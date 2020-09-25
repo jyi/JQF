@@ -197,6 +197,7 @@ public class ZestGuidance implements Guidance {
     /** Number of conditional jumps since last run was started. */
     protected long branchCount;
     protected String curSaveFileName;
+    protected boolean timeOutOccurred = false;
 
     /**
      * Creates a new guidance instance.
@@ -558,7 +559,7 @@ public class ZestGuidance implements Guidance {
             Input parent = savedInputs.get(currentParentInputIdx);
 
             // Fuzz it to get a new input
-            // infoLog("Mutating input: %s", parent.desc);
+            infoLog("Mutating input: %s", parent.desc);
             currentInput = parent.fuzz(random);
             numChildrenGeneratedForCurrentParentInput++;
 
@@ -572,25 +573,27 @@ public class ZestGuidance implements Guidance {
             this.branchCount = 0;
         }
 
-
         return createParameterStream();
     }
 
     @Override
     public boolean hasInput() {
-      Date now = new Date();
-      long elapsedMilliseconds = now.getTime() - startTime.getTime();
-      if (EXIT_ON_CRASH && uniqueFailures.size() >= 1) {
-          // exit
-          return false;
-      }
-      if (EXIT_ON_PLATEAU && isPlateauReached) {
-          return false;
-      }
-      if (USE_CORPUS_SIZE && this.curCorpusSize > this.maxCorpusSize) {
-          return false;
-      }
-      return elapsedMilliseconds < maxDurationMillis;
+        Date now = new Date();
+        long elapsedMilliseconds = now.getTime() - startTime.getTime();
+
+        if (timeOutOccurred) return false;
+
+        if (EXIT_ON_CRASH && uniqueFailures.size() >= 1) {
+            // exit
+            return false;
+        }
+        if (EXIT_ON_PLATEAU && isPlateauReached) {
+            return false;
+        }
+        if (USE_CORPUS_SIZE && this.curCorpusSize > this.maxCorpusSize) {
+            return false;
+        }
+        return elapsedMilliseconds < maxDurationMillis;
     }
 
     @Override
@@ -883,15 +886,17 @@ public class ZestGuidance implements Guidance {
         // Collect totalCoverage
         runCoverage.handleEvent(e);
         // Check for possible timeouts every so often
-        if (this.singleRunTimeoutMillis > 0 &&
-                this.runStart != null && (++this.branchCount) % 10_000 == 0) {
+        if (this.singleRunTimeoutMillis > 0
+                // && (++this.branchCount) % 10_000 == 0
+                && this.runStart != null) {
             long elapsed = new Date().getTime() - runStart.getTime();
             if (elapsed > this.singleRunTimeoutMillis) {
+                timeOutOccurred = true;
+                System.err.println("timeout occurred");
                 throw new TimeoutException(elapsed, this.singleRunTimeoutMillis);
             }
         }
     }
-
 
     /**
      * Returns a reference to the coverage statistics.

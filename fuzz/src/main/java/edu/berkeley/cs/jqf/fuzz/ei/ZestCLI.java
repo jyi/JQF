@@ -91,7 +91,7 @@ public class ZestCLI implements Runnable {
 
     @Option(names = { "--max-corpus-size" },
             description = "Max Corpus size")
-    int maxCorpusSize = 10;
+    int maxCorpusSize = -1; // negative to denote that the option is not used
 
     @Option(names = { "--timeout" },
             description = "Timeout")

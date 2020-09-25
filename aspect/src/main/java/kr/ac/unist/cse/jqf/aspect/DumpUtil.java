@@ -1,5 +1,6 @@
 package kr.ac.unist.cse.jqf.aspect;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.thoughtworks.xstream.XStream;
@@ -9,14 +10,21 @@ import org.aspectj.lang.Signature;
 
 public class DumpUtil {
 
-    private static List<MethodInfo> methods;
+    private static List<MethodInfo> callers;
+    private static List<MethodInfo> callees = new ArrayList<>();
+    private static boolean isTheTargetHit = false;
+    private static boolean isCallChainReady = false;
+    private static boolean isTheTargetReturned = false;
 
-    public static List<MethodInfo> getInterestingMethods() {
-        return methods;
+    public static List<MethodInfo> getCallers() {
+        return callers;
+    }
+    public static List<MethodInfo> getCallees() {
+        return callees;
     }
 
-    public static void setInterestingMethods(List<MethodInfo> methods) {
-        DumpUtil.methods = methods;
+    public static void setCallers(List<MethodInfo> callers) {
+        DumpUtil.callers = callers;
     }
 
     public static void dump(Object returnVal, JoinPoint target) {
@@ -29,12 +37,43 @@ public class DumpUtil {
 
     public static boolean isInteresting(JoinPoint jp) {
         Signature signature = jp.getSignature();
-        if(methods != null) {
-            for (MethodInfo method : methods) {
+        if(callers != null) {
+            for (MethodInfo method : callers) {
                 if (method.equals(new MethodInfo(signature.getDeclaringTypeName(), signature.getName())))
                     return true;
             }
         }
-            return false;
+        if(callees !=null){
+            for (MethodInfo method : callees) {
+                if (method.equals(new MethodInfo(signature.getDeclaringTypeName(), signature.getName())))
+                    return true;
+            }
+        }
+        return false;
+    }
+
+    public static void addCallee(JoinPoint jp) {
+        Signature signature = jp.getSignature();
+        MethodInfo m = new MethodInfo(signature.getDeclaringTypeName(),signature.getName());
+        setTargetHit(false);
+        if(callees.contains(m)) return;
+        callees.add(m);
+
+    }
+
+    public static boolean isTheTargetHit() {
+        return DumpUtil.isTheTargetHit;
+    }
+
+    public static void setTargetHit(boolean val) {
+        DumpUtil.isTheTargetHit = val;
+    }
+
+    public static boolean isCallChainReady() {
+        return DumpUtil.isCallChainReady;
+    }
+
+    public static boolean isTheTargetReturned() {
+        return DumpUtil.isTheTargetReturned;
     }
 }
