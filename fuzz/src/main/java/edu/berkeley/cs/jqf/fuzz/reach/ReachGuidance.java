@@ -304,6 +304,8 @@ public class ReachGuidance extends ZestGuidance {
         Date now = new Date();
         long elapsedMilliseconds = now.getTime() - startTime.getTime();
 
+        if (timeOutOccurred) return false;
+
         if (EXIT_ON_PLATEAU && isPlateauReached) {
             System.out.println("stop because plateau is reached");
             return false;
