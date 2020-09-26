@@ -39,7 +39,7 @@ public class Log {
         // return true when outputs are equal to each other
         public static boolean hasEqualOutput() {
             if (outputForOrg == null || outputForPatch == null) return false;
-            else {
+            if(outputForOrg.contains("IGNORE_OUTPUT")) return true;
                 try{
                     double delta = Double.parseDouble(System.getProperty("jqf.ei.delta"));
                     if(Math.abs(Double.parseDouble(outputForOrg) - Double.parseDouble(outputForPatch)) > delta){
@@ -50,7 +50,7 @@ public class Log {
                 }
                 return outputForOrg.equals(outputForPatch);
             }
-        }
+
     }
 
     public static boolean logOutIfCalled = false;
