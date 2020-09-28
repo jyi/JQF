@@ -45,6 +45,7 @@ import java.util.stream.Collectors;
 import com.pholser.junit.quickcheck.generator.GenerationStatus;
 import com.pholser.junit.quickcheck.generator.Generator;
 import com.pholser.junit.quickcheck.generator.InRange;
+import com.pholser.junit.quickcheck.generator.java.lang.DoubleGenerator;
 import com.pholser.junit.quickcheck.generator.java.lang.IntegerGenerator;
 import com.pholser.junit.quickcheck.internal.ParameterTypeContext;
 import com.pholser.junit.quickcheck.internal.generator.CompositeGenerator;
@@ -576,6 +577,8 @@ public class FuzzStatement extends Statement {
             m.invoke(gen, newRange);
             if (gen instanceof IntegerGenerator) {
                 System.out.println("[" + newRange.minInt() + ", " + newRange.maxInt() + "]");
+            } else if (gen instanceof DoubleGenerator) {
+                System.out.println("[" + newRange.minDouble() + ", " + newRange.maxDouble() + "]");
             }
         } catch (NoSuchMethodException e) {
             System.err.println(String.format("Class %s does not have configure(InRange)", gen.getClass()));
