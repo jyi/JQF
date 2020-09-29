@@ -87,6 +87,7 @@ public class PropagationTest {
 //                "--max-corpus-size", "15",
                 "--widening-plateau-threshold", "10",
                 "--verbose",
+                "--duration", "30s",
                 //"--delta", "1e-6",
                 "-o", "../src/test/resources/fuzz-results-patch",
                 "../src/test/resources/patches/Patch27/Math2b/target/test-classes:../src/test/resources/patches/Patch27/Math2b/target/classes:../../aspect/tracing.jar",
@@ -257,11 +258,52 @@ public class PropagationTest {
             "--seed", "885441",
             //"--max-corpus-size", "15",
             //"--plateau-threshold", "10",
+            "--widening-plateau-threshold", "10",
             "--verbose",
+            "--duration", "30s",
             "--delta", "0",
             "-o", "../src/test/resources/fuzz-results-patch",
             "../src/test/resources/patches/Patch156/Math7b/target/test-classes:../src/test/resources/patches/Patch156/Math7b/target/classes",
             "../src/test/resources/patches/Patch156/Math7p/target/test-classes:../src/test/resources/patches/Patch156/Math7p/target/classes",
             "org.apache.commons.math3.ode.nonstiff.JQF_DormandPrince853IntegratorTest", "testEventsScheduling"});
 }
+    @Test
+    public void runZestCLI2_Time16() throws IOException {
+        // turn on the following to see instrumentation log
+        // System.setProperty("janala.verbose", "true");
+        // String currentDir = System.getProperty("user.dir");
+        System.setProperty("org.aspectj.weaver.loadtime.configuration", "aspect/aop.xml");
+        // System.setProperty("org.aspectj.weaver.loadtime.configuration", "file:/home/elkhan/Remote/poracle/modules/JQF/aspect/aop.xml");
+
+        Path fuzz_results_patch_dir = FileSystems.getDefault().getPath("..", "src", "test", "resources", "fuzz-results-patch");
+        Path log_dir = FileSystems.getDefault().getPath("..", "src", "test", "resources", "log");
+
+        if (fuzz_results_patch_dir.toFile().exists()) {
+            Files.walk(fuzz_results_patch_dir)
+                    .sorted(Comparator.reverseOrder())
+                    .map(Path::toFile)
+                    .forEach(File::delete);
+        }
+        if (log_dir.toFile().exists()) {
+            Files.walk(log_dir)
+                    .sorted(Comparator.reverseOrder())
+                    .map(Path::toFile)
+                    .forEach(File::delete);
+        }
+
+        ZestCLI2.main(new String[] {
+                "--target", "org/joda/time/format/DateTimeFormatter.java:710",
+                "--save-all-inputs",
+                "--logdir", "../src/test/resources/log",
+                "--seed", "885441",
+                //"--max-corpus-size", "15",
+                "--widening-plateau-threshold", "10",
+                "--verbose",
+                "--duration", "30s",
+                "--delta", "0",
+                "-o", "../src/test/resources/fuzz-results-patch",
+                "../src/test/resources/patches/timebug16/Time16b/build/tests:../src/test/resources/patches/timebug16/Time16b/build/classes",
+                "../src/test/resources/patches/timebug16/Time16p/build/tests:../src/test/resources/patches/timebug16/Time16p/build/classes",
+                "org.joda.time.format.JQF_TestDateTimeFormatter", "testParseInto_monthOnly_baseStartYear"});
+    }
 }

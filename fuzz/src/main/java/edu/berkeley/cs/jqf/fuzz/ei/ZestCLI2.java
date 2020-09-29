@@ -91,7 +91,7 @@ public class ZestCLI2 implements Runnable {
 
     @Option(names = { "--timeout" },
             description = "Timeout")
-    int timeout = 10;
+    int timeout = 3600;
 
     @Option(names = { "--delta" },
             description = "Delta")
