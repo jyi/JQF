@@ -14,15 +14,18 @@ public aspect Tracing {
                  System.out.println("< target method is called");
                  System.out.println(thisJoinPoint.getTarget().getClass());
                  System.out.println("Method " + thisJoinPoint.toString() + " is called ");
-                 DumpUtil.dump(o, thisJoinPoint);
-               }
+                 DumpUtil.dumpAtExit(o, thisJoinPoint);
+            }
+            // TODO: check whether the target method exits.
+            // If so, call DumpUtil.setTargetHit(false).
+            if(DumpUtil.isTargetFunction(thisJoinPoint)&&DumpUtil.isTheTargetHit())
+                    DumpUtil.setTargetHit(false);
         }
 
         before (): methodPC() {
-            if (!DumpUtil.isCallChainReady() &&
-                DumpUtil.isTheTargetHit() &&
-                !DumpUtil.isTheTargetReturned()) {
-                DumpUtil.addCallee(thisJoinPoint);
+            if (DumpUtil.isTheTargetHit()) {
+                if(DumpUtil.addCallee(thisJoinPoint))
+                    DumpUtil.dumpAtEntry(thisJoinPoint);
             }
         }
 }

@@ -72,6 +72,7 @@ public class ReachGuidance extends ZestGuidance {
     private BigList<BigList<Double>> stateDiffCoverage = new BigList<>();
     private File notIgnoreDirectory;
     private boolean diffOutFound;
+    private static boolean valid = false;
 
     protected boolean USE_WIDENING_PLATEAU_THRESHOLD =
             System.getProperty("jqf.ei.WIDENING_PLATEAU_THRESHOLD") != null?
@@ -134,6 +135,10 @@ public class ReachGuidance extends ZestGuidance {
             stateDiffCoverage.add(currentStateDiff);
             return true;
         }
+        if(currentStateDiff.size()>last.size()) {
+            stateDiffCoverage.add(currentStateDiff);
+            return true;
+        }
 
         if (TargetCoverage.isTargetHit() && Log.getActualCount() > 0) {
            TargetCoverage.resetHit();
@@ -152,9 +157,8 @@ public class ReachGuidance extends ZestGuidance {
     }
 
     public void saveInputs() {
-        boolean valid = true;
-        Set<Object> responsibilities = computeResponsibilities(valid);
-        String reason = "+valid";
+        Set<Object> responsibilities = computeResponsibilities(ReachGuidance.valid);
+        String reason = "+poracle";
         GuidanceException.wrap(() -> saveCurrentInput(responsibilities, reason));
     }
 
@@ -376,7 +380,7 @@ public class ReachGuidance extends ZestGuidance {
         this.numTrials++;
 
         boolean valid = result == Result.SUCCESS;
-
+        ReachGuidance.valid = valid;
         if (valid) {
             // Increment valid counter
             numValid++;

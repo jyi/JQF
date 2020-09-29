@@ -10,10 +10,10 @@ import org.aspectj.lang.Signature;
 
 public class DumpUtil {
 
+    // the last item of callers is the target method
     private static List<MethodInfo> callers;
-    private static List<MethodInfo> callees = new ArrayList<>();
+    private static final List<MethodInfo> callees = new ArrayList<>();
     private static boolean isTheTargetHit = false;
-    private static boolean isCallChainReady = false;
     private static boolean isTheTargetReturned = false;
 
     public static List<MethodInfo> getCallers() {
@@ -27,7 +27,8 @@ public class DumpUtil {
         DumpUtil.callers = callers;
     }
 
-    public static void dump(Object returnVal, JoinPoint target) {
+    // dump at an exit point
+    public static void dumpAtExit(Object returnVal, JoinPoint target) {
         XStream stream = new XStream();
         String xml = stream.toXML(target.getTarget());
         if(returnVal!=null)
@@ -35,29 +36,44 @@ public class DumpUtil {
         Log.writeToFile(xml,target.getSignature().getName()+".xml");
     }
 
+    // dump at an entry point
+    public static void dumpAtEntry(JoinPoint target) {
+        Object[] args = target.getArgs();
+
+        XStream stream = new XStream();
+        String xml = stream.toXML(target.getTarget());
+        if(args != null) {
+            String argsXml = stream.toXML(args);
+            xml = String.format("<values>\n<args>\n%s\n</args>\n%s\n</values>", argsXml, xml);
+        }
+        Log.writeToFile(xml,target.getSignature().getName()+".xml");
+    }
+
     public static boolean isInteresting(JoinPoint jp) {
         Signature signature = jp.getSignature();
-        if(callers != null) {
+        if (callers != null) {
             for (MethodInfo method : callers) {
-                if (method.equals(new MethodInfo(signature.getDeclaringTypeName(), signature.getName())))
-                    return true;
-            }
-        }
-        if(callees !=null){
-            for (MethodInfo method : callees) {
                 if (method.equals(new MethodInfo(signature.getDeclaringTypeName(), signature.getName())))
                     return true;
             }
         }
         return false;
     }
-
-    public static void addCallee(JoinPoint jp) {
+    public static boolean isTargetFunction(JoinPoint jp){
+        if(callers==null) return false;
         Signature signature = jp.getSignature();
         MethodInfo m = new MethodInfo(signature.getDeclaringTypeName(),signature.getName());
-        setTargetHit(false);
-        if(callees.contains(m)) return;
+        MethodInfo targetInfo = callers.get(callers.size() - 1);
+        if(m.equals(targetInfo)) return  true;
+        return false;
+    }
+    public static boolean addCallee(JoinPoint jp) {
+        Signature signature = jp.getSignature();
+        MethodInfo m = new MethodInfo(signature.getDeclaringTypeName(),signature.getName());
+        if(callees.contains(m)) return true;
+        if(callees.size()>5) return false;
         callees.add(m);
+        return true;
 
     }
 
@@ -67,10 +83,6 @@ public class DumpUtil {
 
     public static void setTargetHit(boolean val) {
         DumpUtil.isTheTargetHit = val;
-    }
-
-    public static boolean isCallChainReady() {
-        return DumpUtil.isCallChainReady;
     }
 
     public static boolean isTheTargetReturned() {
