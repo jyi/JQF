@@ -15,11 +15,12 @@ public aspect Tracing {
                  System.out.println(thisJoinPoint.getTarget().getClass());
                  System.out.println("Method " + thisJoinPoint.toString() + " is called ");
                  DumpUtil.dumpAtExit(o, thisJoinPoint);
+                if(DumpUtil.isTargetFunction(thisJoinPoint)&&DumpUtil.isTheTargetHit())
+                    DumpUtil.setTargetHit(false);
             }
             // TODO: check whether the target method exits.
             // If so, call DumpUtil.setTargetHit(false).
-            if(DumpUtil.isTargetFunction(thisJoinPoint)&&DumpUtil.isTheTargetHit())
-                    DumpUtil.setTargetHit(false);
+
         }
 
         before (): methodPC() {

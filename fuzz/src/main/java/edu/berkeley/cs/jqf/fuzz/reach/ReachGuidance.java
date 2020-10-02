@@ -135,11 +135,6 @@ public class ReachGuidance extends ZestGuidance {
             stateDiffCoverage.add(currentStateDiff);
             return true;
         }
-        if(currentStateDiff.size()>last.size()) {
-            stateDiffCoverage.add(currentStateDiff);
-            return true;
-        }
-
         if (TargetCoverage.isTargetHit() && Log.getActualCount() > 0) {
            TargetCoverage.resetHit();
            return true;

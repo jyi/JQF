@@ -63,8 +63,9 @@ public class DumpUtil {
         if(callers==null) return false;
         Signature signature = jp.getSignature();
         MethodInfo m = new MethodInfo(signature.getDeclaringTypeName(),signature.getName());
-        MethodInfo targetInfo = callers.get(callers.size() - 1);
-        if(m.equals(targetInfo)) return  true;
+        MethodInfo targetInfo = callers.get(0);
+        if(m.equals(targetInfo))
+            return  true;
         return false;
     }
     public static boolean addCallee(JoinPoint jp) {
