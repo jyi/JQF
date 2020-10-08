@@ -11,12 +11,12 @@ public aspect Tracing {
         after () returning (Object o): methodPC() {
             if (DumpUtil.isInteresting(thisJoinPoint) &&
                 !thisJoinPoint.getTarget().getClass().toString().contains("JQF_")) {
-                 System.out.println("< target method is called");
-                 System.out.println(thisJoinPoint.getTarget().getClass());
-                 System.out.println("Method " + thisJoinPoint.toString() + " is called ");
-                 DumpUtil.dumpAtExit(o, thisJoinPoint);
-                if(DumpUtil.isTargetFunction(thisJoinPoint)&&DumpUtil.isTheTargetHit())
-                    DumpUtil.setTargetHit(false);
+                System.out.println("< target method is called");
+                System.out.println(thisJoinPoint.getTarget().getClass());
+                System.out.println("Method " + thisJoinPoint.toString() + " is called ");
+                DumpUtil.dumpAtExit(o, thisJoinPoint);
+                if (DumpUtil.isTargetFunction(thisJoinPoint))
+                    DumpUtil.setTargetReturned(true);
             }
             // TODO: check whether the target method exits.
             // If so, call DumpUtil.setTargetHit(false).
@@ -24,7 +24,10 @@ public aspect Tracing {
         }
 
         before (): methodPC() {
-            if (DumpUtil.isTheTargetHit()) {
+            if (DumpUtil.isTargetFunction(thisJoinPoint))
+                DumpUtil.setTargetReturned(false);
+
+            if (!DumpUtil.isTheTargetReturned() && DumpUtil.isTheTargetHit()) {
                 if(DumpUtil.addCallee(thisJoinPoint))
                     DumpUtil.dumpAtEntry(thisJoinPoint);
             }

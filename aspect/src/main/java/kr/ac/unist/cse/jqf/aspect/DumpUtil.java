@@ -31,9 +31,11 @@ public class DumpUtil {
     public static void dumpAtExit(Object returnVal, JoinPoint target) {
         XStream stream = new XStream();
         String xml = stream.toXML(target.getTarget());
+        Signature signature = target.getSignature();
+        MethodInfo m = new MethodInfo(signature.getDeclaringTypeName(),signature.getName());
         if(returnVal!=null)
             xml = String.format("<values>\n<return>\n%s\n</return>\n%s\n</values>", returnVal.toString(), xml);
-        Log.writeToFile(xml,target.getSignature().getName()+".xml");
+            Log.writeToFile(xml,target.getSignature().getName()+"Exit"+".xml");
     }
 
     // dump at an entry point
@@ -46,13 +48,19 @@ public class DumpUtil {
             String argsXml = stream.toXML(args);
             xml = String.format("<values>\n<args>\n%s\n</args>\n%s\n</values>", argsXml, xml);
         }
-        Log.writeToFile(xml,target.getSignature().getName()+".xml");
+        Log.writeToFile(xml,target.getSignature().getName()+"Entry"+".xml");
     }
 
     public static boolean isInteresting(JoinPoint jp) {
         Signature signature = jp.getSignature();
         if (callers != null) {
             for (MethodInfo method : callers) {
+                if (method.equals(new MethodInfo(signature.getDeclaringTypeName(), signature.getName())))
+                    return true;
+            }
+        }
+        if (callees != null) {
+            for (MethodInfo method : callees) {
                 if (method.equals(new MethodInfo(signature.getDeclaringTypeName(), signature.getName())))
                     return true;
             }
@@ -68,14 +76,15 @@ public class DumpUtil {
             return  true;
         return false;
     }
+
+    // returns true if jp is a callee of the target function
     public static boolean addCallee(JoinPoint jp) {
         Signature signature = jp.getSignature();
         MethodInfo m = new MethodInfo(signature.getDeclaringTypeName(),signature.getName());
         if(callees.contains(m)) return true;
-        if(callees.size()>5) return false;
+        if(callees.size() >= 1) return false;
         callees.add(m);
         return true;
-
     }
 
     public static boolean isTheTargetHit() {
@@ -85,7 +94,7 @@ public class DumpUtil {
     public static void setTargetHit(boolean val) {
         DumpUtil.isTheTargetHit = val;
     }
-
+    public static void setTargetReturned(boolean b){ isTheTargetReturned=b; }
     public static boolean isTheTargetReturned() {
         return DumpUtil.isTheTargetReturned;
     }
