@@ -70,10 +70,12 @@ public class ReachGuidance extends ZestGuidance {
     private final List<Input<?>> inputs = new ArrayList<>();
     private boolean outputCmpResult=true;
     private BigList<BigList<Double>> stateDiffCoverage = new BigList<>();
+    private static List<MethodInfo> interestingCallers =null;
+    private static boolean isInterestingCallerFound = false;
+    private static boolean isInterestingCalleeExit = false;
     private File notIgnoreDirectory;
     private boolean diffOutFound;
     private static boolean valid = false;
-
     protected boolean USE_WIDENING_PLATEAU_THRESHOLD =
             System.getProperty("jqf.ei.WIDENING_PLATEAU_THRESHOLD") != null?
                     true : false;
@@ -127,28 +129,21 @@ public class ReachGuidance extends ZestGuidance {
         // TODO: try with various options.
         // Currently, we accumulate distances
         BigList<Double> last = stateDiffCoverage.peekLast();
-        double distOfLast = totalDistance(last);
-        double distOfCur = totalDistance(currentStateDiff);
+        double distOfLast = last.getLast();
+        double distOfCur = currentStateDiff.getLast();
         System.out.println("distOfLast = " + distOfLast);
         System.out.println("distOfCur = " + distOfCur);
         if (distOfLast < distOfCur) {
             stateDiffCoverage.add(currentStateDiff);
             return true;
         }
-        if (TargetCoverage.isTargetHit() && Log.getActualCount() > 0) {
-           TargetCoverage.resetHit();
-           return true;
-        }
+    //    TargetCoverage.resetHit();
+//        if (TargetCoverage.isTargetHit() && Log.getActualCount() > 0) {
+//
+//           return true;
+//        }
 
         return false;
-    }
-
-    private double totalDistance(BigList<Double> list) {
-        int sum = 0;
-        for (double d : list) {
-            sum += d;
-        }
-        return sum;
     }
 
     public void saveInputs() {
@@ -161,12 +156,13 @@ public class ReachGuidance extends ZestGuidance {
         return this.diffOutFound;
     }
 
-
-    public void addDifferences(String logDir, String inputID, BigList<Double> currentStateDiff, List<MethodInfo> methods){
-        if(methods==null) return;
-        for(MethodInfo m: methods){
-            Path orgD = Paths.get(logDir + File.separator + "ORG", inputID, m.getMethodName()+".xml");
-            Path patchD = Paths.get(logDir + File.separator + "PATCH", inputID, m.getMethodName()+".xml");
+    public int compareDifferences(String logDir, String inputID, BigList<Double> currentStateDiff,
+                                   List<MethodInfo> methods, String suffix){
+        if(methods==null) return -1;
+        for(int i = methods.size()-1; i>=0;i--){
+            MethodInfo m  = methods.get(i);
+            Path orgD = Paths.get(logDir + File.separator + "ORG", inputID, m.getMethodName()+suffix+".xml");
+            Path patchD = Paths.get(logDir + File.separator + "PATCH", inputID, m.getMethodName()+suffix+".xml");
             if(!Files.exists(orgD)||!Files.exists(patchD)){
                 System.out.println("No matching method exists");
                 continue;
@@ -175,9 +171,9 @@ public class ReachGuidance extends ZestGuidance {
                 String orgContents = new String(Files.readAllBytes(orgD));
                 String patchContents = new String(Files.readAllBytes(patchD));
                 Diff myDiff = DiffBuilder.compare(orgContents).withTest(patchContents).build();
-
+                double distance = 0d;
                 for (Difference diff : myDiff.getDifferences()) {
-                    double distance = 0d;
+
                     Comparison cmp = diff.getComparison();
 
                     // TODO: this is temporary code to ignore random variables
@@ -194,12 +190,19 @@ public class ReachGuidance extends ZestGuidance {
                         String s1 = (String) v1;
                         String s2 = (String) v2;
                         LevenshteinDistance levenshteinDistance = new LevenshteinDistance();
-                        distance = levenshteinDistance.apply(s1,s2);
+                        distance += levenshteinDistance.apply(s1,s2);
                     }else {
-                        distance = Math.abs(val1 - val2);
+                        distance += Math.abs(val1 - val2);
                     }
-                    currentStateDiff.add(distance);
+
                 }
+                    if(distance>0) {
+                        currentStateDiff.add(distance);
+                        if (shouldKeep(currentStateDiff)) {
+                            saveInputs();
+                        }
+                        return i;
+                    }
                 // TODO: we decide whether to keep the current input
                 // We can save the current input by calling saveCurrentInput method
 
@@ -207,19 +210,28 @@ public class ReachGuidance extends ZestGuidance {
                 e.printStackTrace();
             }
         }
+        return -1;
     }
     public void handleResult() {
         // TODO: compute the difference between the two xml files
         String logDir = System.getProperty("jqf.ei.logDir");
         String inputID = System.getProperty("jqf.ei.inputID");
-        List<MethodInfo> callers = DumpUtil.getCallers();
         List<MethodInfo> callees = DumpUtil.getCallees();
-        if((callers==null&&callees==null)) return;
+        if(interestingCallers==null)
+            interestingCallers = DumpUtil.getCallers();
+        if((interestingCallers==null&&callees==null)) return;
         BigList<Double> currentStateDiff = new BigList<>();
-        addDifferences(logDir,inputID,currentStateDiff,callers);
-        addDifferences(logDir,inputID,currentStateDiff,callees);
-        if(shouldKeep(currentStateDiff)){
-            saveInputs();
+        int firstPos = compareDifferences(logDir,inputID,currentStateDiff,interestingCallers, "Exit");
+        if(firstPos!=-1) {
+            interestingCallers = interestingCallers.subList(firstPos, interestingCallers.size());
+            isInterestingCallerFound = true;
+        }
+        else if(!isInterestingCallerFound) {
+            firstPos = compareDifferences(logDir, inputID, currentStateDiff, callees, "Exit");
+            if (firstPos == -1)
+                firstPos = compareDifferences(logDir, inputID, currentStateDiff, callees, "Entry");
+            else
+                isInterestingCalleeExit = true;
         }
     }
 

@@ -65,6 +65,7 @@ import edu.berkeley.cs.jqf.fuzz.Fuzz;
 import edu.berkeley.cs.jqf.fuzz.junit.GuidedFuzzing;
 import edu.berkeley.cs.jqf.fuzz.junit.TrialRunner;
 import kr.ac.unist.cse.jqf.Log;
+import kr.ac.unist.cse.jqf.aspect.DumpUtil;
 import kr.ac.unist.cse.jqf.fuzz.generator.InRangeFactory;
 import org.junit.AssumptionViolatedException;
 import org.junit.runners.model.FrameworkMethod;
@@ -366,9 +367,9 @@ public class FuzzStatement extends Statement {
                     if (compareOutput()) {
                         // we call the original version again
                         // we should retrieve the class loader for the buggy version
-                        // TODO: replace the following with reproGuidance
                         run(testClass.getName(), method.getName(), ZestCLI2.loaderForOrg,
                                 reproGuidance, System.out);
+                        DumpUtil.setTargetHit(false);
                     }
 
                     guidance.handleResult();

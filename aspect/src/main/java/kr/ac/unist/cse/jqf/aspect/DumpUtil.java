@@ -1,6 +1,7 @@
 package kr.ac.unist.cse.jqf.aspect;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import com.thoughtworks.xstream.XStream;
@@ -30,20 +31,31 @@ public class DumpUtil {
     // dump at an exit point
     public static void dumpAtExit(Object returnVal, JoinPoint target) {
         XStream stream = new XStream();
-        String xml = stream.toXML(target.getTarget());
+        String xml = null;
+        if(target.getTarget()==null)
+            xml = stream.toXML(target.getStaticPart());
+        else
+            xml = stream.toXML(target.getTarget());
         Signature signature = target.getSignature();
         MethodInfo m = new MethodInfo(signature.getDeclaringTypeName(),signature.getName());
         if(returnVal!=null)
-            xml = String.format("<values>\n<return>\n%s\n</return>\n%s\n</values>", returnVal.toString(), xml);
-            Log.writeToFile(xml,target.getSignature().getName()+"Exit"+".xml");
+            if(returnVal.getClass().isArray())
+                xml = String.format("<values>\n<return>\n%s\n</return>\n%s\n</values>", returnVal.toString(), xml);
+            else
+                xml = String.format("<values>\n<return>\n%s\n</return>\n%s\n</values>", returnVal.toString(), xml);
+
+        Log.writeToFile(xml,target.getSignature().getName()+"Exit"+".xml");
     }
 
     // dump at an entry point
     public static void dumpAtEntry(JoinPoint target) {
         Object[] args = target.getArgs();
-
         XStream stream = new XStream();
-        String xml = stream.toXML(target.getTarget());
+        String xml = null;
+        if(target.getTarget()==null)
+            xml = stream.toXML(target.getStaticPart());
+        else
+            xml = stream.toXML(target.getTarget());
         if(args != null) {
             String argsXml = stream.toXML(args);
             xml = String.format("<values>\n<args>\n%s\n</args>\n%s\n</values>", argsXml, xml);
