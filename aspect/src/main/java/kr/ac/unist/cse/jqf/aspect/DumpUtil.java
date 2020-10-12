@@ -39,11 +39,7 @@ public class DumpUtil {
         Signature signature = target.getSignature();
         MethodInfo m = new MethodInfo(signature.getDeclaringTypeName(),signature.getName());
         if(returnVal!=null)
-            if(returnVal.getClass().isArray())
-                xml = String.format("<values>\n<return>\n%s\n</return>\n%s\n</values>", returnVal.toString(), xml);
-            else
-                xml = String.format("<values>\n<return>\n%s\n</return>\n%s\n</values>", returnVal.toString(), xml);
-
+                xml = String.format("<values>\n<return>\n%s\n</return>\n%s\n</values>", stream.toXML(returnVal), xml);
         Log.writeToFile(xml,target.getSignature().getName()+"Exit"+".xml");
     }
 
@@ -79,6 +75,7 @@ public class DumpUtil {
         }
         return false;
     }
+
     public static boolean isTargetFunction(JoinPoint jp){
         if(callers==null) return false;
         Signature signature = jp.getSignature();
