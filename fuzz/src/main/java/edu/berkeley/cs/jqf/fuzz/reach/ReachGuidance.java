@@ -68,11 +68,8 @@ public class ReachGuidance extends ZestGuidance {
     private CFGAnalysis cfga = null;
 
     private final List<Input<?>> inputs = new ArrayList<>();
-    private boolean outputCmpResult=true;
+    private boolean isDiffOutFound = false;
     private BigList<BigList<Double>> stateDiffCoverage = new BigList<>();
-    private static List<MethodInfo> interestingCallers =null;
-    private static boolean isInterestingCallerFound = false;
-    private static boolean isInterestingCalleeExit = false;
     private File notIgnoreDirectory;
     private boolean diffOutFound;
     private static boolean valid = false;
@@ -156,10 +153,12 @@ public class ReachGuidance extends ZestGuidance {
         return this.diffOutFound;
     }
 
-    public int compareDifferences(String logDir, String inputID, BigList<Double> currentStateDiff,
-                                   List<MethodInfo> methods, String suffix){
-        if(methods==null) return -1;
-        for(int i = methods.size()-1; i>=0;i--){
+    private double compareDifferences(String logDir, String inputID, BigList<Double> currentStateDiff,
+                                  List<MethodInfo> methods, String suffix) {
+        if (methods == null) return 0;
+
+        double distance = 0d;
+        for (int i = methods.size() - 1; i >= 0; i--) {
             MethodInfo m  = methods.get(i);
             Path orgD = Paths.get(logDir + File.separator + "ORG", inputID, m.getMethodName()+suffix+".xml");
             Path patchD = Paths.get(logDir + File.separator + "PATCH", inputID, m.getMethodName()+suffix+".xml");
@@ -171,7 +170,6 @@ public class ReachGuidance extends ZestGuidance {
                 String orgContents = new String(Files.readAllBytes(orgD));
                 String patchContents = new String(Files.readAllBytes(patchD));
                 Diff myDiff = DiffBuilder.compare(orgContents).withTest(patchContents).build();
-                double distance = 0d;
                 for (Difference diff : myDiff.getDifferences()) {
 
                     Comparison cmp = diff.getComparison();
@@ -191,63 +189,57 @@ public class ReachGuidance extends ZestGuidance {
                         String s2 = (String) v2;
                         LevenshteinDistance levenshteinDistance = new LevenshteinDistance();
                         distance += levenshteinDistance.apply(s1,s2);
-                    }else {
+                    } else {
                         distance += Math.abs(val1 - val2);
                     }
-
                 }
-                    if(distance>0) {
-                        currentStateDiff.add(distance);
-                        if (shouldKeep(currentStateDiff)) {
-                            saveInputs();
-                        }
-                        return i;
-                    }
-                // TODO: we decide whether to keep the current input
-                // We can save the current input by calling saveCurrentInput method
-
             } catch (IOException e) {
+                System.err.println("Failed to read xml files");
                 e.printStackTrace();
             }
         }
-        return -1;
+        return distance;
     }
+
     public void handleResult() {
         // TODO: compute the difference between the two xml files
         String logDir = System.getProperty("jqf.ei.logDir");
         String inputID = System.getProperty("jqf.ei.inputID");
+        List<MethodInfo> callers = DumpUtil.getCallers();
         List<MethodInfo> callees = DumpUtil.getCallees();
-        if(interestingCallers==null)
-            interestingCallers = DumpUtil.getCallers();
-        if((interestingCallers==null&&callees==null)) return;
+
+        if ((callers == null && callees == null)) return;
+
         BigList<Double> currentStateDiff = new BigList<>();
-        int firstPos = compareDifferences(logDir,inputID,currentStateDiff,interestingCallers, "Exit");
-        if(firstPos!=-1) {
-            interestingCallers = interestingCallers.subList(firstPos, interestingCallers.size());
-            isInterestingCallerFound = true;
-        }
-        else if(!isInterestingCallerFound) {
-            firstPos = compareDifferences(logDir, inputID, currentStateDiff, callees, "Exit");
-            if (firstPos == -1)
-                firstPos = compareDifferences(logDir, inputID, currentStateDiff, callees, "Entry");
-            else
-                isInterestingCalleeExit = true;
+        // compute total distance at the caller level
+        double distance = compareDifferences(logDir, inputID, currentStateDiff, callers, "Exit");
+        currentStateDiff.add(distance);
+
+        // compute total distance at the callee (exit)
+        distance = compareDifferences(logDir, inputID, currentStateDiff, callees, "Exit");
+        currentStateDiff.add(distance);
+
+        distance = compareDifferences(logDir, inputID, currentStateDiff, callees, "Entry");
+        currentStateDiff.add(distance);
+
+        if (shouldKeep(currentStateDiff)) {
+            saveInputs();
         }
     }
 
     public class HandleResult {
         private final Input<?> input;
         private final File inputFile;
-        private boolean inputAdded;
+        private boolean inputNotIgnored;
         
-        public HandleResult(boolean inputAdded, Input<?> input, File inputFile) {
-            this.inputAdded = inputAdded;
+        public HandleResult(boolean inputNotIgnored, Input<?> input, File inputFile) {
+            this.inputNotIgnored = inputNotIgnored;
             this.input = input;
             this.inputFile = inputFile;
         }
 
-        public boolean isInputAdded() {
-            return inputAdded;
+        public boolean isInputNotIgnored() {
+            return inputNotIgnored;
         }
         
         public Input<?> getInput() {
@@ -304,9 +296,8 @@ public class ReachGuidance extends ZestGuidance {
 //        }
     }
 
-    public void setOutputCmpResult(boolean cmpResult) {
-        this.outputCmpResult = cmpResult;
-        System.out.println(cmpResult);
+    public void setDiffOutputFound(boolean isDiffOutFound) {
+        this.isDiffOutFound = isDiffOutFound;
     }
 
     @Override
@@ -330,7 +321,7 @@ public class ReachGuidance extends ZestGuidance {
         String currentDir = System.getProperty("user.dir");
         String path = outputDirectory.getPath()+"/diff_out";
         if(!Files.exists(Paths.get(path))) {
-//            System.out.println("Current dir using System:" +currentDir);
+            // System.out.println("Current dir using System:" +currentDir);
             try {
                 Files.createDirectories(Paths.get(path));
             } catch (IOException e) {
@@ -338,7 +329,7 @@ public class ReachGuidance extends ZestGuidance {
             }
         }
         // return false when the two outputs differ from each other
-        if (!this.outputCmpResult) {
+        if (this.isDiffOutFound) {
             // save the current input into diff_out dir
             try {
                 Path inFile = Paths.get(path, inputID);
@@ -347,6 +338,7 @@ public class ReachGuidance extends ZestGuidance {
                 Files.write(inFile, msg.getBytes(), StandardOpenOption.APPEND);
                 diffOutFound = true;
             } catch (IOException e) {
+                System.err.println("Something went wrong while writing diff-revealing input");
                 e.printStackTrace();
             }
 
@@ -380,7 +372,7 @@ public class ReachGuidance extends ZestGuidance {
     }
 
     public HandleResult handleResultOfOrg(Result result, Throwable error) throws GuidanceException {
-        boolean inputAdded = false;
+        boolean inputNotIgnored = false;
 
         // Stop timeout handling
         this.runStart = null;
@@ -435,7 +427,7 @@ public class ReachGuidance extends ZestGuidance {
 
                 // update inputs
                 inputs.add(currentInput);
-                inputAdded = true;
+                inputNotIgnored = true;
             }
         } else if (result == Result.FAILURE || result == Result.TIMEOUT) {
             String msg = error.getMessage();
@@ -489,14 +481,14 @@ public class ReachGuidance extends ZestGuidance {
         }
 
         File inputFile = null;
-        if (inputAdded) {
+        if (inputNotIgnored) {
             this.curSaveFileName = String.format("id_%09d", numTrials);
             inputFile = new File(notIgnoreDirectory, this.curSaveFileName);
             final File saved = inputFile;
             GuidanceException.wrap(() -> writeCurrentInputToFile(saved));
         }
 
-        return new HandleResult(inputAdded, currentInput, inputFile);
+        return new HandleResult(inputNotIgnored, currentInput, inputFile);
     }
 
     public boolean isWideningPlateauReached() {

@@ -6,7 +6,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.util.ArrayList;
 import java.util.Arrays;
 
 public class Log {
@@ -36,21 +35,24 @@ public class Log {
             }
         }
 
-        // return true when outputs are equal to each other
-        public static boolean hasEqualOutput() {
-            if (outputForOrg == null || outputForPatch == null) return false;
-            if(outputForOrg.contains("IGNORE_OUTPUT")) return true;
-                try{
-                    double delta = Double.parseDouble(System.getProperty("jqf.ei.delta"));
-                    if(Math.abs(Double.parseDouble(outputForOrg) - Double.parseDouble(outputForPatch)) > delta){
-                        return false;
-                    }else
-                        return true;
-                }catch (NumberFormatException e){
-                }
-                return outputForOrg.equals(outputForPatch);
-            }
+        public static boolean isDiffOutputFound() {
+            if (outputForOrg == null && outputForPatch != null) return true;
+            if (outputForOrg != null && outputForPatch == null) return true;
+            if (outputForOrg.contains("IGNORE_OUTPUT")) return false;
 
+            try {
+                // TODO: currently, we only handle single number case.
+                // What if output has has more than one numbers?
+                // What if output is not a number?
+                double delta = Double.parseDouble(System.getProperty("jqf.ei.delta"));
+                if (Math.abs(Double.parseDouble(outputForOrg) - Double.parseDouble(outputForPatch)) > delta) {
+                    return true;
+                } else
+                    return false;
+            } catch (NumberFormatException e) { }
+            // fall back to equals
+            return !outputForOrg.equals(outputForPatch);
+        }
     }
 
     public static boolean logOutIfCalled = false;

@@ -87,7 +87,7 @@ public class PropagationTest {
 //                "--max-corpus-size", "15",
                 "--widening-plateau-threshold", "10",
                 "--verbose",
-                "--duration", "30s",
+//                "--duration", "30s",
                 //"--delta", "1e-6",
                 "-o", "../src/test/resources/fuzz-results-patch",
                 "../src/test/resources/patches/Patch27/Math2b/target/test-classes:../src/test/resources/patches/Patch27/Math2b/target/classes:../../aspect/tracing.jar",

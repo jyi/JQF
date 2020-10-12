@@ -351,7 +351,7 @@ public class FuzzStatement extends Statement {
 
                 // Inform guidance about the outcome of this trial
                 ReachGuidance.HandleResult info = guidance.handleResultOfOrg(result, error);
-                if (info.isInputAdded()) {
+                if (info.isInputNotIgnored()) {
                     System.out.println("Succeeded to log out actual");
                     // run patched version
                     assert guidance.getCurSaveFileName() != null;
@@ -362,9 +362,9 @@ public class FuzzStatement extends Statement {
                     run(testClass.getName(), method.getName(), this.loaderForPatch, reproGuidance, System.out);
                     System.setProperty("jqf.ei.run_patch", "false");
                     guidance.reset();
-                    guidance.setOutputCmpResult(compareOutput());
+                    guidance.setDiffOutputFound(isDiffOutputFound());
 
-                    if (compareOutput()) {
+                    if (!isDiffOutputFound()) {
                         // we call the original version again
                         // we should retrieve the class loader for the buggy version
                         run(testClass.getName(), method.getName(), ZestCLI2.loaderForOrg,
@@ -373,8 +373,6 @@ public class FuzzStatement extends Statement {
                     }
 
                     guidance.handleResult();
-                } else {
-                    // System.out.println("Failed to log out actual");
                 }
             }
         } catch (GuidanceException e) {
@@ -404,8 +402,8 @@ public class FuzzStatement extends Statement {
     }
 
     // return true when outputs are equal to each other
-    private boolean compareOutput() {
-        return Log.LogResult.hasEqualOutput();
+    private boolean isDiffOutputFound() {
+        return Log.LogResult.isDiffOutputFound();
     }
 
     private void evaluatePatch(ReproGuidance guidance, List<Generator<?>> generators) throws Throwable {
