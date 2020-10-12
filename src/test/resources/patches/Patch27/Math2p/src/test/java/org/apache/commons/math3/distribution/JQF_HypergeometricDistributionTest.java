@@ -24,6 +24,7 @@ import org.apache.commons.math3.exception.NumberIsTooLargeException;
 import org.apache.commons.math3.util.Precision;
 import org.junit.Assert;
 import org.junit.Test;
+import static org.junit.Assume.*;
 
 // PORACLE: Additional packages
 import org.junit.runner.RunWith;
@@ -316,6 +317,7 @@ public class JQF_HypergeometricDistributionTest extends IntegerDistributionAbstr
     int popSize = 43130568;
     int n = 50;
 
+    assumeTrue(sampleSize <= popSize);
     HypergeometricDistribution dist = new HypergeometricDistribution(popSize, sampleSize, n);
 
     // the original test stmt: int sample = dist.sample();
