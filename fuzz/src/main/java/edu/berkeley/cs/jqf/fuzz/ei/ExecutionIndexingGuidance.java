@@ -589,6 +589,12 @@ public class ExecutionIndexingGuidance extends ZestGuidance {
             executed = true;
         }
 
+        @Override
+        public double getVersionDist() {
+            assert false;
+            return 0;
+        }
+
         /**
          * Return a new input derived from this one with some values
          * mutated.

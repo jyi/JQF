@@ -79,7 +79,7 @@ public class ZestGuidance implements Guidance {
     /** Whether to hide fuzzing statistics **/
     static final boolean QUIET_MODE = Boolean.getBoolean("jqf.ei.QUIET_MODE");
     /** Whether to save only valid inputs **/
-    static final boolean SAVE_ONLY_VALID = Boolean.getBoolean("jqf.ei.SAVE_ONLY_VALID");
+    protected static final boolean SAVE_ONLY_VALID = Boolean.getBoolean("jqf.ei.SAVE_ONLY_VALID");
     /** Max input size to generate. */
     static final int MAX_INPUT_SIZE = Integer.getInteger("jqf.ei.MAX_INPUT_SIZE", 10240);
     /** Whether to generate EOFs when we run out of bytes in the input, instead of randomly generating new bytes. **/
@@ -89,9 +89,9 @@ public class ZestGuidance implements Guidance {
     /** Multiplication factor for number of children to produce for favored inputs. */
     static final int NUM_CHILDREN_MULTIPLIER_FAVORED = 20;
     /** Mean number of mutations to perform in each round. */
-    static final double MEAN_MUTATION_COUNT = 8.0;
+    protected static final double MEAN_MUTATION_COUNT = 8.0;
     /** Mean number of contiguous bytes to mutate in each mutation. */
-    static final double MEAN_MUTATION_SIZE = 4.0; // Bytes
+    protected static final double MEAN_MUTATION_SIZE = 4.0; // Bytes
     /** Whether to steal responsibility from old inputs (this increases computation cost). */
     static final boolean STEAL_RESPONSIBILITY = Boolean.getBoolean("jqf.ei.STEAL_RESPONSIBILITY");
     static final boolean SAVE_ALL_INPUTS =
@@ -436,7 +436,7 @@ public class ZestGuidance implements Guidance {
         this.blind = blind;
     }
 
-    private int getTargetChildrenForParent(Input parentInput) {
+    protected int getTargetChildrenForParent(Input parentInput) {
         // Baseline is a constant
         int target = NUM_CHILDREN_BASELINE;
 
@@ -871,7 +871,6 @@ public class ZestGuidance implements Guidance {
         }
     }
 
-
     @Override
     public Consumer<TraceEvent> generateCallBack(Thread thread) {
         if (appThread != null) {
@@ -926,14 +925,14 @@ public class ZestGuidance implements Guidance {
          *
          * <p>This field is null for inputs that are not saved.</p>
          */
-        File saveFile = null;
+        public File saveFile = null;
 
         /**
          * An ID for a saved input.
          *
          * <p>This field is -1 for inputs that are not saved.</p>
          */
-        int id;
+        public int id;
 
         /**
          * The description for this input.
@@ -941,14 +940,14 @@ public class ZestGuidance implements Guidance {
          * <p>This field is modified by the construction and mutation
          * operations.</p>
          */
-        String desc;
+        public String desc;
 
         /**
          * The run coverage for this input, if the input is saved.
          *
          * <p>This field is null for inputs that are not saved.</p>
          */
-        Coverage coverage = null;
+        public Coverage coverage = null;
 
         /**
          * The number of non-zero elements in `coverage`.
@@ -959,7 +958,7 @@ public class ZestGuidance implements Guidance {
          * redundant (can be computed using {@link Coverage#getNonZeroCount()}),
          * but we store it here for performance reasons.</p>
          */
-        int nonZeroCoverage = -1;
+        public int nonZeroCoverage = -1;
 
         /**
          * The number of mutant children spawned from this input that
@@ -967,12 +966,12 @@ public class ZestGuidance implements Guidance {
          *
          * <p>This field is -1 for inputs that are not saved.</p>
          */
-        int offspring = -1;
+        public int offspring = -1;
 
         /**
          * Whether this input resulted in a valid run.
          */
-        boolean valid = false;
+        public boolean valid = false;
 
         /**
          * The set of coverage keys for which this input is
@@ -985,7 +984,7 @@ public class ZestGuidance implements Guidance {
          * in at least some responsibility set. Hence, this list
          * needs to be kept in-sync with {@link #responsibleInputs}.</p>
          */
-        Set<Object> responsibilities = null;
+        public Set<Object> responsibilities = null;
 
 
         /**
@@ -1048,6 +1047,8 @@ public class ZestGuidance implements Guidance {
         public boolean isFavored() {
             return responsibilities.size() > 0;
         }
+
+        public abstract double getVersionDist();
     }
 
     public class LinearInput extends Input<Integer> {
@@ -1103,6 +1104,10 @@ public class ZestGuidance implements Guidance {
             }
         }
 
+        public ArrayList<Integer> getValues() {
+            return values;
+        }
+
         @Override
         public int size() {
             return values.size();
@@ -1120,6 +1125,12 @@ public class ZestGuidance implements Guidance {
             // Remove elements beyond "requested"
             values = new ArrayList<>(values.subList(0, requested));
             values.trimToSize();
+        }
+
+        @Override
+        public double getVersionDist() {
+            assert false;
+            return 0;
         }
 
         @Override

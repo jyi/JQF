@@ -40,6 +40,7 @@ import java.time.Duration;
 import edu.berkeley.cs.jqf.fuzz.ei.ZestGuidance;
 import edu.berkeley.cs.jqf.fuzz.guidance.GuidanceException;
 import edu.berkeley.cs.jqf.fuzz.guidance.Result;
+import edu.berkeley.cs.jqf.fuzz.util.Coverage;
 import edu.berkeley.cs.jqf.fuzz.util.TargetCoverage;
 import edu.berkeley.cs.jqf.instrument.tracing.events.TraceEvent;
 
@@ -80,6 +81,87 @@ public class ReachGuidance extends ZestGuidance {
             System.getProperty("jqf.ei.WIDENING_PLATEAU_THRESHOLD") != null?
                     Integer.getInteger("jqf.ei.WIDENING_PLATEAU_THRESHOLD") : 10;
     private boolean isWideningPlateauReached = false;
+
+
+    public class ComparableInput extends LinearInput {
+
+        private double versionDist;
+
+        public ComparableInput() {
+            super();
+        }
+
+        public ComparableInput(ComparableInput other) {
+            super(other);
+        }
+
+        public void setVersionDist(double dist) {
+            this.versionDist = dist;
+        }
+
+        public double getVersionDist() {
+            return versionDist;
+        }
+
+        @Override
+        public Input fuzz(Random random) {
+            // Clone this input to create initial version of new child
+            LinearInput newInput = new ComparableInput(this);
+
+            // Stack a bunch of mutations
+            int numMutations = sampleGeometric(random, MEAN_MUTATION_COUNT);
+            newInput.desc += ",havoc:"+numMutations;
+
+            boolean setToZero = random.nextDouble() < 0.1; // one out of 10 times
+
+            for (int mutation = 1; mutation <= numMutations; mutation++) {
+
+                // Select a random offset and size
+                int offset = random.nextInt(newInput.getValues().size());
+                int mutationSize = sampleGeometric(random, MEAN_MUTATION_SIZE);
+
+                // desc += String.format(":%d@%d", mutationSize, idx);
+
+                // Mutate a contiguous set of bytes from offset
+                for (int i = offset; i < offset + mutationSize; i++) {
+                    // Don't go past end of list
+                    if (i >= newInput.getValues().size()) {
+                        break;
+                    }
+
+                    // Otherwise, apply a random mutation
+                    int mutatedValue = setToZero ? 0 : random.nextInt(256);
+                    newInput.getValues().set(i, mutatedValue);
+                }
+            }
+
+            return newInput;
+        }
+    }
+
+    public class HandleResult {
+        private final Input<?> input;
+        private final File inputFile;
+        private boolean inputNotIgnored;
+
+        public HandleResult(boolean inputNotIgnored, Input<?> input, File inputFile) {
+            this.inputNotIgnored = inputNotIgnored;
+            this.input = input;
+            this.inputFile = inputFile;
+        }
+
+        public boolean isInputNotIgnored() {
+            return inputNotIgnored;
+        }
+
+        public Input<?> getInput() {
+            return this.input;
+        }
+
+        public File getInputFile() {
+            return this.inputFile;
+        }
+    }
 
     public void reset() {
         this.isWideningPlateauReached = false;
@@ -143,18 +225,69 @@ public class ReachGuidance extends ZestGuidance {
         return false;
     }
 
-    public void saveInputs() {
+    public void saveInputs(double versionDist) {
         Set<Object> responsibilities = computeResponsibilities(ReachGuidance.valid);
         String reason = "+poracle";
-        GuidanceException.wrap(() -> saveCurrentInput(responsibilities, reason));
+        GuidanceException.wrap(() -> saveCurrentInput(versionDist, responsibilities, reason));
+    }
+
+    /* Saves an interesting input to the queue. */
+    protected void saveCurrentInput(double versionDistance, Set<Object> responsibilities, String why) throws IOException {
+        this.curCorpusSize++;
+
+        // First, save to disk (note: we issue IDs to everyone, but only write to disk  if valid)
+        int newInputIdx = numSavedInputs++;
+        String saveFileName = String.format("id_%06d", newInputIdx);
+        String how = currentInput.desc;
+        File saveFile = new File(savedCorpusDirectory, saveFileName);
+        if (SAVE_ONLY_VALID == false || currentInput.valid) {
+            writeCurrentInputToFile(saveFile);
+            infoLog("Saved - %s %s %s", saveFile.getPath(), how, why);
+        }
+
+        // If not using guidance, do nothing else
+        if (blind) {
+            return;
+        }
+
+        // Second, save to queue
+        if (currentInput instanceof ComparableInput) {
+            ((ComparableInput) currentInput).setVersionDist(versionDistance);
+        }
+        savedInputs.add(currentInput);
+
+        // Third, store basic book-keeping data
+        currentInput.id = newInputIdx;
+        currentInput.saveFile = saveFile;
+        currentInput.coverage = new Coverage(runCoverage);
+        currentInput.nonZeroCoverage = runCoverage.getNonZeroCount();
+        currentInput.offspring = 0;
+        savedInputs.get(currentParentInputIdx).offspring += 1;
+
+        // Fourth, assume responsibility for branches
+        currentInput.responsibilities = responsibilities;
+
+        for (Object b : responsibilities) {
+            // If there is an old input that is responsible,
+            // subsume it
+            Input oldResponsible = responsibleInputs.get(b);
+            if (oldResponsible != null) {
+                oldResponsible.responsibilities.remove(b);
+                // infoLog("-- Stealing responsibility for %s from input %d", b, oldResponsible.id);
+            } else {
+                // infoLog("-- Assuming new responsibility for %s", b);
+            }
+            // We are now responsible
+            responsibleInputs.put(b, currentInput);
+        }
     }
 
     public boolean isDiffOutFound() {
         return this.diffOutFound;
     }
 
-    private double compareDifferences(String logDir, String inputID, BigList<Double> currentStateDiff,
-                                  List<MethodInfo> methods, String suffix) {
+    private double getversionDistance(String logDir, String inputID, BigList<Double> currentStateDiff,
+                                      List<MethodInfo> methods, String suffix) {
         if (methods == null) return 0;
 
         double distance = 0d;
@@ -212,42 +345,21 @@ public class ReachGuidance extends ZestGuidance {
 
         BigList<Double> currentStateDiff = new BigList<>();
         // compute total distance at the caller level
-        double distance = compareDifferences(logDir, inputID, currentStateDiff, callers, "Exit");
-        currentStateDiff.add(distance);
+        double versionDist = getversionDistance(logDir, inputID, currentStateDiff, callers, "Exit");
+        currentStateDiff.add(versionDist);
 
         // compute total distance at the callee (exit)
-        distance = compareDifferences(logDir, inputID, currentStateDiff, callees, "Exit");
-        currentStateDiff.add(distance);
+        versionDist = getversionDistance(logDir, inputID, currentStateDiff, callees, "Exit");
+        currentStateDiff.add(versionDist);
 
-        distance = compareDifferences(logDir, inputID, currentStateDiff, callees, "Entry");
-        currentStateDiff.add(distance);
+        versionDist = getversionDistance(logDir, inputID, currentStateDiff, callees, "Entry");
+        currentStateDiff.add(versionDist);
 
-        if (shouldKeep(currentStateDiff)) {
-            saveInputs();
-        }
-    }
+        // TODO: calculate the parentDist
 
-    public class HandleResult {
-        private final Input<?> input;
-        private final File inputFile;
-        private boolean inputNotIgnored;
-        
-        public HandleResult(boolean inputNotIgnored, Input<?> input, File inputFile) {
-            this.inputNotIgnored = inputNotIgnored;
-            this.input = input;
-            this.inputFile = inputFile;
-        }
-
-        public boolean isInputNotIgnored() {
-            return inputNotIgnored;
-        }
-        
-        public Input<?> getInput() {
-            return this.input;
-        }
-
-        public File getInputFile() {
-            return this.inputFile;
+        // TODO: currently save all inputs
+        if (true/*shouldKeep(currentStateDiff)*/) {
+            saveInputs(versionDist /*, parentDist*/);
         }
     }
 
@@ -348,10 +460,86 @@ public class ReachGuidance extends ZestGuidance {
         return elapsedMilliseconds < maxDurationMillis;
     }
 
+    /** Spawns a new input from thin air (i.e., actually random) */
+    @Override
+    protected Input<?> createFreshInput() {
+        return new ComparableInput();
+    }
+
     @Override
     public InputStream getInput() throws GuidanceException {
         targetCoverage.clear();
-        return super.getInput();
+        // Clear coverage stats for this run
+        runCoverage.clear();
+
+        // set inputID
+        String saveFileName = String.format("id_%09d", numTrials + 1);
+        System.setProperty("jqf.ei.inputID", saveFileName);
+
+        // Choose an input to execute based on state of queues
+        if (!seedInputs.isEmpty()) {
+            // First, if we have some specific seeds, use those
+            currentInput = seedInputs.removeFirst();
+
+            // Hopefully, the seeds will lead to new coverage and be added to saved inputs
+
+        } else if (savedInputs.isEmpty()) {
+            // If no seeds given try to start with something random
+            if (!blind && numTrials > 100_000) {
+                throw new GuidanceException("Too many trials without coverage; " +
+                        "likely all assumption violations");
+            }
+
+            // Make fresh input using either list or maps
+            // infoLog("Spawning new input from thin air");
+            currentInput = createFreshInput();
+
+            // Start time-counting for timeout handling
+            this.runStart = new Date();
+        } else {
+            savedInputs.sort(new Comparator<Input>() {
+                @Override
+                public int compare(Input i1, Input i2) {
+                    if (i1.getVersionDist() == i2.getVersionDist()) {
+                        // TODO: in the future, we should consider parentDist
+                        return 0;
+                    }
+                    if (i1.getVersionDist() < i2.getVersionDist()) return -1;
+                    else return 1;
+                }
+            });
+            // The number of children to produce is determined by how much of the coverage
+            // pool this parent input hits
+            Input currentParentInput = savedInputs.get(currentParentInputIdx);
+            int targetNumChildren = getTargetChildrenForParent(currentParentInput);
+            if (numChildrenGeneratedForCurrentParentInput >= targetNumChildren) {
+                // Select the next saved input to fuzz
+                currentParentInputIdx = random.nextInt(savedInputs.size());
+                numChildrenGeneratedForCurrentParentInput = 0;
+            }
+            Input parent = savedInputs.get(currentParentInputIdx);
+
+            // Fuzz it to get a new input
+            infoLog("Mutating input: %s", parent.desc);
+            currentInput = parent.fuzz(random);
+            numChildrenGeneratedForCurrentParentInput++;
+
+            // Write it to disk for debugging
+            try {
+                writeCurrentInputToFile(currentInputFile);
+            } catch (IOException ignore) { }
+
+            // Start time-counting for timeout handling
+            this.runStart = new Date();
+            this.branchCount = 0;
+        }
+
+        return createParameterStream();
+    }
+
+    @Override
+    protected int getTargetChildrenForParent(Input parentInput) {
+        return 10;
     }
 
     @Override
