@@ -86,6 +86,7 @@ public class ReachGuidance extends ZestGuidance {
     public class ComparableInput extends LinearInput {
 
         private double versionDist;
+        private double parentDist;
 
         public ComparableInput() {
             super();
@@ -101,6 +102,13 @@ public class ReachGuidance extends ZestGuidance {
 
         public double getVersionDist() {
             return versionDist;
+        }
+        public double getParentDist() {
+            return parentDist;
+        }
+
+        public void setParentDist(double parentDist) {
+            this.parentDist = parentDist;
         }
 
         @Override
@@ -225,14 +233,14 @@ public class ReachGuidance extends ZestGuidance {
         return false;
     }
 
-    public void saveInputs(double versionDist) {
+    public void saveInputs(double versionDist, double parentDist) {
         Set<Object> responsibilities = computeResponsibilities(ReachGuidance.valid);
         String reason = "+poracle";
-        GuidanceException.wrap(() -> saveCurrentInput(versionDist, responsibilities, reason));
+        GuidanceException.wrap(() -> saveCurrentInput(versionDist, parentDist, responsibilities, reason));
     }
 
     /* Saves an interesting input to the queue. */
-    protected void saveCurrentInput(double versionDistance, Set<Object> responsibilities, String why) throws IOException {
+    protected void saveCurrentInput(double versionDistance, double parentDistance, Set<Object> responsibilities, String why) throws IOException {
         this.curCorpusSize++;
 
         // First, save to disk (note: we issue IDs to everyone, but only write to disk  if valid)
@@ -253,6 +261,7 @@ public class ReachGuidance extends ZestGuidance {
         // Second, save to queue
         if (currentInput instanceof ComparableInput) {
             ((ComparableInput) currentInput).setVersionDist(versionDistance);
+            ((ComparableInput) currentInput).setParentDist(parentDistance);
         }
         savedInputs.add(currentInput);
 
@@ -286,14 +295,17 @@ public class ReachGuidance extends ZestGuidance {
         return this.diffOutFound;
     }
 
-    private double getversionDistance(String logDir, String inputID, BigList<Double> currentStateDiff,
-                                      List<MethodInfo> methods, String suffix) {
+    private double getDistance(String logDir, String inputID, String parentInputID, BigList<Double> currentStateDiff,
+                               List<MethodInfo> methods, String suffix) {
         if (methods == null) return 0;
-
+        String chosenID = null;
+        String chosenDir = "ORG";
+        if(parentInputID==null) chosenID=inputID;
+        else {chosenID = parentInputID; chosenDir = "PATCH";}
         double distance = 0d;
         for (int i = methods.size() - 1; i >= 0; i--) {
             MethodInfo m  = methods.get(i);
-            Path orgD = Paths.get(logDir + File.separator + "ORG", inputID, m.getMethodName()+suffix+".xml");
+            Path orgD = Paths.get(logDir + File.separator + chosenDir, chosenID, m.getMethodName()+suffix+".xml");
             Path patchD = Paths.get(logDir + File.separator + "PATCH", inputID, m.getMethodName()+suffix+".xml");
             if(!Files.exists(orgD)||!Files.exists(patchD)){
                 System.out.println("No matching method exists");
@@ -331,6 +343,7 @@ public class ReachGuidance extends ZestGuidance {
                 e.printStackTrace();
             }
         }
+        if(distance==Double.MAX_VALUE||Double.isInfinite(distance)) return 0;
         return distance;
     }
 
@@ -345,21 +358,33 @@ public class ReachGuidance extends ZestGuidance {
 
         BigList<Double> currentStateDiff = new BigList<>();
         // compute total distance at the caller level
-        double versionDist = getversionDistance(logDir, inputID, currentStateDiff, callers, "Exit");
+        double versionDist = getDistance(logDir, inputID,null, currentStateDiff, callers, "Exit");
         currentStateDiff.add(versionDist);
 
         // compute total distance at the callee (exit)
-        versionDist = getversionDistance(logDir, inputID, currentStateDiff, callees, "Exit");
+        versionDist += getDistance(logDir, inputID,null,currentStateDiff, callees, "Exit");
         currentStateDiff.add(versionDist);
 
-        versionDist = getversionDistance(logDir, inputID, currentStateDiff, callees, "Entry");
+        versionDist += getDistance(logDir, inputID,null, currentStateDiff, callees, "Entry");
         currentStateDiff.add(versionDist);
+        String parentInputID = System.getProperty("jqf.ei.parentInputID");
+        double parentDist = getDistance(logDir, inputID,parentInputID, currentStateDiff, callers, "Exit");
+        currentStateDiff.add(parentDist);
+
+        // compute total distance at the callee (exit)
+        parentDist += getDistance(logDir, inputID,parentInputID,currentStateDiff, callees, "Exit");
+        currentStateDiff.add(parentDist);
+
+        parentDist += getDistance(logDir, inputID,parentInputID, currentStateDiff, callees, "Entry");
+        currentStateDiff.add(parentDist);
+
+
 
         // TODO: calculate the parentDist
 
         // TODO: currently save all inputs
         if (true/*shouldKeep(currentStateDiff)*/) {
-            saveInputs(versionDist /*, parentDist*/);
+            saveInputs(versionDist, parentDist);
         }
     }
 
@@ -502,6 +527,8 @@ public class ReachGuidance extends ZestGuidance {
                 public int compare(Input i1, Input i2) {
                     if (i1.getVersionDist() == i2.getVersionDist()) {
                         // TODO: in the future, we should consider parentDist
+                        if(i1.getParentDist()<i2.getParentDist()) return -1;
+                        if(i1.getParentDist()>i2.getParentDist()) return 1;
                         return 0;
                     }
                     if (i1.getVersionDist() < i2.getVersionDist()) return -1;
@@ -518,11 +545,16 @@ public class ReachGuidance extends ZestGuidance {
                 numChildrenGeneratedForCurrentParentInput = 0;
             }
             Input parent = savedInputs.get(currentParentInputIdx);
-
+            String parentSaveLogFile = parent.getSaveLogFileName();
+            if(parentSaveLogFile!=null)
+                System.setProperty("jqf.ei.parentInputID", parent.getSaveLogFileName());
             // Fuzz it to get a new input
             infoLog("Mutating input: %s", parent.desc);
             currentInput = parent.fuzz(random);
             numChildrenGeneratedForCurrentParentInput++;
+            currentInput.saveLogFileName = saveFileName;
+
+
 
             // Write it to disk for debugging
             try {

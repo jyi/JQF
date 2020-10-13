@@ -381,7 +381,7 @@ public class FuzzStatement extends Statement {
         }
 
         if (guidance.isDiffOutFound()) {
-            guidance.saveInputs(Double.MAX_VALUE);
+            guidance.saveInputs(Double.MAX_VALUE,Double.MAX_VALUE);
         }
 
         if (failures.size() > 0) {

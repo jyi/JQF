@@ -926,6 +926,7 @@ public class ZestGuidance implements Guidance {
          * <p>This field is null for inputs that are not saved.</p>
          */
         public File saveFile = null;
+        public String saveLogFileName = null;
 
         /**
          * An ID for a saved input.
@@ -1036,6 +1037,8 @@ public class ZestGuidance implements Guidance {
             return this.saveFile;
         }
 
+        public String getSaveLogFileName(){return  this.saveLogFileName;}
+
         /**
          * Returns whether this input should be favored for fuzzing.
          *
@@ -1049,6 +1052,7 @@ public class ZestGuidance implements Guidance {
         }
 
         public abstract double getVersionDist();
+        public abstract double getParentDist();
     }
 
     public class LinearInput extends Input<Integer> {
@@ -1129,6 +1133,12 @@ public class ZestGuidance implements Guidance {
 
         @Override
         public double getVersionDist() {
+            assert false;
+            return 0;
+        }
+
+        @Override
+        public double getParentDist(){
             assert false;
             return 0;
         }
