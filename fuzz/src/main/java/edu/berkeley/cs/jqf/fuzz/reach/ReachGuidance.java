@@ -550,9 +550,10 @@ public class ReachGuidance extends ZestGuidance {
                 System.setProperty("jqf.ei.parentInputID", parent.getSaveLogFileName());
             // Fuzz it to get a new input
             infoLog("Mutating input: %s", parent.desc);
+            currentInput.saveLogFileName = saveFileName;
             currentInput = parent.fuzz(random);
             numChildrenGeneratedForCurrentParentInput++;
-            currentInput.saveLogFileName = saveFileName;
+
 
 
 
