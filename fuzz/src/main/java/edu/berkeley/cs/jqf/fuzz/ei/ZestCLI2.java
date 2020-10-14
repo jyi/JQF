@@ -91,7 +91,11 @@ public class ZestCLI2 implements Runnable {
 
     @Option(names = { "--timeout" },
             description = "Timeout")
-    int timeout = 3600;
+    int timeout = 3600000;
+
+    @Option(names = { "--max-mutations" },
+            description = "Timeout")
+    int maxMutations = 100;
 
     @Option(names = { "--delta" },
             description = "Delta")
@@ -204,6 +208,10 @@ public class ZestCLI2 implements Runnable {
         if (this.timeout >= 0) {
             System.setProperty("jqf.ei.TIMEOUT",
                     String.valueOf(this.timeout));
+        }
+        if(this.maxMutations>=0){
+            System.setProperty("jqf.ei.MAX_MUTATIONS",
+                    String.valueOf(this.maxMutations));
         }
 
         if (this.saveAllInputs) {

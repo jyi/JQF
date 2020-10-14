@@ -85,8 +85,7 @@ public class ReachGuidance extends ZestGuidance {
 
     public class ComparableInput extends LinearInput {
 
-        private double versionDist;
-        private double parentDist;
+        private double[] dists;
 
         public ComparableInput() {
             super();
@@ -96,19 +95,12 @@ public class ReachGuidance extends ZestGuidance {
             super(other);
         }
 
-        public void setVersionDist(double dist) {
-            this.versionDist = dist;
+        public void setDists(double[] dists) {
+            this.dists = dists;
         }
 
-        public double getVersionDist() {
-            return versionDist;
-        }
-        public double getParentDist() {
-            return parentDist;
-        }
-
-        public void setParentDist(double parentDist) {
-            this.parentDist = parentDist;
+        public double[] getDists() {
+            return dists;
         }
 
         @Override
@@ -233,14 +225,15 @@ public class ReachGuidance extends ZestGuidance {
         return false;
     }
 
-    public void saveInputs(double versionDist, double parentDist) {
+    // public void saveInputs(double ... dist)
+    public void saveInputs(double ... dist) {
         Set<Object> responsibilities = computeResponsibilities(ReachGuidance.valid);
         String reason = "+poracle";
-        GuidanceException.wrap(() -> saveCurrentInput(versionDist, parentDist, responsibilities, reason));
+        GuidanceException.wrap(() -> saveCurrentInput(dist, responsibilities, reason));
     }
 
     /* Saves an interesting input to the queue. */
-    protected void saveCurrentInput(double versionDistance, double parentDistance, Set<Object> responsibilities, String why) throws IOException {
+    protected void saveCurrentInput(double[] dist, Set<Object> responsibilities, String why) throws IOException {
         this.curCorpusSize++;
 
         // First, save to disk (note: we issue IDs to everyone, but only write to disk  if valid)
@@ -260,8 +253,7 @@ public class ReachGuidance extends ZestGuidance {
 
         // Second, save to queue
         if (currentInput instanceof ComparableInput) {
-            ((ComparableInput) currentInput).setVersionDist(versionDistance);
-            ((ComparableInput) currentInput).setParentDist(parentDistance);
+            ((ComparableInput) currentInput).setDists(dist);
         }
         savedInputs.add(currentInput);
 
@@ -315,9 +307,9 @@ public class ReachGuidance extends ZestGuidance {
                 String orgContents = new String(Files.readAllBytes(orgD));
                 String patchContents = new String(Files.readAllBytes(patchD));
                 Diff myDiff = DiffBuilder.compare(orgContents).withTest(patchContents).build();
-                for (Difference diff : myDiff.getDifferences()) {
+                for (Difference xmlDiff : myDiff.getDifferences()) {
 
-                    Comparison cmp = diff.getComparison();
+                    Comparison cmp = xmlDiff.getComparison();
 
                     // TODO: this is temporary code to ignore random variables
                     if (cmp.getControlDetails().getParentXPath().contains("random"))
@@ -329,11 +321,14 @@ public class ReachGuidance extends ZestGuidance {
                     Comparison.Detail test = cmp.getTestDetails();
                     Object v2 = test.getValue();
                     double val2 = getDiffVal(v2);
+                    if(val1==Double.MAX_VALUE||val1==Double.MIN_VALUE||val2==Double.MAX_VALUE||val2==Double.MIN_VALUE) continue;
                     if(Double.isNaN(val1)||Double.isNaN(val2)){
                         String s1 = (String) v1;
                         String s2 = (String) v2;
                         LevenshteinDistance levenshteinDistance = new LevenshteinDistance();
-                        distance += levenshteinDistance.apply(s1,s2);
+                        double temp = levenshteinDistance.apply(s1,s2);
+                        if(temp==Double.MAX_VALUE||temp==Double.MIN_VALUE) continue;
+                        distance += temp;
                     } else {
                         distance += Math.abs(val1 - val2);
                     }
@@ -343,7 +338,7 @@ public class ReachGuidance extends ZestGuidance {
                 e.printStackTrace();
             }
         }
-        if(distance==Double.MAX_VALUE||Double.isInfinite(distance)) return 0;
+
         return distance;
     }
 
@@ -358,34 +353,36 @@ public class ReachGuidance extends ZestGuidance {
 
         BigList<Double> currentStateDiff = new BigList<>();
         // compute total distance at the caller level
-        double versionDist = getDistance(logDir, inputID,null, currentStateDiff, callers, "Exit");
-        currentStateDiff.add(versionDist);
+        double versionDistCallerExit = getDistance(logDir, inputID,null, currentStateDiff, callers, "Exit");
+        currentStateDiff.add(versionDistCallerExit);
 
         // compute total distance at the callee (exit)
-        versionDist += getDistance(logDir, inputID,null,currentStateDiff, callees, "Exit");
-        currentStateDiff.add(versionDist);
+        double versionDistCalleeExit = getDistance(logDir, inputID,null,currentStateDiff, callees, "Exit");
+        currentStateDiff.add(versionDistCalleeExit);
 
-        versionDist += getDistance(logDir, inputID,null, currentStateDiff, callees, "Entry");
-        currentStateDiff.add(versionDist);
+        double versionDistCalleeEntry = getDistance(logDir, inputID,null, currentStateDiff, callees, "Entry");
+        currentStateDiff.add(versionDistCalleeEntry);
         String parentInputID = System.getProperty("jqf.ei.parentInputID");
-        double parentDist = getDistance(logDir, inputID,parentInputID, currentStateDiff, callers, "Exit");
-        currentStateDiff.add(parentDist);
+        if(parentInputID==null){
+            saveInputs(new double[]{versionDistCallerExit,versionDistCallerExit,versionDistCalleeEntry,0,0,0});
+        }
+        double parentDistCallerExit = getDistance(logDir, inputID,parentInputID, currentStateDiff, callers, "Exit");
+        currentStateDiff.add(parentDistCallerExit);
 
         // compute total distance at the callee (exit)
-        parentDist += getDistance(logDir, inputID,parentInputID,currentStateDiff, callees, "Exit");
-        currentStateDiff.add(parentDist);
+        double parentDistCalleeExit = getDistance(logDir, inputID,parentInputID,currentStateDiff, callees, "Exit");
+        currentStateDiff.add(parentDistCalleeExit);
 
-        parentDist += getDistance(logDir, inputID,parentInputID, currentStateDiff, callees, "Entry");
-        currentStateDiff.add(parentDist);
+        double parentDistCalleeEntry = getDistance(logDir, inputID,parentInputID, currentStateDiff, callees, "Entry");
+        currentStateDiff.add(parentDistCalleeEntry);
 
 
-
-        // TODO: calculate the parentDist
-
-        // TODO: currently save all inputs
         if (true/*shouldKeep(currentStateDiff)*/) {
-            saveInputs(versionDist, parentDist);
+            saveInputs(new double[]{versionDistCallerExit,versionDistCalleeExit,versionDistCalleeEntry,
+                    parentDistCallerExit, parentDistCalleeExit, parentDistCalleeEntry});
         }
+        System.out.println(Arrays.toString(new double[]{versionDistCallerExit,versionDistCalleeExit,versionDistCalleeEntry,
+                parentDistCallerExit, parentDistCalleeExit, parentDistCalleeEntry}));
     }
 
     /**
@@ -522,23 +519,29 @@ public class ReachGuidance extends ZestGuidance {
             // Start time-counting for timeout handling
             this.runStart = new Date();
         } else {
+            // sorted in an ascending order
             savedInputs.sort(new Comparator<Input>() {
-                @Override
+                 @Override
                 public int compare(Input i1, Input i2) {
-                    if (i1.getVersionDist() == i2.getVersionDist()) {
-                        // TODO: in the future, we should consider parentDist
-                        if(i1.getParentDist()<i2.getParentDist()) return -1;
-                        if(i1.getParentDist()>i2.getParentDist()) return 1;
-                        return 0;
-                    }
-                    if (i1.getVersionDist() < i2.getVersionDist()) return -1;
-                    else return 1;
+                   double[] dists1 = i1.getDists();
+                   double[] dists2 = i2.getDists();
+                   for (int i = 0; i < dists1.length; i++) {
+                       double d1 = dists1[i];
+                       double d2 = dists2[i];
+                       if (d1 == d2) {
+                           continue;
+                       } else {
+                           if (d1 > d2) return 1;
+                           else return -1;
+                       }
+                   }
+                   return 0;
                 }
             });
             // The number of children to produce is determined by how much of the coverage
             // pool this parent input hits
             Input currentParentInput = savedInputs.get(currentParentInputIdx);
-            int targetNumChildren = getTargetChildrenForParent(currentParentInput);
+            int targetNumChildren = getTargetChildrenForParent(savedInputs.size(),currentParentInputIdx+1);
             if (numChildrenGeneratedForCurrentParentInput >= targetNumChildren) {
                 // Select the next saved input to fuzz
                 currentParentInputIdx = random.nextInt(savedInputs.size());
@@ -570,9 +573,18 @@ public class ReachGuidance extends ZestGuidance {
         return createParameterStream();
     }
 
-    @Override
-    protected int getTargetChildrenForParent(Input parentInput) {
-        return 10;
+//    @Override
+    protected int getTargetChildrenForParent(int size, int idx) {
+        Date now = new Date();
+        long elapsedTime = now.getTime() - startTime.getTime();
+        long maxMutations = Long.parseLong(System.getProperty("jqf.ei.MAX_MUTATIONS"));
+        double temp = ((double)idx/(double)size*(1-T(elapsedTime)+0.5*T(elapsedTime)));
+        int answer = (int) (maxMutations*temp);
+        return answer;
+    }
+
+    private double T(long elapsedTime) {
+        return Math.pow(20,elapsedTime/maxDurationMillis);
     }
 
     @Override

@@ -91,7 +91,7 @@ public class DumpUtil {
         Signature signature = jp.getSignature();
         MethodInfo m = new MethodInfo(signature.getDeclaringTypeName(),signature.getName());
         if(callees.contains(m)) return true;
-        if(callees.size() >= 1) return false;
+        if(callees.size() >= 1||callers.contains(m)) return false;
         callees.add(m);
         return true;
     }

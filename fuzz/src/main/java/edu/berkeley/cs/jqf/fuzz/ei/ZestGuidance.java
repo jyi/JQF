@@ -1051,8 +1051,7 @@ public class ZestGuidance implements Guidance {
             return responsibilities.size() > 0;
         }
 
-        public abstract double getVersionDist();
-        public abstract double getParentDist();
+        public abstract double[] getDists();
     }
 
     public class LinearInput extends Input<Integer> {
@@ -1132,15 +1131,9 @@ public class ZestGuidance implements Guidance {
         }
 
         @Override
-        public double getVersionDist() {
+        public double[] getDists() {
             assert false;
-            return 0;
-        }
-
-        @Override
-        public double getParentDist(){
-            assert false;
-            return 0;
+            return null;
         }
 
         @Override
