@@ -410,10 +410,20 @@ public class ReachGuidance extends ZestGuidance {
         double[] dists = new double[]{versionDistCallerExit, versionDistCalleeExit, versionDistCalleeEntry,
                 parentDistCallerExit, parentDistCalleeExit, parentDistCalleeEntry};
         if (shouldKeep(dists)) {
+            infoLog("new distances: " + toString(dists));
+            System.out.println("new distances: " + toString(dists));
             saveInputs(dists);
         }
-//        System.out.println(Arrays.toString(new double[]{versionDistCallerExit,versionDistCalleeExit,versionDistCalleeEntry,
-//                parentDistCallerExit, parentDistCalleeExit, parentDistCalleeEntry}));
+    }
+
+    private String toString(double[] dists) {
+        StringBuilder sb = new StringBuilder("[");
+        for (int i = 0; i < dists.length; i++) {
+            sb.append(dists[i]);
+            if (i < dists.length - 1) sb.append(", ");
+        }
+        sb.append("]");
+        return sb.toString();
     }
 
     /**
@@ -483,7 +493,7 @@ public class ReachGuidance extends ZestGuidance {
         }
 
         String inputID = System.getProperty("jqf.ei.inputID");
-        String path = outputDirectory.getPath() + "/diff_out";
+        String path = outputDirectory.getPath() + File.separator + "diff_out";
         if(!Files.exists(Paths.get(path))) {
             // System.out.println("Current dir using System:" +currentDir);
             try {
