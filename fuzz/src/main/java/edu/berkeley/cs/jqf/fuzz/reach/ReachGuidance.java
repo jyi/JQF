@@ -64,6 +64,8 @@ import org.xmlunit.diff.Difference;
  */
 public class ReachGuidance extends ZestGuidance {
 
+    private final String logDir;
+    private final int maxMutations;
     private TargetCoverage targetCoverage = TargetCoverage.getTargetCoverage();
 
     private CFGAnalysis cfga = null;
@@ -81,7 +83,61 @@ public class ReachGuidance extends ZestGuidance {
             System.getProperty("jqf.ei.WIDENING_PLATEAU_THRESHOLD") != null?
                     Integer.getInteger("jqf.ei.WIDENING_PLATEAU_THRESHOLD") : 10;
     private boolean isWideningPlateauReached = false;
+    private long inputIdx = 0;
+    private String inputID = null;
+    private String firstParentID = null;
+    private int targetNumChildren = Integer.parseInt(System.getProperty("jqf.ei.MAX_MUTATIONS"))  / 2;
 
+    enum Version {
+        ORG ("ORG"),
+        PATCH("PATCH");
+
+        private final String dir;
+
+        Version(String dir) {
+            this.dir = dir;
+        }
+
+        public String getDir() {
+            return this.dir;
+        }
+    }
+
+    enum PointCutLocation {
+        ENTRY("Entry"),
+        EXIT("Exit");
+
+        private final String suffix;
+
+        PointCutLocation(String suffix) {
+            this.suffix = suffix;
+        }
+
+        public String getSuffix() {
+            return suffix;
+        }
+    }
+
+    class InputComparator implements Comparator<Input> {
+        @Override
+        public int compare(Input i1, Input i2) {
+            return compare(i1.getDists(), i2.getDists());
+        }
+
+        public int compare(double[] dists1, double[] dists2) {
+            for (int i = 0; i < dists1.length; i++) {
+                double d1 = dists1[i];
+                double d2 = dists2[i];
+                if (d1 == d2) {
+                    continue;
+                } else {
+                    if (d1 > d2) return 1;
+                    else return -1;
+                }
+            }
+            return 0;
+        }
+    }
 
     public class ComparableInput extends LinearInput {
 
@@ -197,32 +253,18 @@ public class ReachGuidance extends ZestGuidance {
         this.notIgnoreDirectory.mkdirs();
     }
 
-    private boolean shouldKeep(BigList<Double> currentStateDiff) {
-        System.out.println("|stateDiffCoverage| = " + stateDiffCoverage.size());
-        System.out.println("|currentStateDiff| = " + currentStateDiff.size());
-        if (stateDiffCoverage.isEmpty()) {
-            stateDiffCoverage.add(currentStateDiff);
-            return true;
-        }
+    private boolean shouldKeep(double[] dists) {
+        if (savedInputs.isEmpty()) return true;
 
-        // TODO: try with various options.
-        // Currently, we accumulate distances
-        BigList<Double> last = stateDiffCoverage.peekLast();
-        double distOfLast = last.getLast();
-        double distOfCur = currentStateDiff.getLast();
-        System.out.println("distOfLast = " + distOfLast);
-        System.out.println("distOfCur = " + distOfCur);
-        if (distOfLast < distOfCur) {
-            stateDiffCoverage.add(currentStateDiff);
-            return true;
+        Input best = this.savedInputs.get(savedInputs.size() - 1);
+        int result = (new InputComparator()).compare(dists, best.getDists());
+        if (result > 0) return true;
+        else {
+            long elapsedTime = new Date().getTime() - startTime.getTime();
+            double temp = this.temparature(elapsedTime) / 2d;
+            if (Math.random() < temp) return true;
+            else return false;
         }
-    //    TargetCoverage.resetHit();
-//        if (TargetCoverage.isTargetHit() && Log.getActualCount() > 0) {
-//
-//           return true;
-//        }
-
-        return false;
     }
 
     // public void saveInputs(double ... dist)
@@ -237,10 +279,9 @@ public class ReachGuidance extends ZestGuidance {
         this.curCorpusSize++;
 
         // First, save to disk (note: we issue IDs to everyone, but only write to disk  if valid)
-        int newInputIdx = numSavedInputs++;
-        String saveFileName = String.format("id_%06d", newInputIdx);
+        numSavedInputs++;
         String how = currentInput.desc;
-        File saveFile = new File(savedCorpusDirectory, saveFileName);
+        File saveFile = new File(savedCorpusDirectory, System.getProperty("jqf.ei.inputID"));
         if (SAVE_ONLY_VALID == false || currentInput.valid) {
             writeCurrentInputToFile(saveFile);
             infoLog("Saved - %s %s %s", saveFile.getPath(), how, why);
@@ -258,7 +299,7 @@ public class ReachGuidance extends ZestGuidance {
         savedInputs.add(currentInput);
 
         // Third, store basic book-keeping data
-        currentInput.id = newInputIdx;
+        currentInput.id = inputIdx;
         currentInput.saveFile = saveFile;
         currentInput.coverage = new Coverage(runCoverage);
         currentInput.nonZeroCoverage = runCoverage.getNonZeroCount();
@@ -287,48 +328,45 @@ public class ReachGuidance extends ZestGuidance {
         return this.diffOutFound;
     }
 
-    private double getDistance(String logDir, String inputID, String parentInputID, BigList<Double> currentStateDiff,
-                               List<MethodInfo> methods, String suffix) {
+    private double getDistance(String inputID1, String inputID2, List<MethodInfo> methods,
+                               Version version1, Version version2, PointCutLocation loc) {
         if (methods == null) return 0;
-        String chosenID = null;
-        String chosenDir = "ORG";
-        if(parentInputID==null) chosenID=inputID;
-        else {chosenID = parentInputID; chosenDir = "PATCH";}
         double distance = 0d;
         for (int i = methods.size() - 1; i >= 0; i--) {
-            MethodInfo m  = methods.get(i);
-            Path orgD = Paths.get(logDir + File.separator + chosenDir, chosenID, m.getMethodName()+suffix+".xml");
-            Path patchD = Paths.get(logDir + File.separator + "PATCH", inputID, m.getMethodName()+suffix+".xml");
-            if(!Files.exists(orgD)||!Files.exists(patchD)){
-                System.out.println("No matching method exists");
+            MethodInfo m = methods.get(i);
+            Path file1 = Paths.get(logDir + File.separator + version1.getDir(),
+                    inputID1, m.getMethodName() + loc.getSuffix() + ".xml");
+            Path file2 = Paths.get(logDir + File.separator + version2.getDir(),
+                    inputID2, m.getMethodName() + loc.getSuffix() + ".xml");
+            if (!Files.exists(file1) || !Files.exists(file2)) {
+                infoLog("No matching method exists");
                 continue;
             }
             try {
-                String orgContents = new String(Files.readAllBytes(orgD));
-                String patchContents = new String(Files.readAllBytes(patchD));
+                String orgContents = new String(Files.readAllBytes(file1));
+                String patchContents = new String(Files.readAllBytes(file2));
                 Diff myDiff = DiffBuilder.compare(orgContents).withTest(patchContents).build();
                 for (Difference xmlDiff : myDiff.getDifferences()) {
-
                     Comparison cmp = xmlDiff.getComparison();
 
                     // TODO: this is temporary code to ignore random variables
                     if (cmp.getControlDetails().getParentXPath().contains("random"))
                         continue;
 
-                    Comparison.Detail control = cmp.getControlDetails();
-                    Object v1 = control.getValue();
+                    Object v1 = cmp.getControlDetails().getValue();
                     double val1 = getDiffVal(v1);
                     Comparison.Detail test = cmp.getTestDetails();
                     Object v2 = test.getValue();
                     double val2 = getDiffVal(v2);
-                    if(val1==Double.MAX_VALUE||val1==Double.MIN_VALUE||val2==Double.MAX_VALUE||val2==Double.MIN_VALUE) continue;
-                    if(Double.isNaN(val1)||Double.isNaN(val2)){
+                    if (val1 == Double.MAX_VALUE || val1 == Double.MIN_VALUE || val2 == Double.MAX_VALUE || val2 == Double.MIN_VALUE)
+                        continue;
+                    if (Double.isNaN(val1) || Double.isNaN(val2)) {
                         String s1 = (String) v1;
                         String s2 = (String) v2;
                         LevenshteinDistance levenshteinDistance = new LevenshteinDistance();
-                        double temp = levenshteinDistance.apply(s1,s2);
-                        if(temp==Double.MAX_VALUE||temp==Double.MIN_VALUE) continue;
-                        distance += temp;
+                        double strDist = levenshteinDistance.apply(s1, s2);
+                        if (strDist == Double.MAX_VALUE || strDist == Double.MIN_VALUE) continue;
+                        distance += strDist;
                     } else {
                         distance += Math.abs(val1 - val2);
                     }
@@ -342,47 +380,40 @@ public class ReachGuidance extends ZestGuidance {
         return distance;
     }
 
+    private double getVersionDistance(String inputID, List<MethodInfo> methods, PointCutLocation loc) {
+        return getDistance(inputID, inputID, methods, Version.ORG, Version.PATCH, loc);
+    }
+
+    private double getParentDistance(String parentID, String inputID, List<MethodInfo> methods, PointCutLocation loc) {
+        return getDistance(parentID, inputID, methods, Version.PATCH, Version.PATCH, loc);
+    }
+
     public void handleResult() {
-        // TODO: compute the difference between the two xml files
-        String logDir = System.getProperty("jqf.ei.logDir");
-        String inputID = System.getProperty("jqf.ei.inputID");
         List<MethodInfo> callers = DumpUtil.getCallers();
         List<MethodInfo> callees = DumpUtil.getCallees();
 
         if ((callers == null && callees == null)) return;
 
-        BigList<Double> currentStateDiff = new BigList<>();
-        // compute total distance at the caller level
-        double versionDistCallerExit = getDistance(logDir, inputID,null, currentStateDiff, callers, "Exit");
-        currentStateDiff.add(versionDistCallerExit);
+        double versionDistCallerExit = getVersionDistance(inputID, callers, PointCutLocation.EXIT);
+        double versionDistCalleeExit = getVersionDistance(inputID, callees, PointCutLocation.EXIT);
+        double versionDistCalleeEntry = getVersionDistance(inputID, callees, PointCutLocation.ENTRY);
 
-        // compute total distance at the callee (exit)
-        double versionDistCalleeExit = getDistance(logDir, inputID,null,currentStateDiff, callees, "Exit");
-        currentStateDiff.add(versionDistCalleeExit);
-
-        double versionDistCalleeEntry = getDistance(logDir, inputID,null, currentStateDiff, callees, "Entry");
-        currentStateDiff.add(versionDistCalleeEntry);
-        String parentInputID = System.getProperty("jqf.ei.parentInputID");
-        if(parentInputID==null){
-            saveInputs(new double[]{versionDistCallerExit,versionDistCallerExit,versionDistCalleeEntry,0,0,0});
+        double parentDistCallerExit = 0;
+        double parentDistCalleeExit = 0;
+        double parentDistCalleeEntry = 0;
+        if (firstParentID != null) {
+            parentDistCallerExit = getParentDistance(firstParentID, inputID, callers, PointCutLocation.EXIT);
+            parentDistCalleeExit = getParentDistance(firstParentID, inputID, callees, PointCutLocation.EXIT);
+            parentDistCalleeEntry = getParentDistance(firstParentID, inputID, callees, PointCutLocation.ENTRY);
         }
-        double parentDistCallerExit = getDistance(logDir, inputID,parentInputID, currentStateDiff, callers, "Exit");
-        currentStateDiff.add(parentDistCallerExit);
 
-        // compute total distance at the callee (exit)
-        double parentDistCalleeExit = getDistance(logDir, inputID,parentInputID,currentStateDiff, callees, "Exit");
-        currentStateDiff.add(parentDistCalleeExit);
-
-        double parentDistCalleeEntry = getDistance(logDir, inputID,parentInputID, currentStateDiff, callees, "Entry");
-        currentStateDiff.add(parentDistCalleeEntry);
-
-
-        if (true/*shouldKeep(currentStateDiff)*/) {
-            saveInputs(new double[]{versionDistCallerExit,versionDistCalleeExit,versionDistCalleeEntry,
-                    parentDistCallerExit, parentDistCalleeExit, parentDistCalleeEntry});
+        double[] dists = new double[]{versionDistCallerExit, versionDistCalleeExit, versionDistCalleeEntry,
+                parentDistCallerExit, parentDistCalleeExit, parentDistCalleeEntry};
+        if (shouldKeep(dists)) {
+            saveInputs(dists);
         }
-        System.out.println(Arrays.toString(new double[]{versionDistCallerExit,versionDistCalleeExit,versionDistCalleeEntry,
-                parentDistCallerExit, parentDistCalleeExit, parentDistCalleeEntry}));
+//        System.out.println(Arrays.toString(new double[]{versionDistCallerExit,versionDistCalleeExit,versionDistCalleeEntry,
+//                parentDistCallerExit, parentDistCalleeExit, parentDistCalleeEntry}));
     }
 
     /**
@@ -397,6 +428,8 @@ public class ReachGuidance extends ZestGuidance {
     public ReachGuidance(String testName, long seed,
                          Duration duration, File outputDirectory) throws IOException {
         super(testName, duration, outputDirectory);
+        logDir = System.getProperty("jqf.ei.logDir");
+        maxMutations = Integer.parseInt(System.getProperty("jqf.ei.MAX_MUTATIONS"));
         if (seed != -1) this.random.setSeed(seed);
         buildCFGAnalysis();
     }
@@ -415,6 +448,8 @@ public class ReachGuidance extends ZestGuidance {
                          Duration duration, File outputDirectory,
                          File[] seedInputFiles) throws IOException {
         super(testName, duration, outputDirectory, seedInputFiles);
+        logDir = System.getProperty("jqf.ei.logDir");
+        maxMutations = Integer.parseInt(System.getProperty("jqf.ei.MAX_MUTATIONS"));
         if (seed != -1) this.random.setSeed(seed);
         buildCFGAnalysis();
     }
@@ -447,13 +482,8 @@ public class ReachGuidance extends ZestGuidance {
             return false;
         }
 
-        if (USE_CORPUS_SIZE && this.curCorpusSize > this.maxCorpusSize) {
-            System.out.println("stop because corpus size exceeds the max");
-            return false;
-        }
         String inputID = System.getProperty("jqf.ei.inputID");
-        String currentDir = System.getProperty("user.dir");
-        String path = outputDirectory.getPath()+"/diff_out";
+        String path = outputDirectory.getPath() + "/diff_out";
         if(!Files.exists(Paths.get(path))) {
             // System.out.println("Current dir using System:" +currentDir);
             try {
@@ -496,6 +526,8 @@ public class ReachGuidance extends ZestGuidance {
 
         // set inputID
         String saveFileName = String.format("id_%09d", numTrials + 1);
+        inputIdx = numTrials + 1;
+        inputID = saveFileName;
         System.setProperty("jqf.ei.inputID", saveFileName);
 
         // Choose an input to execute based on state of queues
@@ -520,45 +552,27 @@ public class ReachGuidance extends ZestGuidance {
             this.runStart = new Date();
         } else {
             // sorted in an ascending order
-            savedInputs.sort(new Comparator<Input>() {
-                 @Override
-                public int compare(Input i1, Input i2) {
-                   double[] dists1 = i1.getDists();
-                   double[] dists2 = i2.getDists();
-                   for (int i = 0; i < dists1.length; i++) {
-                       double d1 = dists1[i];
-                       double d2 = dists2[i];
-                       if (d1 == d2) {
-                           continue;
-                       } else {
-                           if (d1 > d2) return 1;
-                           else return -1;
-                       }
-                   }
-                   return 0;
-                }
-            });
+            savedInputs.sort(new InputComparator());
+            if (savedInputs.size() > maxCorpusSize) {
+                savedInputs = savedInputs.subList(savedInputs.size() - maxCorpusSize, savedInputs.size());
+            }
+
             // The number of children to produce is determined by how much of the coverage
             // pool this parent input hits
             Input currentParentInput = savedInputs.get(currentParentInputIdx);
-            int targetNumChildren = getTargetChildrenForParent(savedInputs.size(),currentParentInputIdx+1);
             if (numChildrenGeneratedForCurrentParentInput >= targetNumChildren) {
                 // Select the next saved input to fuzz
                 currentParentInputIdx = random.nextInt(savedInputs.size());
+                targetNumChildren = getTargetChildrenForParent(savedInputs.size(), currentParentInputIdx);
                 numChildrenGeneratedForCurrentParentInput = 0;
             }
             Input parent = savedInputs.get(currentParentInputIdx);
-            String parentSaveLogFile = parent.getSaveLogFileName();
-            if(parentSaveLogFile!=null)
-                System.setProperty("jqf.ei.parentInputID", parent.getSaveLogFileName());
+            if (firstParentID == null)
+                firstParentID = String.format("id_%09d", parent.id);
             // Fuzz it to get a new input
             infoLog("Mutating input: %s", parent.desc);
-            currentInput.saveLogFileName = saveFileName;
             currentInput = parent.fuzz(random);
             numChildrenGeneratedForCurrentParentInput++;
-
-
-
 
             // Write it to disk for debugging
             try {
@@ -573,18 +587,18 @@ public class ReachGuidance extends ZestGuidance {
         return createParameterStream();
     }
 
-//    @Override
     protected int getTargetChildrenForParent(int size, int idx) {
-        Date now = new Date();
-        long elapsedTime = now.getTime() - startTime.getTime();
-        long maxMutations = Long.parseLong(System.getProperty("jqf.ei.MAX_MUTATIONS"));
-        double temp = ((double)idx/(double)size*(1-T(elapsedTime)+0.5*T(elapsedTime)));
-        int answer = (int) (maxMutations*temp);
+        idx = idx + 1; // the index should start from 1
+        long elapsedTime = new Date().getTime() - startTime.getTime();
+        double energy = ((double) idx / (double) size) * (1 - temparature(elapsedTime)) + 0.5 * temparature(elapsedTime);
+        int answer = (int) (maxMutations * energy);
         return answer;
     }
 
-    private double T(long elapsedTime) {
-        return Math.pow(20,elapsedTime/maxDurationMillis);
+    private double temparature(long elapsedTime) {
+        double exploitTime = (double) maxDurationMillis / 3d;
+        double ret = Math.pow(20, -(((double) elapsedTime) / exploitTime));
+        return ret;
     }
 
     @Override

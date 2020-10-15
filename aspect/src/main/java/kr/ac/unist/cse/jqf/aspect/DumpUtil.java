@@ -1,10 +1,20 @@
 package kr.ac.unist.cse.jqf.aspect;
 
+import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.converters.ConverterLookup;
+import com.thoughtworks.xstream.converters.ConverterRegistry;
+import com.thoughtworks.xstream.converters.reflection.ReflectionProvider;
+import com.thoughtworks.xstream.core.ClassLoaderReference;
+import com.thoughtworks.xstream.core.JVM;
+import com.thoughtworks.xstream.io.HierarchicalStreamDriver;
+import com.thoughtworks.xstream.io.xml.XppDriver;
+import com.thoughtworks.xstream.mapper.*;
 import kr.ac.unist.cse.jqf.Log;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.Signature;
@@ -32,15 +42,13 @@ public class DumpUtil {
     public static void dumpAtExit(Object returnVal, JoinPoint target) {
         XStream stream = new XStream();
         String xml = null;
-        if(target.getTarget()==null)
+        if (target.getTarget() == null)
             xml = stream.toXML(target.getStaticPart());
         else
             xml = stream.toXML(target.getTarget());
-        Signature signature = target.getSignature();
-        MethodInfo m = new MethodInfo(signature.getDeclaringTypeName(),signature.getName());
-        if(returnVal!=null)
-                xml = String.format("<values>\n<return>\n%s\n</return>\n%s\n</values>", stream.toXML(returnVal), xml);
-        Log.writeToFile(xml,target.getSignature().getName()+"Exit"+".xml");
+        if (returnVal != null)
+            xml = String.format("<values>\n<return>\n%s\n</return>\n%s\n</values>", stream.toXML(returnVal), xml);
+        Log.writeToFile(xml, target.getSignature().getName() + "Exit" + ".xml");
     }
 
     // dump at an entry point
@@ -48,15 +56,15 @@ public class DumpUtil {
         Object[] args = target.getArgs();
         XStream stream = new XStream();
         String xml = null;
-        if(target.getTarget()==null)
+        if (target.getTarget() == null)
             xml = stream.toXML(target.getStaticPart());
         else
             xml = stream.toXML(target.getTarget());
-        if(args != null) {
+        if (args != null) {
             String argsXml = stream.toXML(args);
             xml = String.format("<values>\n<args>\n%s\n</args>\n%s\n</values>", argsXml, xml);
         }
-        Log.writeToFile(xml,target.getSignature().getName()+"Entry"+".xml");
+        Log.writeToFile(xml, target.getSignature().getName() + "Entry" + ".xml");
     }
 
     public static boolean isInteresting(JoinPoint jp) {

@@ -209,7 +209,7 @@ public class ZestCLI2 implements Runnable {
             System.setProperty("jqf.ei.TIMEOUT",
                     String.valueOf(this.timeout));
         }
-        if(this.maxMutations>=0){
+        if (this.maxMutations >= 0) {
             System.setProperty("jqf.ei.MAX_MUTATIONS",
                     String.valueOf(this.maxMutations));
         }

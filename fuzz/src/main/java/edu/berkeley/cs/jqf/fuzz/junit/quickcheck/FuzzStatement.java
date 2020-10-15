@@ -121,7 +121,6 @@ public class FuzzStatement extends Statement {
      */
     @Override
     public void evaluate() throws Throwable {
-        init();
         if (this.loaderForPatch != null) {
             evaluateTwoVersions();
             return;
@@ -359,7 +358,7 @@ public class FuzzStatement extends Statement {
 
                     // we call the patched version
                     System.setProperty("jqf.ei.run_patch", "true");
-                    run(testClass.getName(), method.getName(), this.loaderForPatch, reproGuidance, System.out);
+                    run(testClass.getName(), method.getName(), this.loaderForPatch, reproGuidance);
                     System.setProperty("jqf.ei.run_patch", "false");
                     guidance.reset();
                     guidance.setDiffOutputFound(isDiffOutputFound());
@@ -367,8 +366,7 @@ public class FuzzStatement extends Statement {
                     if (!isDiffOutputFound()) {
                         // we call the original version again
                         // we should retrieve the class loader for the buggy version
-                        run(testClass.getName(), method.getName(), ZestCLI2.loaderForOrg,
-                                reproGuidance, System.out);
+                        run(testClass.getName(), method.getName(), ZestCLI2.loaderForOrg, reproGuidance);
                         DumpUtil.setTargetHit(false);
                     }
 
@@ -393,6 +391,10 @@ public class FuzzStatement extends Statement {
                 throw new MultipleFailureException(failures);
             }
         }
+    }
+
+    private void run(String className, String methodName, ClassLoader loader, ReproGuidance reproGuidance) throws ClassNotFoundException {
+        run(className, methodName, loader, reproGuidance, null);
     }
 
     private void run(String className, String methodName, ClassLoader loader, ReproGuidance reproGuidance, PrintStream out) throws ClassNotFoundException {
@@ -498,44 +500,6 @@ public class FuzzStatement extends Statement {
                 // Not sure if we should report each failing run,
                 // as there may be duplicates
                 throw new MultipleFailureException(failures);
-            }
-        }
-    }
-
-    private void init() {
-        String logDir = System.getProperty("jqf.ei.logDir");
-        String inputID = System.getProperty("jqf.ei.inputID");
-
-        if (logDir == null) {
-            return;
-        }
-
-        Path dir;
-        if (inputID == null)
-            dir = Paths.get(logDir);
-        else
-            dir = Paths.get(logDir, inputID);
-        try {
-            Files.createDirectories(dir);
-        } catch (IOException e) {
-            System.err.println("Failed to create directory " + dir);
-            e.printStackTrace();
-        }
-        List<Path> files = new ArrayList<>();
-        files.add(Paths.get(dir.toString(), "OUT.log"));
-        files.add(Paths.get(dir.toString(), "IN.log"));
-
-        for (Path file : files) {
-            try {
-                Files.deleteIfExists(file);
-            } catch (IOException e) {
-                System.err.println("Failed to delete " + file);
-            }
-
-            try {
-                Files.createFile(file);
-            } catch (IOException e) {
-                System.err.println("Failed to create " + file);
             }
         }
     }
