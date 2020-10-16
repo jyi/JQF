@@ -19,14 +19,8 @@ public class TargetCoverage implements TraceEventVisitor {
 
     protected final boolean verbose = Boolean.getBoolean("jqf.ei.verbose");
 
-    private static boolean isTargetHit = false;
-
     public static boolean isTargetHit() {
-        return isTargetHit;
-    }
-
-    public static void resetHit() {
-        TargetCoverage.isTargetHit = false;
+        return DumpUtil.isTheTargetHit();
     }
 
     public void handleEvent(TraceEvent e) {
@@ -40,38 +34,40 @@ public class TargetCoverage implements TraceEventVisitor {
         return singleton;
     }
 
-    public void extractCallers(){
+    public void extractCallers() {
         try {
             throw new RuntimeException();
         } catch (RuntimeException re) {
             StackTraceElement[] stackTrace = re.getStackTrace();
-            List<MethodInfo> callers = new ArrayList();
-            String s = System.getProperty("jqf.ei.targets");
-            List<String> temp = Arrays.asList(s.substring(1, s.length() - 1).split(", "));
-            List<String> targets = new ArrayList<>();
-            for (String t: temp){
-                String z = t.substring(0,t.lastIndexOf('/'));
-                z  = z.replace('/','.');
-                targets.add(z);
+            List<MethodInfo> callChainToTargetMethod = new ArrayList();
+            String targetInfo = System.getProperty("jqf.ei.targets");
+            List<String> targets = Arrays.asList(targetInfo.substring(1, targetInfo.length() - 1).split(", "));
+            List<String> packages = new ArrayList<>();
+            for (String target : targets) {
+                String pkg = target.substring(0, target.lastIndexOf('/')).replace('/', '.');
+                packages.add(pkg);
+            }
 
-            }
-            for (StackTraceElement method: stackTrace){
-                String className= method.getClassName();
-                if (targets.contains(className.substring(0,className.lastIndexOf('.')))
+            for (StackTraceElement method : stackTrace) {
+                String className = method.getClassName();
+                if (packages.contains(className.substring(0, className.lastIndexOf('.')))
                         && !className.contains("JQF"))
-                    if(!callers.contains(new MethodInfo(method.getClassName(), method.getMethodName())))
-                            callers.add(new MethodInfo(method.getClassName(), method.getMethodName()));
+                    if (!callChainToTargetMethod.contains(new MethodInfo(method.getClassName(), method.getMethodName())))
+                        callChainToTargetMethod.add(new MethodInfo(method.getClassName(), method.getMethodName()));
             }
-            DumpUtil.setCallers(callers);
+            DumpUtil.setCallerChainToTargetMethod(callChainToTargetMethod);
         }
     }
+
     @Override
     public void visitTargetEvent(TargetEvent e) {
-        infoLog("Target is hit at %s: %d", e.getFileName(), e.getLineNumber());
-        isTargetHit = true;
-        covered.add(new Target(e.getFileName(), e.getLineNumber()));
-        extractCallers();
-        DumpUtil.setTargetHit(true);
+        if (!DumpUtil.isTheTargetHit()) {
+            infoLog("Target is hit at %s: %d", e.getFileName(), e.getLineNumber());
+            covered.add(new Target(e.getFileName(), e.getLineNumber()));
+            extractCallers();
+            DumpUtil.insideTargetMethod(true);
+            DumpUtil.setTargetHit(true);
+        }
     }
 
     public List<Target> getCoveredTargets() {

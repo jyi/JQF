@@ -339,10 +339,16 @@ public class PoracleGuidance extends ZestGuidance {
                     inputID1, m.getMethodName() + loc.getSuffix() + ".xml");
             Path file2 = Paths.get(logDir + File.separator + version2.getDir(),
                     inputID2, m.getMethodName() + loc.getSuffix() + ".xml");
-            if (!Files.exists(file1) || !Files.exists(file2)) {
-                infoLog("No matching method exists");
+            if (!Files.exists(file1)) {
+                infoLog("No matching method exists: %s", file1);
                 continue;
             }
+
+            if (!Files.exists(file2)) {
+                infoLog("No matching method exists: %s", file2);
+                continue;
+            }
+
             try {
                 String orgContents = new String(Files.readAllBytes(file1));
                 String patchContents = new String(Files.readAllBytes(file2));
@@ -389,31 +395,36 @@ public class PoracleGuidance extends ZestGuidance {
         return getDistance(parentID, inputID, methods, Version.PATCH, Version.PATCH, loc);
     }
 
-    public void handleResult() {
-        List<MethodInfo> callers = DumpUtil.getCallers();
-        List<MethodInfo> callees = DumpUtil.getCallees();
-
-        if ((callers == null && callees == null)) return;
-
-        double versionDistCallerExit = getVersionDistance(inputID, callers, PointCutLocation.EXIT);
-        double versionDistCalleeExit = getVersionDistance(inputID, callees, PointCutLocation.EXIT);
-        double versionDistCalleeEntry = getVersionDistance(inputID, callees, PointCutLocation.ENTRY);
+    public void handleResult(boolean targetHit) {
+        double versionDistCallerExit = 0;
+        double versionDistCalleeExit = 0;
+        double versionDistCalleeEntry = 0;
 
         double parentDistCallerExit = 0;
         double parentDistCalleeExit = 0;
         double parentDistCalleeEntry = 0;
-        if (parentID != null) {
-            parentDistCallerExit = getParentDistance(parentID, inputID, callers, PointCutLocation.EXIT);
-            parentDistCalleeExit = getParentDistance(parentID, inputID, callees, PointCutLocation.EXIT);
-            parentDistCalleeEntry = getParentDistance(parentID, inputID, callees, PointCutLocation.ENTRY);
-        }
 
-        double[] dists = new double[]{versionDistCallerExit, versionDistCalleeExit, versionDistCalleeEntry,
-                parentDistCallerExit, parentDistCalleeExit, parentDistCalleeEntry};
-        if (shouldKeep(dists)) {
-            infoLog("new distances: " + distsToString(dists));
-            System.out.println("new distances: " + distsToString(dists));
-            saveInputs(dists);
+        List<MethodInfo> callers = DumpUtil.getCallerChain();
+        List<MethodInfo> callees = DumpUtil.getCalleesOfTaregetMethod();
+
+        if (targetHit && callers != null && callees != null) {
+            versionDistCallerExit = getVersionDistance(inputID, callers, PointCutLocation.EXIT);
+            versionDistCalleeExit = getVersionDistance(inputID, callees, PointCutLocation.EXIT);
+            versionDistCalleeEntry = getVersionDistance(inputID, callees, PointCutLocation.ENTRY);
+
+            if (parentID != null) {
+                parentDistCallerExit = getParentDistance(parentID, inputID, callers, PointCutLocation.EXIT);
+                parentDistCalleeExit = getParentDistance(parentID, inputID, callees, PointCutLocation.EXIT);
+                parentDistCalleeEntry = getParentDistance(parentID, inputID, callees, PointCutLocation.ENTRY);
+            }
+
+            double[] dists = new double[]{versionDistCallerExit, versionDistCalleeExit, versionDistCalleeEntry,
+                    parentDistCallerExit, parentDistCalleeExit, parentDistCalleeEntry};
+
+            if (shouldKeep(dists)) {
+                infoLog("new distances: " + distsToString(dists));
+                saveInputs(dists);
+            }
         }
     }
 
@@ -632,7 +643,9 @@ public class PoracleGuidance extends ZestGuidance {
     /** Handles a trace event generated during test execution */
     protected void handleEvent(TraceEvent e) {
         super.handleEvent(e);
-        targetCoverage.handleEvent(e);
+        if (Boolean.getBoolean("jqf.ei.run_patch")) {
+            targetCoverage.handleEvent(e);
+        }
     }
 
     public HandleResult handleResultOfOrg(Result result, Throwable error) throws GuidanceException {

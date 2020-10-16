@@ -60,6 +60,7 @@ import edu.berkeley.cs.jqf.fuzz.guidance.StreamBackedRandom;
 import edu.berkeley.cs.jqf.fuzz.Fuzz;
 import edu.berkeley.cs.jqf.fuzz.junit.GuidedFuzzing;
 import edu.berkeley.cs.jqf.fuzz.junit.TrialRunner;
+import edu.berkeley.cs.jqf.fuzz.util.TargetCoverage;
 import kr.ac.unist.cse.jqf.Log;
 import kr.ac.unist.cse.jqf.aspect.DumpUtil;
 import kr.ac.unist.cse.jqf.fuzz.generator.InRangeFactory;
@@ -255,6 +256,8 @@ public class FuzzStatement extends Statement {
             Log.turnOnRunBuggyVersion();
         }
 
+        // NOTE: When the original version is called the second time,
+        // we use evaluatePatch to use the repro guidance.
         if (useRepro) {
             evaluatePatch((ReproGuidance) ReproRun.getCurrentGuidance(),
                     generators);
@@ -359,14 +362,21 @@ public class FuzzStatement extends Statement {
                     guidance.reset();
                     guidance.setDiffOutputFound(isDiffOutputFound());
 
-                    if (!isDiffOutputFound()) {
+                    boolean targetHit = false;
+                    if (DumpUtil.isTheTargetHit() && !isDiffOutputFound()) {
+                        targetHit = true;
                         // we call the original version again
                         // we should retrieve the class loader for the buggy version
-                        run(testClass.getName(), method.getName(), ZestCLI2.loaderForOrg, reproGuidance);
+                        DumpUtil.runOrgVerAgain = true;
+                        ReproGuidance reproGuidance2 = new ReproGuidance(info.getInputFile(), null);
+                        run(testClass.getName(), method.getName(), ZestCLI2.loaderForOrg, reproGuidance2);
+                        DumpUtil.runOrgVerAgain = false;
                         DumpUtil.setTargetHit(false);
+                        DumpUtil.exitMethods.clear();
+                        DumpUtil.enterMethods.clear();
                     }
 
-                    guidance.handleResult();
+                    guidance.handleResult(targetHit);
                 }
             }
         } catch (GuidanceException e) {

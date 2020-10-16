@@ -1,41 +1,49 @@
 package kr.ac.unist.cse.jqf.aspect;
 
-import java.lang.reflect.Constructor;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
-import java.util.regex.Pattern;
+import java.util.Set;
 
 import com.thoughtworks.xstream.XStream;
-import com.thoughtworks.xstream.converters.ConverterLookup;
-import com.thoughtworks.xstream.converters.ConverterRegistry;
-import com.thoughtworks.xstream.converters.reflection.ReflectionProvider;
-import com.thoughtworks.xstream.core.ClassLoaderReference;
-import com.thoughtworks.xstream.core.JVM;
-import com.thoughtworks.xstream.io.HierarchicalStreamDriver;
-import com.thoughtworks.xstream.io.xml.XppDriver;
-import com.thoughtworks.xstream.mapper.*;
 import kr.ac.unist.cse.jqf.Log;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.Signature;
+import org.aspectj.weaver.Dump;
 
 public class DumpUtil {
 
     // the last item of callers is the target method
-    private static List<MethodInfo> callers;
-    private static final List<MethodInfo> callees = new ArrayList<>();
+    private static List<MethodInfo> callerChain;
+    public static Set<MethodInfo> exitMethods = new HashSet<>();
+    public static Set<MethodInfo> enterMethods = new HashSet<>();
+    private static final List<MethodInfo> calleesOfTaregetMethod = new ArrayList<>();
     private static boolean isTheTargetHit = false;
-    private static boolean isTheTargetReturned = false;
+    private static boolean isInsideTargetMethod = false;
+    public static boolean runOrgVerAgain = false;
 
-    public static List<MethodInfo> getCallers() {
-        return callers;
-    }
-    public static List<MethodInfo> getCallees() {
-        return callees;
+    public static List<MethodInfo> getCallerChain() {
+        return callerChain;
     }
 
-    public static void setCallers(List<MethodInfo> callers) {
-        DumpUtil.callers = callers;
+    public static List<MethodInfo> getCalleesOfTaregetMethod() {
+        return calleesOfTaregetMethod;
+    }
+
+    public static void setCallerChainToTargetMethod(List<MethodInfo> callerChain) {
+        DumpUtil.callerChain = callerChain;
+    }
+
+    public static void addExitMethod(JoinPoint jp) {
+        Signature signature = jp.getSignature();
+        MethodInfo m = new MethodInfo(signature.getDeclaringTypeName(), signature.getName());
+        exitMethods.add(m);
+    }
+
+    public static void addEnterMethod(JoinPoint jp) {
+        Signature signature = jp.getSignature();
+        MethodInfo m = new MethodInfo(signature.getDeclaringTypeName(), signature.getName());
+        enterMethods.add(m);
     }
 
     // dump at an exit point
@@ -67,41 +75,75 @@ public class DumpUtil {
         Log.writeToFile(xml, target.getSignature().getName() + "Entry" + ".xml");
     }
 
-    public static boolean isInteresting(JoinPoint jp) {
+    public static boolean isInterestingExit(JoinPoint jp) {
+        if (DumpUtil.runOrgVerAgain) {
+            Signature signature = jp.getSignature();
+            MethodInfo m = new MethodInfo(signature.getDeclaringTypeName(), signature.getName());
+            return DumpUtil.exitMethods != null && DumpUtil.exitMethods.contains(m);
+        }
+
+        if (!isTheTargetHit()) return false;
+
         Signature signature = jp.getSignature();
-        if (callers != null) {
-            for (MethodInfo method : callers) {
+        if (signature.getDeclaringTypeName().contains("JQF_")) return false;
+
+        if (callerChain != null) {
+            for (MethodInfo method : callerChain) {
                 if (method.equals(new MethodInfo(signature.getDeclaringTypeName(), signature.getName())))
                     return true;
             }
         }
-        if (callees != null) {
-            for (MethodInfo method : callees) {
+
+        if (calleesOfTaregetMethod != null) {
+            for (MethodInfo method : calleesOfTaregetMethod) {
                 if (method.equals(new MethodInfo(signature.getDeclaringTypeName(), signature.getName())))
                     return true;
             }
         }
+
         return false;
     }
 
-    public static boolean isTargetFunction(JoinPoint jp){
-        if(callers==null) return false;
-        Signature signature = jp.getSignature();
-        MethodInfo m = new MethodInfo(signature.getDeclaringTypeName(),signature.getName());
-        MethodInfo targetInfo = callers.get(0);
-        if(m.equals(targetInfo))
-            return  true;
-        return false;
-    }
+    public static boolean isInterestingEntry(JoinPoint jp) {
+        if (DumpUtil.runOrgVerAgain) {
+            Signature signature = jp.getSignature();
+            MethodInfo m = new MethodInfo(signature.getDeclaringTypeName(), signature.getName());
+            return DumpUtil.enterMethods != null && DumpUtil.enterMethods.contains(m);
+        }
 
-    // returns true if jp is a callee of the target function
-    public static boolean addCallee(JoinPoint jp) {
+        if (!DumpUtil.isTheTargetHit()) return false;
+
         Signature signature = jp.getSignature();
-        MethodInfo m = new MethodInfo(signature.getDeclaringTypeName(),signature.getName());
-        if(callees.contains(m)) return true;
-        if(callees.size() >= 1||callers.contains(m)) return false;
-        callees.add(m);
+        MethodInfo m = new MethodInfo(signature.getDeclaringTypeName(), signature.getName());
+
+        if (!DumpUtil.insideTargetMethod()) return false;
+        if (DumpUtil.callerChain != null && DumpUtil.callerChain.get(0) != null
+                && DumpUtil.callerChain.get(0).equals(m)) return false;
+
         return true;
+    }
+
+    public static boolean isTargetCallee(JoinPoint jp) {
+        Signature signature = jp.getSignature();
+        MethodInfo m = new MethodInfo(signature.getDeclaringTypeName(), signature.getName());
+
+        return calleesOfTaregetMethod != null && calleesOfTaregetMethod.contains(m);
+    }
+
+    public static boolean isTargetMethod(JoinPoint jp) {
+        if (callerChain == null) return false;
+        Signature signature = jp.getSignature();
+        MethodInfo m = new MethodInfo(signature.getDeclaringTypeName(), signature.getName());
+        MethodInfo targetInfo = callerChain.get(0);
+        return m.equals(targetInfo);
+    }
+
+    public static void addTargetCallee(JoinPoint jp) {
+        Signature signature = jp.getSignature();
+        MethodInfo m = new MethodInfo(signature.getDeclaringTypeName(), signature.getName());
+
+        if (!calleesOfTaregetMethod.contains(m))
+            calleesOfTaregetMethod.add(m);
     }
 
     public static boolean isTheTargetHit() {
@@ -111,8 +153,12 @@ public class DumpUtil {
     public static void setTargetHit(boolean val) {
         DumpUtil.isTheTargetHit = val;
     }
-    public static void setTargetReturned(boolean b){ isTheTargetReturned=b; }
-    public static boolean isTheTargetReturned() {
-        return DumpUtil.isTheTargetReturned;
+
+    public static void insideTargetMethod(boolean b) {
+        isInsideTargetMethod = b;
+    }
+
+    public static boolean insideTargetMethod() {
+        return DumpUtil.isInsideTargetMethod;
     }
 }
