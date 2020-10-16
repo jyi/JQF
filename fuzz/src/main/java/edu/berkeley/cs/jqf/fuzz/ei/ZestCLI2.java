@@ -31,7 +31,7 @@
 package edu.berkeley.cs.jqf.fuzz.ei;
 
 import edu.berkeley.cs.jqf.fuzz.junit.GuidedFuzzing;
-import edu.berkeley.cs.jqf.fuzz.reach.ReachGuidance;
+import edu.berkeley.cs.jqf.fuzz.reach.PoracleGuidance;
 import edu.berkeley.cs.jqf.fuzz.reach.Target;
 import edu.berkeley.cs.jqf.instrument.InstrumentingClassLoader;
 import kr.ac.unist.cse.jqf.Log;
@@ -251,8 +251,8 @@ public class ZestCLI2 implements Runnable {
             if (targets != null) {
                 System.setProperty("jqf.ei.targets", Arrays.toString(targets));
                 guidance = seedFiles.length > 0 ?
-                        new ReachGuidance(title, this.seed, duration, this.outputDirectory, seedFiles) :
-                        new ReachGuidance(title, this.seed, duration, this.outputDirectory);
+                        new PoracleGuidance(title, this.seed, duration, this.outputDirectory, seedFiles) :
+                        new PoracleGuidance(title, this.seed, duration, this.outputDirectory);
             } else {
                 guidance = seedFiles.length > 0 ?
                         new ZestGuidance(title, duration, this.outputDirectory, seedFiles) :

@@ -62,7 +62,7 @@ import org.xmlunit.diff.Difference;
  * {@link Random}, making it effectively an unguided random test input
  * generator.
  */
-public class ReachGuidance extends ZestGuidance {
+public class PoracleGuidance extends ZestGuidance {
 
     private final String logDir;
     private final int maxMutations;
@@ -269,7 +269,7 @@ public class ReachGuidance extends ZestGuidance {
 
     // public void saveInputs(double ... dist)
     public void saveInputs(double ... dist) {
-        Set<Object> responsibilities = computeResponsibilities(ReachGuidance.valid);
+        Set<Object> responsibilities = computeResponsibilities(PoracleGuidance.valid);
         String reason = "+poracle";
         GuidanceException.wrap(() -> saveCurrentInput(dist, responsibilities, reason));
     }
@@ -435,8 +435,8 @@ public class ReachGuidance extends ZestGuidance {
      * @param outputDirectory the directory where fuzzing results will be written
      * @throws IOException if the output directory could not be prepared
      */
-    public ReachGuidance(String testName, long seed,
-                         Duration duration, File outputDirectory) throws IOException {
+    public PoracleGuidance(String testName, long seed,
+                           Duration duration, File outputDirectory) throws IOException {
         super(testName, duration, outputDirectory);
         logDir = System.getProperty("jqf.ei.logDir");
         maxMutations = Integer.parseInt(System.getProperty("jqf.ei.MAX_MUTATIONS"));
@@ -454,9 +454,9 @@ public class ReachGuidance extends ZestGuidance {
      * @param seedInputFiles one or more input files to be used as initial inputs
      * @throws IOException if the output directory could not be prepared
      */
-    public ReachGuidance(String testName, long seed,
-                         Duration duration, File outputDirectory,
-                         File[] seedInputFiles) throws IOException {
+    public PoracleGuidance(String testName, long seed,
+                           Duration duration, File outputDirectory,
+                           File[] seedInputFiles) throws IOException {
         super(testName, duration, outputDirectory, seedInputFiles);
         logDir = System.getProperty("jqf.ei.logDir");
         maxMutations = Integer.parseInt(System.getProperty("jqf.ei.MAX_MUTATIONS"));
@@ -614,7 +614,7 @@ public class ReachGuidance extends ZestGuidance {
     @Override
     public Consumer<TraceEvent> generateCallBack(Thread thread) {
         if (appThread != null) {
-            throw new IllegalStateException(ReachGuidance.class +
+            throw new IllegalStateException(PoracleGuidance.class +
                     " only supports single-threaded apps at the moment");
         }
         appThread = thread;
@@ -638,7 +638,7 @@ public class ReachGuidance extends ZestGuidance {
         this.numTrials++;
 
         boolean valid = result == Result.SUCCESS;
-        ReachGuidance.valid = valid;
+        PoracleGuidance.valid = valid;
         if (valid) {
             // Increment valid counter
             numValid++;

@@ -29,13 +29,9 @@
 package edu.berkeley.cs.jqf.fuzz.junit.quickcheck;
 import java.io.EOFException;
 import java.io.File;
-import java.io.IOException;
 import java.io.PrintStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -57,7 +53,7 @@ import edu.berkeley.cs.jqf.fuzz.guidance.GuidanceException;
 import edu.berkeley.cs.jqf.fuzz.guidance.TimeoutException;
 import edu.berkeley.cs.jqf.fuzz.junit.ReproRun;
 import edu.berkeley.cs.jqf.fuzz.random.NoGuidance;
-import edu.berkeley.cs.jqf.fuzz.reach.ReachGuidance;
+import edu.berkeley.cs.jqf.fuzz.reach.PoracleGuidance;
 import edu.berkeley.cs.jqf.fuzz.repro.ReproGuidance;
 import edu.berkeley.cs.jqf.fuzz.guidance.Result;
 import edu.berkeley.cs.jqf.fuzz.guidance.StreamBackedRandom;
@@ -263,12 +259,12 @@ public class FuzzStatement extends Statement {
             evaluatePatch((ReproGuidance) ReproRun.getCurrentGuidance(),
                     generators);
         } else {
-            evaluateOrg((ReachGuidance) GuidedFuzzing.getCurrentGuidance(),
+            evaluateOrg((PoracleGuidance) GuidedFuzzing.getCurrentGuidance(),
                     generators);
         }
     }
 
-    private void evaluateOrg(ReachGuidance guidance, List<Generator<?>> generators) throws Throwable {
+    private void evaluateOrg(PoracleGuidance guidance, List<Generator<?>> generators) throws Throwable {
         // Keep fuzzing until no more input or I/O error with guidance
         try {
             // Keep fuzzing as long as guidance wants to
@@ -349,7 +345,7 @@ public class FuzzStatement extends Statement {
                 }
 
                 // Inform guidance about the outcome of this trial
-                ReachGuidance.HandleResult info = guidance.handleResultOfOrg(result, error);
+                PoracleGuidance.HandleResult info = guidance.handleResultOfOrg(result, error);
                 if (info.isInputNotIgnored()) {
                     System.out.println("Succeeded to log out actual");
                     // run patched version
