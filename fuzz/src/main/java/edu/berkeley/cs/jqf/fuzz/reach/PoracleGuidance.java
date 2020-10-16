@@ -85,7 +85,7 @@ public class PoracleGuidance extends ZestGuidance {
     private boolean isWideningPlateauReached = false;
     private long inputIdx = 0;
     private String inputID = null;
-    private String firstParentID = null;
+    private String parentID = null;
     private int targetNumChildren = Integer.parseInt(System.getProperty("jqf.ei.MAX_MUTATIONS"))  / 2;
 
     enum Version {
@@ -401,10 +401,10 @@ public class PoracleGuidance extends ZestGuidance {
         double parentDistCallerExit = 0;
         double parentDistCalleeExit = 0;
         double parentDistCalleeEntry = 0;
-        if (firstParentID != null) {
-            parentDistCallerExit = getParentDistance(firstParentID, inputID, callers, PointCutLocation.EXIT);
-            parentDistCalleeExit = getParentDistance(firstParentID, inputID, callees, PointCutLocation.EXIT);
-            parentDistCalleeEntry = getParentDistance(firstParentID, inputID, callees, PointCutLocation.ENTRY);
+        if (parentID != null) {
+            parentDistCallerExit = getParentDistance(parentID, inputID, callers, PointCutLocation.EXIT);
+            parentDistCalleeExit = getParentDistance(parentID, inputID, callees, PointCutLocation.EXIT);
+            parentDistCalleeEntry = getParentDistance(parentID, inputID, callees, PointCutLocation.ENTRY);
         }
 
         double[] dists = new double[]{versionDistCallerExit, versionDistCalleeExit, versionDistCalleeEntry,
@@ -577,8 +577,7 @@ public class PoracleGuidance extends ZestGuidance {
                 numChildrenGeneratedForCurrentParentInput = 0;
             }
             Input parent = savedInputs.get(currentParentInputIdx);
-            if (firstParentID == null)
-                firstParentID = String.format("id_%09d", parent.id);
+            parentID = String.format("id_%09d", parent.id);
             // Fuzz it to get a new input
             infoLog("Mutating input: %s", parent.desc);
             currentInput = parent.fuzz(random);
