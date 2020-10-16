@@ -298,4 +298,18 @@ public class HypergeometricDistributionTest extends IntegerDistributionAbstractT
             Assert.assertTrue("sample=" + sample, sample <= n);
         }
     }
+
+    @Test
+    public void testMath1021_variation() {
+        int popSize = 43130568;
+        int n = 50;
+        int sampleSize = 41952090;
+        double p = 0.9176672111146251;
+
+        HypergeometricDistribution dist = new HypergeometricDistribution(popSize, sampleSize, n);
+
+        // the original test stmt: int sample = dist.sample();
+        // the body of sample(): inverseCumulativeProbability(random.nextDouble());
+        int actual = dist.inverseCumulativeProbability(p);
+    }
 }
