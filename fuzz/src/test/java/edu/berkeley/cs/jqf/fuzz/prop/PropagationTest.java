@@ -88,7 +88,8 @@ public class PropagationTest {
                 "--widening-plateau-threshold", "10",
                 "--verbose",
                 "--max-mutations", "50",
-                "--duration", "12h",
+                "--duration", "1h",
+                "--exploreDuration", "10m",
                 //"--delta", "1e-6",
                 "-o", "../src/test/resources/fuzz-results-patch",
                 "../src/test/resources/patches/Patch27/Math2b/target/test-classes:../src/test/resources/patches/Patch27/Math2b/target/classes:../../aspect/tracing.jar",
@@ -129,6 +130,7 @@ public class PropagationTest {
                 "../src/test/resources/patches/Patch197/Math25p/target/test-classes:../src/test/resources/patches/Patch197/Math25p/target/classes",
                 "org.apache.commons.math3.optimization.fitting.JQF_HarmonicFitterTest", "testMath844"});
     }
+
     @Test
     public void runZestCLI2_patch32() throws IOException {
         System.setProperty("org.aspectj.weaver.loadtime.configuration", "aspect/aop.xml");
@@ -162,6 +164,7 @@ public class PropagationTest {
                 "../src/test/resources/patches/Patch32/Math28p/target/test-classes:../src/test/resources/patches/Patch32/Math28p/target/classes",
                 "org.apache.commons.math3.optimization.linear.JQF_SimplexSolverTest", "testMath828Cycle"});
     }
+
     @Test
     public void runZestCLI2_patch172() throws IOException {
         System.setProperty("org.aspectj.weaver.loadtime.configuration", "file:../aspect/aop.xml");
@@ -195,6 +198,7 @@ public class PropagationTest {
                 "../src/test/resources/patches/Patch172/Math80p/target/test-classes:../src/test/resources/patches/Patch172/Math80p/target/classes",
                 "org.apache.commons.math.linear.JQF_EigenDecompositionImplTest", "testMathpbx02"});
     }
+
 //    @Test
 //    public void runZestCLI2_patch157() throws IOException {
 //        System.setProperty("org.aspectj.weaver.loadtime.configuration", "aspect/aop.xml");
@@ -228,6 +232,7 @@ public class PropagationTest {
 //                "../src/test/resources/patches/Patch157/Math24p/target/test-classes:../src/test/resources/patches/Patch157/Math24p/target/classes",
 //                "org.apache.commons.math3.analysis.JQF_FunctionUtilsTest", "testMath855"});
 //    }
+
     @Test
     public void runZestCLI2_Patch156() throws IOException {
     // turn on the following to see instrumentation log

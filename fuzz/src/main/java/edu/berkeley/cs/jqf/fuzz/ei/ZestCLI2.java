@@ -125,6 +125,10 @@ public class ZestCLI2 implements Runnable {
             description = "Total fuzz duration (e.g. PT5s or 5s)")
     private Duration duration;
 
+    @Option(names = { "--exploreDuration" },
+            description = "explore duration (e.g. PT5s or 5s)")
+    private Duration exploreDuration;
+
     @Option(names = { "-b", "--blind" },
             description = "Blind fuzzing: do not use coverage feedback (default: false)")
     private boolean blindFuzzing;
@@ -251,8 +255,8 @@ public class ZestCLI2 implements Runnable {
             if (targets != null) {
                 System.setProperty("jqf.ei.targets", Arrays.toString(targets));
                 guidance = seedFiles.length > 0 ?
-                        new PoracleGuidance(title, this.seed, duration, this.outputDirectory, seedFiles) :
-                        new PoracleGuidance(title, this.seed, duration, this.outputDirectory);
+                        new PoracleGuidance(title, this.seed, duration, exploreDuration, this.outputDirectory, seedFiles) :
+                        new PoracleGuidance(title, this.seed, duration, exploreDuration, this.outputDirectory);
             } else {
                 guidance = seedFiles.length > 0 ?
                         new ZestGuidance(title, duration, this.outputDirectory, seedFiles) :

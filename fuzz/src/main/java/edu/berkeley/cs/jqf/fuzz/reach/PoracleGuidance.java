@@ -64,9 +64,10 @@ import org.xmlunit.diff.Difference;
  */
 public class PoracleGuidance extends ZestGuidance {
 
-    private final String logDir;
-    private final int maxMutations;
+    private String logDir;
+    private int maxMutations;
     private TargetCoverage targetCoverage = TargetCoverage.getTargetCoverage();
+    private long exploreDurationMills;
 
     private CFGAnalysis cfga = null;
 
@@ -410,13 +411,13 @@ public class PoracleGuidance extends ZestGuidance {
         double[] dists = new double[]{versionDistCallerExit, versionDistCalleeExit, versionDistCalleeEntry,
                 parentDistCallerExit, parentDistCalleeExit, parentDistCalleeEntry};
         if (shouldKeep(dists)) {
-            infoLog("new distances: " + toString(dists));
-            System.out.println("new distances: " + toString(dists));
+            infoLog("new distances: " + distsToString(dists));
+            System.out.println("new distances: " + distsToString(dists));
             saveInputs(dists);
         }
     }
 
-    private String toString(double[] dists) {
+    private String distsToString(double[] dists) {
         StringBuilder sb = new StringBuilder("[");
         for (int i = 0; i < dists.length; i++) {
             sb.append(dists[i]);
@@ -436,12 +437,9 @@ public class PoracleGuidance extends ZestGuidance {
      * @throws IOException if the output directory could not be prepared
      */
     public PoracleGuidance(String testName, long seed,
-                           Duration duration, File outputDirectory) throws IOException {
+                           Duration duration, Duration exploreDuration, File outputDirectory) throws IOException {
         super(testName, duration, outputDirectory);
-        logDir = System.getProperty("jqf.ei.logDir");
-        maxMutations = Integer.parseInt(System.getProperty("jqf.ei.MAX_MUTATIONS"));
-        if (seed != -1) this.random.setSeed(seed);
-        buildCFGAnalysis();
+        init(seed, exploreDuration);
     }
 
     /**
@@ -455,9 +453,14 @@ public class PoracleGuidance extends ZestGuidance {
      * @throws IOException if the output directory could not be prepared
      */
     public PoracleGuidance(String testName, long seed,
-                           Duration duration, File outputDirectory,
+                           Duration duration, Duration exploreDuration, File outputDirectory,
                            File[] seedInputFiles) throws IOException {
         super(testName, duration, outputDirectory, seedInputFiles);
+        init(seed, exploreDuration);
+    }
+
+    private void init(long seed, Duration exploreDuration) {
+        this.exploreDurationMills = exploreDuration.toMillis();
         logDir = System.getProperty("jqf.ei.logDir");
         maxMutations = Integer.parseInt(System.getProperty("jqf.ei.MAX_MUTATIONS"));
         if (seed != -1) this.random.setSeed(seed);
@@ -565,6 +568,10 @@ public class PoracleGuidance extends ZestGuidance {
             savedInputs.sort(new InputComparator());
             if (savedInputs.size() > maxCorpusSize) {
                 savedInputs = savedInputs.subList(savedInputs.size() - maxCorpusSize, savedInputs.size());
+                infoLog("saved distances:");
+                for (Input input: savedInputs) {
+                    infoLog(distsToString(input.getDists()));
+                }
             }
 
             // The number of children to produce is determined by how much of the coverage
@@ -573,7 +580,9 @@ public class PoracleGuidance extends ZestGuidance {
             if (numChildrenGeneratedForCurrentParentInput >= targetNumChildren) {
                 // Select the next saved input to fuzz
                 currentParentInputIdx = random.nextInt(savedInputs.size());
+                infoLog("currentParentInputIdx: %d / %d", currentParentInputIdx, savedInputs.size());
                 targetNumChildren = getTargetChildrenForParent(savedInputs.size(), currentParentInputIdx);
+                infoLog("targetNumChildren: %d", targetNumChildren);
                 numChildrenGeneratedForCurrentParentInput = 0;
             }
             Input parent = savedInputs.get(currentParentInputIdx);
@@ -605,8 +614,7 @@ public class PoracleGuidance extends ZestGuidance {
     }
 
     private double temparature(long elapsedTime) {
-        double exploitTime = (double) maxDurationMillis / 3d;
-        double ret = Math.pow(20, -(((double) elapsedTime) / exploitTime));
+        double ret = Math.pow(20, -(((double) elapsedTime) / (double) exploreDurationMills));
         return ret;
     }
 

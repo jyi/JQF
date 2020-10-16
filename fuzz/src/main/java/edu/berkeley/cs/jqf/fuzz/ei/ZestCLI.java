@@ -220,16 +220,9 @@ public class ZestCLI implements Runnable {
             // Load the guidance
             String title = this.testClassName+"#"+this.testMethodName;
             ZestGuidance guidance;
-            if (targets != null) {
-                System.setProperty("jqf.ei.targets", Arrays.toString(targets));
-                guidance = seedFiles.length > 0 ?
-                        new PoracleGuidance(title, this.seed, duration, this.outputDirectory, seedFiles) :
-                        new PoracleGuidance(title, this.seed, duration, this.outputDirectory);
-            } else {
-                guidance = seedFiles.length > 0 ?
-                        new ZestGuidance(title, duration, this.outputDirectory, seedFiles) :
-                        new ZestGuidance(title, duration, this.outputDirectory);
-            }
+            guidance = seedFiles.length > 0 ?
+                    new ZestGuidance(title, duration, this.outputDirectory, seedFiles) :
+                    new ZestGuidance(title, duration, this.outputDirectory);
             guidance.setBlind(blindFuzzing);
             // Run the Junit test
             Result res = GuidedFuzzing.run(testClassName, testMethodName, loader, guidance, System.out);
