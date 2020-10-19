@@ -400,9 +400,9 @@ public class PoracleGuidance extends ZestGuidance {
         double versionDistCalleeExit = 0;
         double versionDistCalleeEntry = 0;
 
-        double parentDistCallerExit = 0;
-        double parentDistCalleeExit = 0;
-        double parentDistCalleeEntry = 0;
+//        double parentDistCallerExit = 0;
+//        double parentDistCalleeExit = 0;
+//        double parentDistCalleeEntry = 0;
 
         List<MethodInfo> callers = DumpUtil.getCallerChain();
         List<MethodInfo> callees = DumpUtil.getCalleesOfTaregetMethod();
@@ -412,14 +412,13 @@ public class PoracleGuidance extends ZestGuidance {
             versionDistCalleeExit = getVersionDistance(inputID, callees, PointCutLocation.EXIT);
             versionDistCalleeEntry = getVersionDistance(inputID, callees, PointCutLocation.ENTRY);
 
-            if (parentID != null) {
-                parentDistCallerExit = getParentDistance(parentID, inputID, callers, PointCutLocation.EXIT);
-                parentDistCalleeExit = getParentDistance(parentID, inputID, callees, PointCutLocation.EXIT);
-                parentDistCalleeEntry = getParentDistance(parentID, inputID, callees, PointCutLocation.ENTRY);
-            }
+//            if (parentID != null) {
+//                parentDistCallerExit = getParentDistance(parentID, inputID, callers, PointCutLocation.EXIT);
+//                parentDistCalleeExit = getParentDistance(parentID, inputID, callees, PointCutLocation.EXIT);
+//                parentDistCalleeEntry = getParentDistance(parentID, inputID, callees, PointCutLocation.ENTRY);
+//            }
 
-            double[] dists = new double[]{versionDistCallerExit, versionDistCalleeExit, versionDistCalleeEntry,
-                    parentDistCallerExit, parentDistCalleeExit, parentDistCalleeEntry};
+            double[] dists = new double[]{versionDistCallerExit, versionDistCalleeExit, versionDistCalleeEntry};
 
             if (shouldKeep(dists)) {
                 infoLog("new distances: " + distsToString(dists));

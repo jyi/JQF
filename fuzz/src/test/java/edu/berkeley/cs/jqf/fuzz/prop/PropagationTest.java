@@ -6,8 +6,10 @@ import edu.berkeley.cs.jqf.fuzz.repro.ReproDriver2;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -55,6 +57,29 @@ public class PropagationTest {
                 "org.apache.commons.math3.distribution.JQF_HypergeometricDistributionTest", "testMath1021"});
     }
 
+    private String executeCommand(String command) {
+
+        StringBuffer output = new StringBuffer();
+
+        Process p;
+        try {
+            p = Runtime.getRuntime().exec(command);
+            p.waitFor();
+            BufferedReader reader =
+                    new BufferedReader(new InputStreamReader(p.getInputStream()));
+
+            String line = "";
+            while ((line = reader.readLine())!= null) {
+                output.append(line + "\n");
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return output.toString();
+    }
+
     @Test
     public void runZestCLI2() throws IOException {
         // turn on the following to see instrumentation log
@@ -67,16 +92,10 @@ public class PropagationTest {
         Path log_dir = FileSystems.getDefault().getPath("..", "src", "test", "resources", "log");
 
         if (fuzz_results_patch_dir.toFile().exists()) {
-            Files.walk(fuzz_results_patch_dir)
-                    .sorted(Comparator.reverseOrder())
-                    .map(Path::toFile)
-                    .forEach(File::delete);
+            executeCommand("rm -rf " + fuzz_results_patch_dir);
         }
         if (log_dir.toFile().exists()) {
-            Files.walk(log_dir)
-                    .sorted(Comparator.reverseOrder())
-                    .map(Path::toFile)
-                    .forEach(File::delete);
+            executeCommand("rm -rf " + log_dir);
         }
 
         ZestCLI2.main(new String[] {
@@ -84,10 +103,10 @@ public class PropagationTest {
 //                "--save-all-inputs",
                 "--logdir", "../src/test/resources/log",
                 "--seed", "885441",
-                "--max-corpus-size", "10",
+                "--max-corpus-size", "50",
                 "--widening-plateau-threshold", "10",
                 "--verbose",
-                "--max-mutations", "50",
+                "--max-mutations", "100",
                 "--duration", "12h",
                 "--exploreDuration", "3h",
                 //"--delta", "1e-6",
