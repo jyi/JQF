@@ -1,5 +1,6 @@
 package edu.berkeley.cs.jqf.fuzz.util;
 
+import edu.berkeley.cs.jqf.fuzz.guidance.GuidanceException;
 import edu.berkeley.cs.jqf.fuzz.reach.Target;
 import edu.berkeley.cs.jqf.instrument.tracing.events.TargetEvent;
 import edu.berkeley.cs.jqf.instrument.tracing.events.TraceEvent;
@@ -7,6 +8,10 @@ import edu.berkeley.cs.jqf.instrument.tracing.events.TraceEventVisitor;
 import kr.ac.unist.cse.jqf.aspect.DumpUtil;
 import kr.ac.unist.cse.jqf.aspect.MethodInfo;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -19,6 +24,9 @@ public class TargetCoverage implements TraceEventVisitor {
 
     protected final boolean verbose = Boolean.getBoolean("jqf.ei.verbose");
 
+    /** The file where log data is written. */
+    protected File logFile;
+
     public static boolean isTargetHit() {
         return DumpUtil.isTheTargetHit();
     }
@@ -28,6 +36,8 @@ public class TargetCoverage implements TraceEventVisitor {
     }
 
     private TargetCoverage() {
+        File outputDirectory = new File(System.getProperty("jqf.ei.outputDirectory"));
+        this.logFile = new File(outputDirectory, "fuzz.log");
     }
 
     public static TargetCoverage getTargetCoverage() {
@@ -78,10 +88,24 @@ public class TargetCoverage implements TraceEventVisitor {
         covered.clear();
     }
 
+    /** Writes a line of text to the log file. */
     protected void infoLog(String str, Object... args) {
         if (verbose) {
             String line = String.format(str, args);
-            System.err.println(line);
+            if (logFile != null) {
+                appendLineToFile(logFile, line);
+            } else {
+                System.err.println(line);
+            }
+        }
+    }
+
+    /** Writes a line of text to a given log file. */
+    protected void appendLineToFile(File file, String line) throws GuidanceException {
+        try (PrintWriter out = new PrintWriter(new FileWriter(file, true))) {
+            out.println(line);
+        } catch (IOException e) {
+            throw new GuidanceException(e);
         }
     }
 }

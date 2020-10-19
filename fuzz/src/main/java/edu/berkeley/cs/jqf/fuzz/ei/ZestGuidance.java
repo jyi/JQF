@@ -93,7 +93,7 @@ public class ZestGuidance implements Guidance {
     /** Mean number of contiguous bytes to mutate in each mutation. */
     protected static final double MEAN_MUTATION_SIZE = 4.0; // Bytes
     /** Whether to steal responsibility from old inputs (this increases computation cost). */
-    static final boolean STEAL_RESPONSIBILITY = Boolean.getBoolean("jqf.ei.STEAL_RESPONSIBILITY");
+    protected static final boolean STEAL_RESPONSIBILITY = Boolean.getBoolean("jqf.ei.STEAL_RESPONSIBILITY");
     static final boolean SAVE_ALL_INPUTS =
       Boolean.getBoolean("jqf.ei.SAVE_ALL_INPUTS");
     /** The name of the test for display purposes. */
@@ -165,6 +165,7 @@ public class ZestGuidance implements Guidance {
     // ------------- TIMEOUT HANDLING ------------
     protected boolean isPlateauReached = false;
     protected int noProgressCount = 0;
+    protected boolean rangeFixed = false;
     protected boolean USE_PLATEAU_THRESHOLD =
             System.getProperty("jqf.ei.PLATEAU_THRESHOLD") != null?
                     true : false;
@@ -325,11 +326,10 @@ public class ZestGuidance implements Guidance {
         } catch (IOException e) {
             throw new GuidanceException(e);
         }
-
     }
 
     /** Writes a line of text to the log file. */
-    protected void infoLog(String str, Object... args) {
+    public void infoLog(String str, Object... args) {
         if (verbose) {
             String line = String.format(str, args);
             if (logFile != null) {

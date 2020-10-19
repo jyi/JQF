@@ -60,7 +60,6 @@ import edu.berkeley.cs.jqf.fuzz.guidance.StreamBackedRandom;
 import edu.berkeley.cs.jqf.fuzz.Fuzz;
 import edu.berkeley.cs.jqf.fuzz.junit.GuidedFuzzing;
 import edu.berkeley.cs.jqf.fuzz.junit.TrialRunner;
-import edu.berkeley.cs.jqf.fuzz.util.TargetCoverage;
 import kr.ac.unist.cse.jqf.Log;
 import kr.ac.unist.cse.jqf.aspect.DumpUtil;
 import kr.ac.unist.cse.jqf.fuzz.generator.InRangeFactory;
@@ -276,7 +275,7 @@ public class FuzzStatement extends Statement {
                 Result result = INVALID;
                 Throwable error = null;
 
-                if (guidance.isWideningPlateauReached()) {
+                if (!guidance.isRangeFixed() && guidance.isWideningPlateauReached()) {
                     System.out.println("Plateau is reached, and the range is widened");
                     // update input range
                     wideningCount++;
@@ -350,7 +349,8 @@ public class FuzzStatement extends Statement {
                 // Inform guidance about the outcome of this trial
                 PoracleGuidance.HandleResult info = guidance.handleResultOfOrg(result, error);
                 if (info.isInputNotIgnored()) {
-                    System.out.println("Succeeded to log out actual");
+                    guidance.infoLog("Succeeded to log out actual");
+                    guidance.fixRange();
                     // run patched version
                     assert guidance.getCurSaveFileName() != null;
                     ReproGuidance reproGuidance = new ReproGuidance(info.getInputFile(), null);
@@ -376,8 +376,12 @@ public class FuzzStatement extends Statement {
                         DumpUtil.enterMethods.clear();
                     }
 
-                    guidance.handleResult(targetHit);
+                    guidance.handleResultOfPatch(result, targetHit);
+                } else {
+                    guidance.noProgress();
                 }
+
+                guidance.checkProgress();
             }
         } catch (GuidanceException e) {
             System.err.println("Fuzzing stopped due to guidance exception: " + e.getMessage());
@@ -385,7 +389,7 @@ public class FuzzStatement extends Statement {
         }
 
         if (guidance.isDiffOutFound()) {
-            guidance.saveInputs(Double.MAX_VALUE,Double.MAX_VALUE);
+            guidance.saveInputs("diff_out_found", true);
         }
 
         if (failures.size() > 0) {

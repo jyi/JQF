@@ -34,12 +34,14 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.time.Duration;
 
 import edu.berkeley.cs.jqf.fuzz.ei.ZestGuidance;
 import edu.berkeley.cs.jqf.fuzz.guidance.GuidanceException;
 import edu.berkeley.cs.jqf.fuzz.guidance.Result;
+import edu.berkeley.cs.jqf.fuzz.guidance.TimeoutException;
 import edu.berkeley.cs.jqf.fuzz.util.Coverage;
 import edu.berkeley.cs.jqf.fuzz.util.TargetCoverage;
 import edu.berkeley.cs.jqf.instrument.tracing.events.TraceEvent;
@@ -76,7 +78,6 @@ public class PoracleGuidance extends ZestGuidance {
     private BigList<BigList<Double>> stateDiffCoverage = new BigList<>();
     private File notIgnoreDirectory;
     private boolean diffOutFound;
-    private static boolean valid = false;
     protected boolean USE_WIDENING_PLATEAU_THRESHOLD =
             System.getProperty("jqf.ei.WIDENING_PLATEAU_THRESHOLD") != null?
                     true : false;
@@ -88,6 +89,34 @@ public class PoracleGuidance extends ZestGuidance {
     private String inputID = null;
     private String parentID = null;
     private int targetNumChildren = Integer.parseInt(System.getProperty("jqf.ei.MAX_MUTATIONS"))  / 2;
+
+    /** Coverage statistics for a single run. */
+    protected Coverage runCoverageOfOrg = new Coverage();
+    protected Coverage runCoverageOfPatch = new Coverage();
+
+    /** Cumulative coverage statistics. */
+    protected Coverage totalCoverageOfOrg = new Coverage();
+    protected Coverage totalCoverageOfPatch = new Coverage();
+
+    /** Cumulative coverage for valid inputs. */
+    protected Coverage validCoverageOfOrg = new Coverage();
+    protected Coverage validCoverageOfPatch = new Coverage();
+
+    /** The maximum number of keys covered by any single input found so far. */
+    protected int maxCoverageOfOrg = 0;
+    protected int maxCoverageOfPatch = 0;
+
+    /** A mapping of coverage keys to inputs that are responsible for them. */
+    protected Map<Object, Input> responsibleInputsOfOrg = new HashMap<>(totalCoverageOfOrg.size());
+    protected Map<Object, Input> responsibleInputsOfPatch = new HashMap<>(totalCoverageOfPatch.size());
+
+    public void fixRange() {
+        this.rangeFixed = true;
+    }
+
+    public boolean isRangeFixed() {
+        return this.rangeFixed;
+    }
 
     enum Version {
         ORG ("ORG"),
@@ -222,7 +251,6 @@ public class PoracleGuidance extends ZestGuidance {
 
     public void reset() {
         this.isWideningPlateauReached = false;
-        this.noProgressCount = 0;
         Log.turnOnRunBuggyVersion();
     }
 
@@ -254,24 +282,24 @@ public class PoracleGuidance extends ZestGuidance {
         this.notIgnoreDirectory.mkdirs();
     }
 
-    private boolean shouldKeep(double[] dists) {
+    private boolean shouldKeep(boolean toSave, double[] dists) {
         if (savedInputs.isEmpty()) return true;
 
-        Input best = this.savedInputs.get(savedInputs.size() - 1);
-        int result = (new InputComparator()).compare(dists, best.getDists());
-        if (result > 0) return true;
-        else {
-            long elapsedTime = new Date().getTime() - startTime.getTime();
-            double temp = this.temparature(elapsedTime) / 2d;
-            if (Math.random() < temp) return true;
-            else return false;
+        if (toSave) {
+            Input best = this.savedInputs.get(savedInputs.size() - 1);
+            int result = (new InputComparator()).compare(dists, best.getDists());
+            if (result > 0) return true;
         }
+
+        long elapsedTime = new Date().getTime() - startTime.getTime();
+        double temp = this.temparature(elapsedTime) / 2d;
+        if (Math.random() < temp) return true;
+        else return false;
     }
 
     // public void saveInputs(double ... dist)
-    public void saveInputs(double ... dist) {
-        Set<Object> responsibilities = computeResponsibilities(PoracleGuidance.valid);
-        String reason = "+poracle";
+    public void saveInputs(String reason, boolean valid, double... dist) {
+        Set<Object> responsibilities = computeResponsibilities(valid);
         GuidanceException.wrap(() -> saveCurrentInput(dist, responsibilities, reason));
     }
 
@@ -294,7 +322,7 @@ public class PoracleGuidance extends ZestGuidance {
         }
 
         // Second, save to queue
-        if (currentInput instanceof ComparableInput) {
+        if (currentInput instanceof ComparableInput && dist != null) {
             ((ComparableInput) currentInput).setDists(dist);
         }
         savedInputs.add(currentInput);
@@ -302,8 +330,8 @@ public class PoracleGuidance extends ZestGuidance {
         // Third, store basic book-keeping data
         currentInput.id = inputIdx;
         currentInput.saveFile = saveFile;
-        currentInput.coverage = new Coverage(runCoverage);
-        currentInput.nonZeroCoverage = runCoverage.getNonZeroCount();
+        currentInput.coverage = new Coverage(runCoverageOfPatch);
+        currentInput.nonZeroCoverage = runCoverageOfPatch.getNonZeroCount();
         currentInput.offspring = 0;
         savedInputs.get(currentParentInputIdx).offspring += 1;
 
@@ -313,7 +341,7 @@ public class PoracleGuidance extends ZestGuidance {
         for (Object b : responsibilities) {
             // If there is an old input that is responsible,
             // subsume it
-            Input oldResponsible = responsibleInputs.get(b);
+            Input oldResponsible = responsibleInputsOfPatch.get(b);
             if (oldResponsible != null) {
                 oldResponsible.responsibilities.remove(b);
                 // infoLog("-- Stealing responsibility for %s from input %d", b, oldResponsible.id);
@@ -321,7 +349,7 @@ public class PoracleGuidance extends ZestGuidance {
                 // infoLog("-- Assuming new responsibility for %s", b);
             }
             // We are now responsible
-            responsibleInputs.put(b, currentInput);
+            responsibleInputsOfPatch.put(b, currentInput);
         }
     }
 
@@ -395,14 +423,142 @@ public class PoracleGuidance extends ZestGuidance {
         return getDistance(parentID, inputID, methods, Version.PATCH, Version.PATCH, loc);
     }
 
-    public void handleResult(boolean targetHit) {
+    public void noProgress() {
+        noProgressCount++;
+    }
+
+    public void checkProgress() {
+        if (USE_WIDENING_PLATEAU_THRESHOLD && !rangeFixed && noProgressCount > wideningPlateauThreshold) {
+            infoLog("A widening plateau is reached!!!");
+            isWideningPlateauReached = true;
+        }
+    }
+
+    // Compute a set of branches for which the current input may assume responsibility
+    protected Set<Object> computeResponsibilities(boolean valid) {
+        Set<Object> result = Collections.newSetFromMap(new ConcurrentHashMap<Object, Boolean>());
+
+        // This input is responsible for all new coverage
+        Collection<?> newCoverage = runCoverageOfPatch.computeNewCoverage(totalCoverageOfPatch);
+        if (newCoverage.size() > 0) {
+            result.addAll(newCoverage);
+        }
+
+        // If valid, this input is responsible for all new valid coverage
+        if (valid) {
+            Collection<?> newValidCoverage = runCoverageOfPatch.computeNewCoverage(validCoverageOfPatch);
+            if (newValidCoverage.size() > 0) {
+                result.addAll(newValidCoverage);
+            }
+        }
+
+        // Perhaps it can also steal responsibility from other inputs
+        if (STEAL_RESPONSIBILITY) {
+            int currentNonZeroCoverage = runCoverageOfPatch.getNonZeroCount();
+            int currentInputSize = currentInput.size();
+            Set<?> covered = new HashSet<>(runCoverageOfPatch.getCovered());
+
+            // Search for a candidate to steal responsibility from
+            candidate_search:
+            for (Input candidate : savedInputs) {
+                Set<?> responsibilities = candidate.responsibilities;
+
+                // Candidates with no responsibility are not interesting
+                if (responsibilities.isEmpty()) {
+                    continue candidate_search;
+                }
+
+                // To avoid thrashing, only consider candidates with either
+                // (1) strictly smaller total coverage or
+                // (2) same total coverage but strictly larger size
+                if (candidate.nonZeroCoverage < currentNonZeroCoverage ||
+                        (candidate.nonZeroCoverage == currentNonZeroCoverage &&
+                                currentInputSize < candidate.size())) {
+
+                    // Check if we can steal all responsibilities from candidate
+                    for (Object b : responsibilities) {
+                        if (covered.contains(b) == false) {
+                            // Cannot steal if this input does not cover something
+                            // that the candidate is responsible for
+                            continue candidate_search;
+                        }
+                    }
+                    // If all of candidate's responsibilities are covered by the
+                    // current input, then it can completely subsume the candidate
+                    result.addAll(responsibilities);
+                }
+
+            }
+        }
+
+        return result;
+    }
+
+    public void handleResultOfPatch(Result result, boolean targetHit) {
+        // Stop timeout handling
+        this.runStart = null;
+
+        // Increment run count
+        this.numTrials++;
+
+        boolean valid = result == Result.SUCCESS;
+        if (valid) {
+            // Increment valid counter
+            numValid++;
+        }
+
+        // Possibly save input
+        boolean toSave = false;
+        String why = "";
+
+        // Coverage before
+        int nonZeroBefore = totalCoverageOfPatch.getNonZeroCount();
+        int validNonZeroBefore = validCoverageOfPatch.getNonZeroCount();
+
+        // Compute a list of keys for which this input can assume responsiblity.
+        // Newly covered branches are always included.
+        // Existing branches *may* be included, depending on the heuristics used.
+        // A valid input will steal responsibility from invalid inputs
+        Set<Object> responsibilities = computeResponsibilities(valid);
+
+        // Update total coverage
+        boolean coverageBitsUpdated = totalCoverageOfPatch.updateBits(runCoverageOfPatch);
+        if (valid) {
+            validCoverageOfPatch.updateBits(runCoverageOfPatch);
+        }
+
+        // Coverage after
+        int nonZeroAfter = totalCoverageOfPatch.getNonZeroCount();
+        if (nonZeroAfter > maxCoverageOfPatch) {
+            maxCoverageOfPatch = nonZeroAfter;
+        }
+
+        if (SAVE_NEW_COUNTS && coverageBitsUpdated) {
+            toSave = true;
+            why = why + "+count";
+        }
+
+        // Save if new total coverage found
+        if (nonZeroAfter > nonZeroBefore) {
+            // Must be responsible for some branch
+            assert (responsibilities.size() > 0);
+            toSave = true;
+            why = why + "+cov";
+        }
+
+        // Save if new valid coverage is found
+        int validNonZeroAfter = validCoverageOfPatch.getNonZeroCount();
+        if (this.validityFuzzing && validNonZeroAfter > validNonZeroBefore) {
+            // Must be responsible for some branch
+            assert (responsibilities.size() > 0);
+            currentInput.valid = true;
+            toSave = true;
+            why = why + "+valid";
+        }
+
         double versionDistCallerExit = 0;
         double versionDistCalleeExit = 0;
         double versionDistCalleeEntry = 0;
-
-//        double parentDistCallerExit = 0;
-//        double parentDistCalleeExit = 0;
-//        double parentDistCalleeEntry = 0;
 
         List<MethodInfo> callers = DumpUtil.getCallerChain();
         List<MethodInfo> callees = DumpUtil.getCalleesOfTaregetMethod();
@@ -411,19 +567,17 @@ public class PoracleGuidance extends ZestGuidance {
             versionDistCallerExit = getVersionDistance(inputID, callers, PointCutLocation.EXIT);
             versionDistCalleeExit = getVersionDistance(inputID, callees, PointCutLocation.EXIT);
             versionDistCalleeEntry = getVersionDistance(inputID, callees, PointCutLocation.ENTRY);
+        }
+        double[] dists = new double[]{versionDistCallerExit, versionDistCalleeExit, versionDistCalleeEntry};
 
-//            if (parentID != null) {
-//                parentDistCallerExit = getParentDistance(parentID, inputID, callers, PointCutLocation.EXIT);
-//                parentDistCalleeExit = getParentDistance(parentID, inputID, callees, PointCutLocation.EXIT);
-//                parentDistCalleeEntry = getParentDistance(parentID, inputID, callees, PointCutLocation.ENTRY);
-//            }
-
-            double[] dists = new double[]{versionDistCallerExit, versionDistCalleeExit, versionDistCalleeEntry};
-
-            if (shouldKeep(dists)) {
-                infoLog("new distances: " + distsToString(dists));
-                saveInputs(dists);
-            }
+        if (shouldKeep(toSave, dists)) {
+            noProgressCount = 0; // reset
+            why = why + "+dist";
+            infoLog("new distances: " + distsToString(dists));
+            saveInputs(why, valid, dists);
+        } else {
+            noProgress();
+            infoLog("skip duplicate coverage");
         }
     }
 
@@ -529,7 +683,8 @@ public class PoracleGuidance extends ZestGuidance {
                 e.printStackTrace();
             }
 
-            System.out.println("stop because diff out is found");
+            infoLog("Diff out is found!");
+            System.out.println("Diff out is found!");
             return false;
         }
         return elapsedMilliseconds < maxDurationMillis;
@@ -545,7 +700,8 @@ public class PoracleGuidance extends ZestGuidance {
     public InputStream getInput() throws GuidanceException {
         targetCoverage.clear();
         // Clear coverage stats for this run
-        runCoverage.clear();
+        runCoverageOfOrg.clear();
+        runCoverageOfPatch.clear();
 
         // set inputID
         String saveFileName = String.format("id_%09d", numTrials + 1);
@@ -639,13 +795,35 @@ public class PoracleGuidance extends ZestGuidance {
         return this::handleEvent;
     }
 
+    private Coverage getRunCoverage() {
+        if (Boolean.getBoolean("jqf.ei.run_patch")) {
+            return runCoverageOfPatch;
+        } else {
+            return runCoverageOfOrg;
+        }
+    }
+
     /** Handles a trace event generated during test execution */
     protected void handleEvent(TraceEvent e) {
-        super.handleEvent(e);
+        // Collect totalCoverage
+        getRunCoverage().handleEvent(e);
+        // Check for possible timeouts every so often
+        if (this.singleRunTimeoutMillis > 0
+                // && (++this.branchCount) % 10_000 == 0
+                && this.runStart != null) {
+            long elapsed = new Date().getTime() - runStart.getTime();
+            if (elapsed > this.singleRunTimeoutMillis) {
+                timeOutOccurred = true;
+                System.err.println("timeout occurred");
+                throw new TimeoutException(elapsed, this.singleRunTimeoutMillis);
+            }
+        }
+
         if (Boolean.getBoolean("jqf.ei.run_patch")) {
             targetCoverage.handleEvent(e);
         }
     }
+
 
     public HandleResult handleResultOfOrg(Result result, Throwable error) throws GuidanceException {
         boolean inputNotIgnored = false;
@@ -653,95 +831,18 @@ public class PoracleGuidance extends ZestGuidance {
         // Stop timeout handling
         this.runStart = null;
 
-        // Increment run count
-        this.numTrials++;
-
         boolean valid = result == Result.SUCCESS;
-        PoracleGuidance.valid = valid;
-        if (valid) {
-            // Increment valid counter
-            numValid++;
-        }
 
-        if (result == Result.SUCCESS || result == Result.INVALID) {
+        if (Log.getActualCount() > 0) {
+            // Trim input (remove unused keys)
+            currentInput.gc();
 
-            // Coverage before
-            int nonZeroBefore = totalCoverage.getNonZeroCount();
-            int validNonZeroBefore = validCoverage.getNonZeroCount();
+            // It must still be non-empty
+            assert (currentInput.size() > 0) : String.format("Empty input: %s", currentInput.getDesc());
 
-            // Update total coverage
-            boolean coverageBitsUpdated = totalCoverage.updateBits(runCoverage);
-            if (valid) {
-                validCoverage.updateBits(runCoverage);
-            }
-
-            // Coverage after
-            int nonZeroAfter = totalCoverage.getNonZeroCount();
-            if (nonZeroAfter > maxCoverage) {
-                maxCoverage = nonZeroAfter;
-                noProgressCount = 0; // reset
-            } else {
-                noProgressCount++;
-                if (USE_WIDENING_PLATEAU_THRESHOLD && noProgressCount > wideningPlateauThreshold) {
-                    System.out.println("A widening plateau is reached!!!");
-                    isWideningPlateauReached = true;
-                }
-            }
-            int validNonZeroAfter = validCoverage.getNonZeroCount();
-
-            // Possibly save input
-            boolean toSave = false;
-            String why = "";
-
-            // Save if the target is reached.
-            if (Log.getActualCount() > 0 && !isDuplicate()) {
-                // Trim input (remove unused keys)
-                currentInput.gc();
-
-                // It must still be non-empty
-                assert(currentInput.size() > 0) : String.format("Empty input: %s", currentInput.getDesc());
-
-                // update inputs
-                inputs.add(currentInput);
-                inputNotIgnored = true;
-            }
-        } else if (result == Result.FAILURE || result == Result.TIMEOUT) {
-            String msg = error.getMessage();
-
-            // Get the root cause of the failure
-            Throwable rootCause = error;
-            while (rootCause.getCause() != null) {
-                rootCause = rootCause.getCause();
-            }
-
-            // Attempt to add this to the set of unique failures
-            if (uniqueFailures.add(Arrays.asList(rootCause.getStackTrace()))) {
-                // Trim input (remove unused keys)
-                currentInput.gc();
-
-                // It must still be non-empty
-                assert(currentInput.size() > 0) : String.format("Empty input: %s", currentInput.getDesc());
-
-                // Save crash to disk
-                int crashIdx = uniqueFailures.size()-1;
-                String saveFileName = String.format("id_%06d", crashIdx);
-                File saveFile = new File(savedFailuresDirectory, saveFileName);
-                GuidanceException.wrap(() -> writeCurrentInputToFile(saveFile));
-                infoLog("%s","Found crash: " + error.getClass() + " - " + (msg != null ? msg : ""));
-                String how = currentInput.getDesc();
-                String why = result == Result.FAILURE ? "+crash" : "+hang";
-                infoLog("Saved - %s %s %s", saveFile.getPath(), how, why);
-
-                if (EXACT_CRASH_PATH != null && !EXACT_CRASH_PATH.equals("")) {
-                    File exactCrashFile = new File(EXACT_CRASH_PATH);
-                    GuidanceException.wrap(() -> writeCurrentInputToFile(exactCrashFile));
-                }
-
-                // libFuzzerCompat stats are only displayed when they hit new coverage or crashes
-                if (console != null && LIBFUZZER_COMPAT_OUTPUT) {
-                    displayStats();
-                }
-            }
+            // update inputs
+            inputs.add(currentInput);
+            inputNotIgnored = true;
         }
 
         // displaying stats on every interval is only enabled for AFL-like stats screen

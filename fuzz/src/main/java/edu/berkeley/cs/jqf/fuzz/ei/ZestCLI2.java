@@ -237,6 +237,10 @@ public class ZestCLI2 implements Runnable {
             System.setProperty("jqf.ei.verbose", "false");
         }
 
+        if (this.outputDirectory != null) {
+            System.setProperty("jqf.ei.outputDirectory", this.outputDirectory.toString());
+        }
+
         if (this.libFuzzerCompatOutput) {
             System.setProperty("jqf.ei.LIBFUZZER_COMPAT_OUTPUT", "true");
         }
