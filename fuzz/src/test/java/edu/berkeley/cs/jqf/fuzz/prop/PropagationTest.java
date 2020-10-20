@@ -124,26 +124,24 @@ public class PropagationTest {
         Path log_dir = FileSystems.getDefault().getPath("..", "src", "test", "resources", "log");
 
         if (fuzz_results_patch_dir.toFile().exists()) {
-            Files.walk(fuzz_results_patch_dir)
-                    .sorted(Comparator.reverseOrder())
-                    .map(Path::toFile)
-                    .forEach(File::delete);
+            executeCommand("rm -rf " + fuzz_results_patch_dir);
         }
         if (log_dir.toFile().exists()) {
-            Files.walk(log_dir)
-                    .sorted(Comparator.reverseOrder())
-                    .map(Path::toFile)
-                    .forEach(File::delete);
+            executeCommand("rm -rf " + log_dir);
         }
 
         ZestCLI2.main(new String[] {
                 "--target", "org/apache/commons/math3/optimization/fitting/HarmonicFitter.java:327",
-                "--save-all-inputs",
+//                "--save-all-inputs",
                 "--logdir", "../src/test/resources/log",
                 "--seed", "885441",
-                "--max-corpus-size", "10",
-                "--plateau-threshold", "10",
+                "--max-corpus-size", "100",
+                "--widening-plateau-threshold", "50",
                 "--verbose",
+                "--max-mutations", "200",
+                "--duration", "12h",
+                "--exploreDuration", "3h",
+                //"--delta", "1e-6",
                 "-o", "../src/test/resources/fuzz-results-patch",
                 "../src/test/resources/patches/Patch197/Math25b/target/test-classes:../src/test/resources/patches/Patch197/Math25b/target/classes",
                 "../src/test/resources/patches/Patch197/Math25p/target/test-classes:../src/test/resources/patches/Patch197/Math25p/target/classes",
