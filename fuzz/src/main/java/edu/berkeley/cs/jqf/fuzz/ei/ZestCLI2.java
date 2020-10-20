@@ -97,6 +97,9 @@ public class ZestCLI2 implements Runnable {
             description = "Timeout")
     int maxMutations = 100;
 
+    @Option(names = "--aop", description = "aop location")
+    public String aop = null;
+
     @Option(names = { "--delta" },
             description = "Delta")
     double delta = 0;
@@ -244,8 +247,10 @@ public class ZestCLI2 implements Runnable {
         if (this.libFuzzerCompatOutput) {
             System.setProperty("jqf.ei.LIBFUZZER_COMPAT_OUTPUT", "true");
         }
+        System.setProperty("org.aspectj.weaver.loadtime.configuration", aop);
         System.setProperty("jqf.ei.widenProportion", String.valueOf(this.widenProportion));
         System.setProperty("jqf.ei.delta", String.valueOf(delta));
+
 
         try {
             ClassLoader loaderForOrg = new InstrumentingClassLoader(

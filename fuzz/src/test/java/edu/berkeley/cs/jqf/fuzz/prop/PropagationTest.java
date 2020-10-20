@@ -85,7 +85,7 @@ public class PropagationTest {
         // turn on the following to see instrumentation log
         // System.setProperty("janala.verbose", "true");
         // String currentDir = System.getProperty("user.dir");
-        System.setProperty("org.aspectj.weaver.loadtime.configuration", "file:../aspect/aop.xml");
+        //System.setProperty("org.aspectj.weaver.loadtime.configuration", "file:../aspect/aop.xml");
         // System.setProperty("org.aspectj.weaver.loadtime.configuration", "file:/home/elkhan/Remote/poracle/modules/JQF/aspect/aop.xml");
 
         Path fuzz_results_patch_dir = FileSystems.getDefault().getPath("..", "src", "test", "resources", "fuzz-results-patch");
@@ -118,7 +118,7 @@ public class PropagationTest {
 
     @Test
     public void runZestCLI2_patch197() throws IOException {
-        System.setProperty("org.aspectj.weaver.loadtime.configuration", "aspect/aop.xml");
+        //System.setProperty("org.aspectj.weaver.loadtime.configuration", "aspect/aop.xml");
 
         Path fuzz_results_patch_dir = FileSystems.getDefault().getPath("..", "src", "test", "resources", "fuzz-results-patch");
         Path log_dir = FileSystems.getDefault().getPath("..", "src", "test", "resources", "log");
@@ -150,7 +150,7 @@ public class PropagationTest {
 
     @Test
     public void runZestCLI2_patch32() throws IOException {
-        System.setProperty("org.aspectj.weaver.loadtime.configuration", "aspect/aop.xml");
+        //System.setProperty("org.aspectj.weaver.loadtime.configuration", "aspect/aop.xml");
 
         Path fuzz_results_patch_dir = FileSystems.getDefault().getPath("..", "src", "test", "resources", "fuzz-results-patch");
         Path log_dir = FileSystems.getDefault().getPath("..", "src", "test", "resources", "log");
@@ -184,7 +184,7 @@ public class PropagationTest {
 
     @Test
     public void runZestCLI2_patch172() throws IOException {
-        System.setProperty("org.aspectj.weaver.loadtime.configuration", "file:../aspect/aop.xml");
+        //System.setProperty("org.aspectj.weaver.loadtime.configuration", "file:../aspect/aop.xml");
 
         Path fuzz_results_patch_dir = FileSystems.getDefault().getPath("..", "src", "test", "resources", "fuzz-results-patch");
         Path log_dir = FileSystems.getDefault().getPath("..", "src", "test", "resources", "log");
@@ -255,7 +255,7 @@ public class PropagationTest {
     // turn on the following to see instrumentation log
     // System.setProperty("janala.verbose", "true");
     // String currentDir = System.getProperty("user.dir");
-    System.setProperty("org.aspectj.weaver.loadtime.configuration", "aspect/aop.xml");
+    //System.setProperty("org.aspectj.weaver.loadtime.configuration", "aspect/aop.xml");
     // System.setProperty("org.aspectj.weaver.loadtime.configuration", "file:/home/elkhan/Remote/poracle/modules/JQF/aspect/aop.xml");
 
     Path fuzz_results_patch_dir = FileSystems.getDefault().getPath("..", "src", "test", "resources", "fuzz-results-patch");
@@ -295,7 +295,7 @@ public class PropagationTest {
         // turn on the following to see instrumentation log
         // System.setProperty("janala.verbose", "true");
         // String currentDir = System.getProperty("user.dir");
-        System.setProperty("org.aspectj.weaver.loadtime.configuration", "aspect/aop.xml");
+        //System.setProperty("org.aspectj.weaver.loadtime.configuration", "aspect/aop.xml");
         // System.setProperty("org.aspectj.weaver.loadtime.configuration", "file:/home/elkhan/Remote/poracle/modules/JQF/aspect/aop.xml");
 
         Path fuzz_results_patch_dir = FileSystems.getDefault().getPath("..", "src", "test", "resources", "fuzz-results-patch");
