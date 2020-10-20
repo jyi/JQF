@@ -196,9 +196,9 @@ public class ReproGoal extends AbstractMojo {
         }
 
         if (inputFile.isDirectory()) {
-            guidance = new ReproGuidance(inputFile.listFiles(), null);
+            guidance = new ReproGuidance(inputFile.listFiles(), null, null);
         } else {
-            guidance = new ReproGuidance(inputFile, null);
+            guidance = new ReproGuidance(inputFile, null, null);
         }
 
         try {

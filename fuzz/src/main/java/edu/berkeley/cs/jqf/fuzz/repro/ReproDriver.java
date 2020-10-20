@@ -70,7 +70,7 @@ public class ReproDriver implements Runnable {
             File traceDir = traceDirName != null ? new File(traceDirName) : null;
 
             // Load the guidance
-            ReproGuidance guidance = new ReproGuidance(testInputFiles, traceDir);
+            ReproGuidance guidance = new ReproGuidance(testInputFiles, traceDir, null);
 
             // Run the Junit test
             GuidedFuzzing.run(testClassName, testMethodName, guidance, System.out);

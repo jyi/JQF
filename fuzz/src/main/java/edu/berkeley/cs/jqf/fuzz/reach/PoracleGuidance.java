@@ -407,6 +407,7 @@ public class PoracleGuidance extends ZestGuidance {
                     }
                 }
             } catch (IOException e) {
+                infoLog("Failed to read xml files");
                 System.err.println("Failed to read xml files");
                 e.printStackTrace();
             }
@@ -655,6 +656,7 @@ public class PoracleGuidance extends ZestGuidance {
         if (timeOutOccurred) return false;
 
         if (EXIT_ON_PLATEAU && isPlateauReached) {
+            infoLog("stop because plateau is reached");
             System.out.println("stop because plateau is reached");
             return false;
         }
@@ -662,7 +664,6 @@ public class PoracleGuidance extends ZestGuidance {
         String inputID = System.getProperty("jqf.ei.inputID");
         String path = outputDirectory.getPath() + File.separator + "diff_out";
         if(!Files.exists(Paths.get(path))) {
-            // System.out.println("Current dir using System:" +currentDir);
             try {
                 Files.createDirectories(Paths.get(path));
             } catch (IOException e) {
@@ -679,12 +680,13 @@ public class PoracleGuidance extends ZestGuidance {
                 Files.write(inFile, msg.getBytes(), StandardOpenOption.APPEND);
                 diffOutFound = true;
             } catch (IOException e) {
+                infoLog("Something went wrong while writing diff-revealing input");
                 System.err.println("Something went wrong while writing diff-revealing input");
                 e.printStackTrace();
             }
 
-            infoLog("Diff out is found!");
-            System.out.println("Diff out is found!");
+            infoLog("Diff out is found after %d ms!", elapsedMilliseconds);
+            System.out.println(String.format("Diff out is found after %d ms!", elapsedMilliseconds));
             return false;
         }
         return elapsedMilliseconds < maxDurationMillis;
@@ -814,6 +816,7 @@ public class PoracleGuidance extends ZestGuidance {
             long elapsed = new Date().getTime() - runStart.getTime();
             if (elapsed > this.singleRunTimeoutMillis) {
                 timeOutOccurred = true;
+                infoLog("timeout occurred");
                 System.err.println("timeout occurred");
                 throw new TimeoutException(elapsed, this.singleRunTimeoutMillis);
             }

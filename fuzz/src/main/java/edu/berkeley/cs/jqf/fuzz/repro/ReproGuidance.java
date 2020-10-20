@@ -28,15 +28,7 @@
  */
 package edu.berkeley.cs.jqf.fuzz.repro;
 
-import java.io.BufferedInputStream;
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.PrintStream;
+import java.io.*;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -80,6 +72,13 @@ public class ReproGuidance implements Guidance {
     private boolean ignoreInvalidCoverage;
     private boolean printArgs;
 
+    /** The file where log data is written. */
+    protected File logFile;
+    /** The directory where fuzzing results are produced. */
+    protected final File outputDirectory;
+
+    protected final boolean verbose = true;
+
     HashMap<Integer, String> branchDescCache = new HashMap<>();
 
 
@@ -93,7 +92,7 @@ public class ReproGuidance implements Guidance {
      *                 be the destination for log files containing event
      *                 traces
      */
-    public ReproGuidance(File[] inputFiles, File traceDir) {
+    public ReproGuidance(File[] inputFiles, File traceDir, File outputDirectory) {
         this.inputFiles = inputFiles;
         this.traceDir = traceDir;
         if (Boolean.getBoolean("jqf.repro.logUniqueBranches")) {
@@ -102,6 +101,9 @@ public class ReproGuidance implements Guidance {
             ignoreInvalidCoverage = Boolean.getBoolean("jqf.repro.ignoreInvalidCoverage");
         }
         printArgs = Boolean.getBoolean("jqf.repro.printArgs");
+
+        this.outputDirectory = outputDirectory;
+        logFile = new File(outputDirectory, "fuzz.log");
     }
 
     /**
@@ -114,8 +116,8 @@ public class ReproGuidance implements Guidance {
      *                 be the destination for log files containing event
      *                 traces
      */
-    public ReproGuidance(File inputFile, File traceDir) {
-        this(new File[]{inputFile}, traceDir);
+    public ReproGuidance(File inputFile, File traceDir, File outputDirectory) {
+        this(new File[]{inputFile}, traceDir, outputDirectory);
     }
 
     /**
@@ -155,6 +157,27 @@ public class ReproGuidance implements Guidance {
             for (int i = 0; i < args.length; i++) {
                 System.out.printf("%s[%d]: %s\n", inputFileName, i, String.valueOf(args[i]));
             }
+        }
+    }
+
+    /** Writes a line of text to the log file. */
+    public void infoLog(String str, Object... args) {
+        if (verbose) {
+            String line = String.format(str, args);
+            if (logFile != null) {
+                appendLineToFile(logFile, line);
+            } else {
+                System.err.println(line);
+            }
+        }
+    }
+
+    /** Writes a line of text to a given log file. */
+    protected void appendLineToFile(File file, String line) throws GuidanceException {
+        try (PrintWriter out = new PrintWriter(new FileWriter(file, true))) {
+            out.println(line);
+        } catch (IOException e) {
+            throw new GuidanceException(e);
         }
     }
 

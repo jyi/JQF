@@ -27,9 +27,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 package edu.berkeley.cs.jqf.fuzz.junit.quickcheck;
-import java.io.EOFException;
-import java.io.File;
-import java.io.PrintStream;
+import java.io.*;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
 import java.util.ArrayList;
@@ -48,6 +46,7 @@ import com.pholser.junit.quickcheck.internal.generator.CompositeGenerator;
 import com.pholser.junit.quickcheck.internal.generator.GeneratorRepository;
 import com.pholser.junit.quickcheck.random.SourceOfRandomness;
 import edu.berkeley.cs.jqf.fuzz.ei.ZestCLI2;
+import edu.berkeley.cs.jqf.fuzz.ei.ZestGuidance;
 import edu.berkeley.cs.jqf.fuzz.guidance.Guidance;
 import edu.berkeley.cs.jqf.fuzz.guidance.GuidanceException;
 import edu.berkeley.cs.jqf.fuzz.guidance.TimeoutException;
@@ -91,6 +90,7 @@ public class FuzzStatement extends Statement {
     private final InRangeFactory inRangeFactory = InRangeFactory.singleton();
     private static int wideningCount;
     private static boolean useRepro = false;
+    private static boolean verbose = true;
 
     public FuzzStatement(FrameworkMethod method, TestClass testClass,
                          GeneratorRepository generatorRepository) {
@@ -142,9 +142,9 @@ public class FuzzStatement extends Statement {
                 if (inputFile.isDirectory()) {
                     File[] files = inputFile.listFiles();
                     Arrays.sort(files);
-                    guidance = new ReproGuidance(files, null);
+                    guidance = new ReproGuidance(files, null, null);
                 } else {
-                    guidance = new ReproGuidance(inputFile, null);
+                    guidance = new ReproGuidance(inputFile, null, null);
                 }
             }
         }
@@ -276,10 +276,10 @@ public class FuzzStatement extends Statement {
                 Throwable error = null;
 
                 if (!guidance.isRangeFixed() && guidance.isWideningPlateauReached()) {
-                    System.out.println("Plateau is reached, and the range is widened");
+                    guidance.infoLog("Plateau is reached, and the range is widened");
                     // update input range
                     wideningCount++;
-                    updateInputRange(generators, wideningCount);
+                    updateInputRange(guidance, generators, wideningCount);
                 }
 
                 // Initialize guided fuzzing using a file-backed random number source
@@ -353,7 +353,8 @@ public class FuzzStatement extends Statement {
                     guidance.fixRange();
                     // run patched version
                     assert guidance.getCurSaveFileName() != null;
-                    ReproGuidance reproGuidance = new ReproGuidance(info.getInputFile(), null);
+                    ReproGuidance reproGuidance = new ReproGuidance(info.getInputFile(), null,
+                            guidance.getOutputDirectory());
 
                     // we call the patched version
                     System.setProperty("jqf.ei.run_patch", "true");
@@ -368,7 +369,8 @@ public class FuzzStatement extends Statement {
                         // we call the original version again
                         // we should retrieve the class loader for the buggy version
                         DumpUtil.runOrgVerAgain = true;
-                        ReproGuidance reproGuidance2 = new ReproGuidance(info.getInputFile(), null);
+                        ReproGuidance reproGuidance2 = new ReproGuidance(info.getInputFile(), null,
+                                guidance.getOutputDirectory());
                         run(testClass.getName(), method.getName(), ZestCLI2.loaderForOrg, reproGuidance2);
                         DumpUtil.runOrgVerAgain = false;
                         DumpUtil.setTargetHit(false);
@@ -428,7 +430,7 @@ public class FuzzStatement extends Statement {
                 Throwable error = null;
 
                 // update input range based on the current wideningCount
-                updateInputRange(generators, wideningCount);
+                updateInputRange(guidance, generators, wideningCount);
 
                 // Initialize guided fuzzing using a file-backed random number source
                 try {
@@ -514,7 +516,7 @@ public class FuzzStatement extends Statement {
         }
     }
 
-    private void updateInputRange(List<Generator<?>> generators, int wideningCount) {
+    private void updateInputRange(Guidance guidance, List<Generator<?>> generators, int wideningCount) {
         for (int i = 0; i < method.getMethod().getParameterCount(); i++) {
             Generator<?> gen = generators.get(i);
             if (!(gen instanceof CompositeGenerator)) {
@@ -526,7 +528,7 @@ public class FuzzStatement extends Statement {
                 Annotation[] anns = method.getMethod().getParameterAnnotations()[i];
                 for (Annotation ann: anns) {
                     if (ann instanceof InRange) {
-                        updateRange(gen2, (InRange) ann);
+                        updateRange(guidance, gen2, (InRange) ann);
                     }
                 }
 
@@ -540,7 +542,7 @@ public class FuzzStatement extends Statement {
         }
     }
 
-    private void updateRange(Generator<?> gen, InRange range) {
+    private void updateRange(Guidance guidance, Generator<?> gen, InRange range) {
         try {
             InRange newRange = range;
             if(!range.isFixed()){
@@ -549,16 +551,37 @@ public class FuzzStatement extends Statement {
             Method m = gen.getClass().getMethod("configure", InRange.class);
             m.invoke(gen, newRange);
             if (gen instanceof IntegerGenerator) {
-                System.out.println("[" + newRange.minInt() + ", " + newRange.maxInt() + "]");
+                infoLog("[" + newRange.minInt() + ", " + newRange.maxInt() + "]");
             } else if (gen instanceof DoubleGenerator) {
-                System.out.println("[" + newRange.minDouble() + ", " + newRange.maxDouble() + "]");
+                infoLog("[" + newRange.minDouble() + ", " + newRange.maxDouble() + "]");
             }
         } catch (NoSuchMethodException e) {
-            System.err.println(String.format("Class %s does not have configure(InRange)", gen.getClass()));
+            infoLog(String.format("Class %s does not have configure(InRange)", gen.getClass()));
         } catch (IllegalAccessException e) {
-            System.err.println(String.format("Class %s does not have public configure(InRange)", gen.getClass()));
+            infoLog(String.format("Class %s does not have public configure(InRange)", gen.getClass()));
         } catch (InvocationTargetException e) {
-            System.err.println(String.format("An exception is thrown from %s.configure(InRange)", gen.getClass()));
+            infoLog(String.format("An exception is thrown from %s.configure(InRange)", gen.getClass()));
+        }
+    }
+
+    /** Writes a line of text to the log file. */
+    private void infoLog(String str, Object... args) {
+        if (verbose) {
+            String line = String.format(str, args);
+            if (ZestGuidance.logFile != null) {
+                appendLineToFile(ZestGuidance.logFile, line);
+            } else {
+                System.err.println(line);
+            }
+        }
+    }
+
+    /** Writes a line of text to a given log file. */
+    private void appendLineToFile(File file, String line) throws GuidanceException {
+        try (PrintWriter out = new PrintWriter(new FileWriter(file, true))) {
+            out.println(line);
+        } catch (IOException e) {
+            throw new GuidanceException(e);
         }
     }
 
