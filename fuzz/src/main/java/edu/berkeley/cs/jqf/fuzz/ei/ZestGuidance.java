@@ -186,7 +186,7 @@ public class ZestGuidance implements Guidance {
     /** Total execs at last stats refresh. */
     protected long lastNumTrials = 0;
     /** The file where log data is written. */
-    protected File logFile;
+    public static File logFile;
     /** The file where saved plot data is written. */
     protected File statsFile;
     /** The currently executing input (for debugging purposes). */
@@ -271,7 +271,6 @@ public class ZestGuidance implements Guidance {
 
 
     protected void prepareOutputDirectory() throws IOException {
-
         // Create the output directory if it does not exist
         if (!outputDirectory.exists()) {
             if (!outputDirectory.mkdirs()) {
@@ -334,7 +333,6 @@ public class ZestGuidance implements Guidance {
             String line = String.format(str, args);
             if (logFile != null) {
                 appendLineToFile(logFile, line);
-
             } else {
                 System.err.println(line);
             }
@@ -433,6 +431,10 @@ public class ZestGuidance implements Guidance {
 
     public void setBlind(boolean blind) {
         this.blind = blind;
+    }
+
+    public File getOutputDirectory() {
+        return outputDirectory;
     }
 
     protected int getTargetChildrenForParent(Input parentInput) {
