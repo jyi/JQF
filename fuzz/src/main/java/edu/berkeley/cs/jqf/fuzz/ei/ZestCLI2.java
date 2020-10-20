@@ -97,7 +97,7 @@ public class ZestCLI2 implements Runnable {
             description = "Timeout")
     int maxMutations = 100;
 
-    @Option(names = "--aop", description = "aop location")
+    @Option(names = { "--aop" }, description = "aop")
     public String aop = null;
 
     @Option(names = { "--delta" },
