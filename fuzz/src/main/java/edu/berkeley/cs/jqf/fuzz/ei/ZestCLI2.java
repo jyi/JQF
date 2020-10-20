@@ -247,7 +247,11 @@ public class ZestCLI2 implements Runnable {
         if (this.libFuzzerCompatOutput) {
             System.setProperty("jqf.ei.LIBFUZZER_COMPAT_OUTPUT", "true");
         }
-        System.setProperty("org.aspectj.weaver.loadtime.configuration", aop);
+
+        if (this.aop != null) {
+            System.setProperty("org.aspectj.weaver.loadtime.configuration", aop);
+        }
+
         System.setProperty("jqf.ei.widenProportion", String.valueOf(this.widenProportion));
         System.setProperty("jqf.ei.delta", String.valueOf(delta));
 
