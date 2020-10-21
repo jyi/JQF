@@ -1,7 +1,9 @@
 package kr.ac.unist.cse.jqf;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -9,6 +11,9 @@ import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
 
 public class Log {
+
+    public static File logFile;
+    private static boolean verbose = true;
 
     public static class LogResult {
         private static String outputForOrg = null;
@@ -135,6 +140,23 @@ public class Log {
 
     public static int getActualCount() {
         return actualCount;
+    }
+
+    public static void infoLog(String str, Object... args) {
+        if (verbose) {
+            String line = String.format(str, args);
+            if (logFile != null) {
+                appendLineToFile(logFile, line);
+            } else {
+                System.err.println(line);
+            }
+        }
+    }
+
+    private static void appendLineToFile(File file, String line) {
+        try (PrintWriter out = new PrintWriter(new FileWriter(file, true))) {
+            out.println(line);
+        } catch (IOException e) { }
     }
 
     protected static void logOut(String msg) {

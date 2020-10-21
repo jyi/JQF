@@ -81,7 +81,7 @@ public class PropagationTest {
     }
 
     @Test
-    public void runZestCLI2() throws IOException {
+    public void runZestCLI2_patch27() throws IOException {
         // turn on the following to see instrumentation log
         // System.setProperty("janala.verbose", "true");
         // String currentDir = System.getProperty("user.dir");
@@ -100,7 +100,6 @@ public class PropagationTest {
 
         ZestCLI2.main(new String[] {
                 "--target", "org/apache/commons/math3/distribution/AbstractIntegerDistribution.java:138",
-//                "--save-all-inputs",
                 "--logdir", "../src/test/resources/log",
                 "--seed", "885441",
                 "--max-corpus-size", "100",
@@ -114,6 +113,35 @@ public class PropagationTest {
                 "../src/test/resources/patches/Patch27/Math2b/target/test-classes:../src/test/resources/patches/Patch27/Math2b/target/classes:../../aspect/tracing.jar",
                 "../src/test/resources/patches/Patch27/Math2p/target/test-classes:../src/test/resources/patches/Patch27/Math2p/target/classes:../../aspect/tracing.jar",
                 "org.apache.commons.math3.distribution.JQF_HypergeometricDistributionTest", "testMath1021"});
+    }
+
+    @Test
+    public void runZestCLI2_patch180() throws IOException {
+        Path fuzz_results_patch_dir = FileSystems.getDefault().getPath("..", "src", "test", "resources", "fuzz-results-patch");
+        Path log_dir = FileSystems.getDefault().getPath("..", "src", "test", "resources", "log");
+
+        if (fuzz_results_patch_dir.toFile().exists()) {
+            executeCommand("rm -rf " + fuzz_results_patch_dir);
+        }
+        if (log_dir.toFile().exists()) {
+            executeCommand("rm -rf " + log_dir);
+        }
+
+        ZestCLI2.main(new String[] {
+                "--target", "org/joda/time/Partial.java:459",
+                "--logdir", "../src/test/resources/log",
+                "--seed", "885441",
+                "--max-corpus-size", "100",
+                "--widening-plateau-threshold", "50",
+                "--verbose",
+                "--max-mutations", "200",
+                "--duration", "12h",
+                "--exploreDuration", "3h",
+                //"--delta", "1e-6",
+                "-o", "../src/test/resources/fuzz-results-patch",
+                "../src/test/resources/patches/Patch180/Time4b/target/test-classes:../src/test/resources/patches/Patch180/Time4b/target/classes:../../aspect/tracing.jar",
+                "../src/test/resources/patches/Patch180/Time4p/target/test-classes:../src/test/resources/patches/Patch180/Time4p/target/classes:../../aspect/tracing.jar",
+                "org.joda.time.JQF_TestPartial_Basics", "testWith3"});
     }
 
     @Test
@@ -170,12 +198,15 @@ public class PropagationTest {
 
         ZestCLI2.main(new String[] {
                 "--target", "org/apache/commons/math3/optimization/linear/SimplexSolver.java:124",
-                //"--save-all-inputs",
                 "--logdir", "../src/test/resources/log",
                 "--seed", "885441",
-                //"--max-corpus-size", "10",
-               // "--plateau-threshold", "10",
+                "--max-corpus-size", "100",
+                "--widening-plateau-threshold", "50",
                 "--verbose",
+                "--max-mutations", "200",
+                "--duration", "12h",
+                "--exploreDuration", "3h",
+                //"--delta", "1e-6",
                 "-o", "../src/test/resources/fuzz-results-patch",
                 "../src/test/resources/patches/Patch32/Math28b/target/test-classes:../src/test/resources/patches/Patch32/Math28b/target/classes",
                 "../src/test/resources/patches/Patch32/Math28p/target/test-classes:../src/test/resources/patches/Patch32/Math28p/target/classes",

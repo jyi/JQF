@@ -50,6 +50,7 @@ import edu.berkeley.cs.jqf.fuzz.guidance.Result;
 import edu.berkeley.cs.jqf.fuzz.guidance.TimeoutException;
 import edu.berkeley.cs.jqf.fuzz.util.Coverage;
 import edu.berkeley.cs.jqf.instrument.tracing.events.TraceEvent;
+import kr.ac.unist.cse.jqf.Log;
 
 import static java.lang.Math.ceil;
 import static java.lang.Math.log;
@@ -295,7 +296,8 @@ public class ZestGuidance implements Guidance {
             this.savedAllDirectory.mkdirs();
         }
         this.statsFile = new File(outputDirectory, "plot_data");
-        this.logFile = new File(outputDirectory, "fuzz.log");
+        logFile = new File(outputDirectory, "fuzz.log");
+        Log.logFile = logFile;
         this.currentInputFile = new File(outputDirectory, ".cur_input");
 
 

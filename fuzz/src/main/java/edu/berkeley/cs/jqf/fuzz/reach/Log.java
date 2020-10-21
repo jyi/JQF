@@ -1,6 +1,11 @@
 package edu.berkeley.cs.jqf.fuzz.reach;
 
+import edu.berkeley.cs.jqf.fuzz.ei.ZestGuidance;
+
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -11,6 +16,7 @@ import java.util.List;
 
 public class Log {
 
+  private static boolean verbose = true;
   public static boolean runBuggyVersion = false;
   private boolean shouldReplacePositiveInfinityInput = false;
   private double valueForPositiveInfinity = 0;
@@ -55,6 +61,23 @@ public class Log {
         System.err.println("Failed to create " + file);
       }
     }
+  }
+
+  public static void infoLog(String str, Object... args) {
+    if (verbose) {
+      String line = String.format(str, args);
+      if (ZestGuidance.logFile != null) {
+        appendLineToFile(ZestGuidance.logFile, line);
+      } else {
+        System.err.println(line);
+      }
+    }
+  }
+
+  private static void appendLineToFile(File file, String line) {
+    try (PrintWriter out = new PrintWriter(new FileWriter(file, true))) {
+      out.println(line);
+    } catch (IOException e) { }
   }
 
   public void logOut(String msg) {
