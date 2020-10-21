@@ -98,7 +98,7 @@ public class ZestCLI2 implements Runnable {
     int maxMutations = 100;
 
     @Option(names = { "--aop" }, description = "aop")
-    public String aop = "/home/mazba/remote1/poracle-experiments/aspect/aop.xml";
+    public String aop = "/poracle-experiments/aspect/aop.xml";
 
     @Option(names = { "--delta" },
             description = "Delta")
