@@ -98,7 +98,7 @@ public class ZestCLI2 implements Runnable {
     int maxMutations = 100;
 
     @Option(names = { "--aop" }, description = "aop")
-    public String aop = null;
+    public String aop = "/poracle-experiments/aspect/aop.xml";
 
     @Option(names = { "--delta" },
             description = "Delta")
@@ -249,7 +249,7 @@ public class ZestCLI2 implements Runnable {
         }
 
         if (this.aop != null) {
-            System.setProperty("org.aspectj.weaver.loadtime.configuration", aop);
+            System.setProperty("org.aspectj.weaver.loadtime.configuration", "file:"+aop);
         }
 
         System.setProperty("jqf.ei.widenProportion", String.valueOf(this.widenProportion));
