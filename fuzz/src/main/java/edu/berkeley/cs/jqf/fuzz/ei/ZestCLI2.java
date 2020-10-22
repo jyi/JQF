@@ -98,7 +98,7 @@ public class ZestCLI2 implements Runnable {
     int maxMutations = 100;
 
     @Option(names = { "--aop" }, description = "aop")
-    public String aop = "/poracle-experiments/aspect/aop.xml";
+    public String aop = System.getProperty("user.dir") + File.separator + ".." + File.separator + "aspect" + File.separator + "aop.xml";
 
     @Option(names = { "--delta" },
             description = "Delta")
