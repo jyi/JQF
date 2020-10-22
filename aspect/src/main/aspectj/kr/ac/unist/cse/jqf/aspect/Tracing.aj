@@ -11,9 +11,6 @@ public aspect Tracing {
                 DumpUtil.insideTargetMethod(true);
             }
             if (DumpUtil.isInterestingExit(thisJoinPoint)) {
-                // System.out.println("< target method is called");
-                // System.out.println(thisJoinPoint.getSignature().getDeclaringTypeName());
-                // System.out.println("Method " + thisJoinPoint.toString() + " is called ");
                 DumpUtil.dumpAtExit(o, thisJoinPoint);
                 if (!DumpUtil.runOrgVerAgain) {
                     DumpUtil.addExitMethod(thisJoinPoint);

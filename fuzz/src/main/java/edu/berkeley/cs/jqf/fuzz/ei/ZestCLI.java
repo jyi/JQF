@@ -31,8 +31,7 @@
 package edu.berkeley.cs.jqf.fuzz.ei;
 
 import edu.berkeley.cs.jqf.fuzz.junit.GuidedFuzzing;
-import edu.berkeley.cs.jqf.fuzz.reach.Log;
-import edu.berkeley.cs.jqf.fuzz.reach.PoracleGuidance;
+import kr.ac.unist.cse.jqf.Log;
 import edu.berkeley.cs.jqf.fuzz.reach.Target;
 import edu.berkeley.cs.jqf.instrument.InstrumentingClassLoader;
 import org.junit.runner.Result;

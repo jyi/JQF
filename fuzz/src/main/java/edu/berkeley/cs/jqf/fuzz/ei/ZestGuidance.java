@@ -48,6 +48,7 @@ import edu.berkeley.cs.jqf.fuzz.guidance.Guidance;
 import edu.berkeley.cs.jqf.fuzz.guidance.GuidanceException;
 import edu.berkeley.cs.jqf.fuzz.guidance.Result;
 import edu.berkeley.cs.jqf.fuzz.guidance.TimeoutException;
+import edu.berkeley.cs.jqf.fuzz.reach.PoracleGuidance;
 import edu.berkeley.cs.jqf.fuzz.util.Coverage;
 import edu.berkeley.cs.jqf.instrument.tracing.events.TraceEvent;
 import kr.ac.unist.cse.jqf.Log;
@@ -1051,10 +1052,12 @@ public class ZestGuidance implements Guidance {
             return responsibilities.size() > 0;
         }
 
-        public abstract double[] getDists();
+        public abstract void setDistance(PoracleGuidance.Distance distance);
+
+        public abstract PoracleGuidance.Distance getDistance();
     }
 
-    public class LinearInput extends Input<Integer> {
+                public class LinearInput extends Input<Integer> {
 
         /** A list of byte values (0-255) ordered by their index. */
         protected ArrayList<Integer> values;
@@ -1131,7 +1134,12 @@ public class ZestGuidance implements Guidance {
         }
 
         @Override
-        public double[] getDists() {
+        public void setDistance(PoracleGuidance.Distance distance) {
+            assert false;
+        }
+
+        @Override
+        public PoracleGuidance.Distance getDistance() {
             assert false;
             return null;
         }

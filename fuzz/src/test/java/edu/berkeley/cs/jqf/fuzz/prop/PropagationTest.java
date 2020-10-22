@@ -2,6 +2,7 @@ package edu.berkeley.cs.jqf.fuzz.prop;
 
 import edu.berkeley.cs.jqf.fuzz.ei.ZestCLI;
 import edu.berkeley.cs.jqf.fuzz.ei.ZestCLI2;
+import edu.berkeley.cs.jqf.fuzz.repro.ReproDriver;
 import edu.berkeley.cs.jqf.fuzz.repro.ReproDriver2;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -116,12 +117,12 @@ public class PropagationTest {
     }
 
     @Test
-    public void runZestCLI2_patch180() throws IOException {
-        Path fuzz_results_patch_dir = FileSystems.getDefault().getPath("..", "src", "test", "resources", "fuzz-results-patch");
+    public void runZestCLI2_patch180() {
+        Path fuzz_results_dir = FileSystems.getDefault().getPath("..", "src", "test", "resources", "fuzz-results");
         Path log_dir = FileSystems.getDefault().getPath("..", "src", "test", "resources", "log");
 
-        if (fuzz_results_patch_dir.toFile().exists()) {
-            executeCommand("rm -rf " + fuzz_results_patch_dir);
+        if (fuzz_results_dir.toFile().exists()) {
+            executeCommand("rm -rf " + fuzz_results_dir);
         }
         if (log_dir.toFile().exists()) {
             executeCommand("rm -rf " + log_dir);
@@ -138,10 +139,25 @@ public class PropagationTest {
                 "--duration", "12h",
                 "--exploreDuration", "3h",
                 //"--delta", "1e-6",
-                "-o", "../src/test/resources/fuzz-results-patch",
+                "-o", fuzz_results_dir.toString(),
                 "../src/test/resources/patches/Patch180/Time4b/target/test-classes:../src/test/resources/patches/Patch180/Time4b/target/classes:../../aspect/tracing.jar",
                 "../src/test/resources/patches/Patch180/Time4p/target/test-classes:../src/test/resources/patches/Patch180/Time4p/target/classes:../../aspect/tracing.jar",
                 "org.joda.time.JQF_TestPartial_Basics", "testWith3"});
+    }
+
+    @Test
+    public void runRepro_patch180() throws IOException {
+        // Path fuzz_results_dir = FileSystems.getDefault().getPath("..", "src", "test", "resources", "fuzz-results");
+        Path log_dir = FileSystems.getDefault().getPath("..", "src", "test", "resources", "log", "FIX", "id_000000004");
+        Path input = FileSystems.getDefault().getPath("..", "src", "test", "resources", "fuzz-results", "diff_out", "id_000000004");
+
+        ReproDriver.main(new String[] {
+                "--cp",
+                "../src/test/resources/patches/Patch180/Time4f/target/test-classes:../src/test/resources/patches/Patch180/Time4f/target/classes",
+                "--logdir", log_dir.toString(),
+                "org.joda.time.JQF_TestPartial_Basics", "testWith3",
+                input.toString()
+        });
     }
 
     @Test

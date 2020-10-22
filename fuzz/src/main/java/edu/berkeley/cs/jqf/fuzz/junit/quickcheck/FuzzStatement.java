@@ -179,6 +179,7 @@ public class FuzzStatement extends Statement {
                             // This happens when we reach EOF before reading all the random values.
                             // Treat this as an assumption failure, so that the guidance considers the
                             // generated input as INVALID
+                            System.err.println(e.toString());
                             throw new AssumptionViolatedException("StreamBackedRandom does not have enough data", e.getCause());
                         } else {
                             throw e;
@@ -349,7 +350,7 @@ public class FuzzStatement extends Statement {
                 PoracleGuidance.ResultOfOrg resultOfOrg = guidance.handleResultOfOrg(result, error);
                 PoracleGuidance.ResultOfPatch resultOfPatch = null;
                 if (resultOfOrg.isInputNotIgnored()) {
-                    guidance.infoLog("Succeeded to log out actual");
+                    guidance.infoLog("Found an non-ignoring input");
                     guidance.fixRange();
                     // run patched version
                     assert guidance.getCurSaveFileName() != null;
@@ -374,13 +375,27 @@ public class FuzzStatement extends Statement {
                     }
 
                     resultOfPatch = guidance.handleResultOfPatch(result, targetHit);
+                } else {
+                    guidance.infoLog("Ignore input");
                 }
 
-                if (guidance.shouldSaveInput(resultOfPatch)) {
+                if (guidance.shouldSaveInput(resultOfOrg, resultOfPatch)) {
                     guidance.resetProgressCount();
-                    String why = resultOfPatch.getWhy() + "+dist";
-                    infoLog("new distances: " + guidance.distsToString(resultOfPatch.getDistances()));
-                    guidance.saveInputs(why, resultOfPatch.isValid(), resultOfPatch.getDistances());
+
+                    String why = "";
+                    PoracleGuidance.Distance dist = null;
+                    boolean valid = false;
+                    if (resultOfPatch != null) {
+                        why = resultOfPatch.getWhy() + "+dist";
+                        dist = resultOfPatch.getDistance();
+                        valid = resultOfPatch.isValid();
+                    } else {
+                        why = resultOfOrg.getWhy() + "+dist";
+                        dist = resultOfOrg.getDistance();
+                        valid = resultOfOrg.isValid();
+                    }
+                    infoLog("new distances: " + guidance.distsToString(dist));
+                    guidance.saveInputs(why, valid, dist);
                 } else {
                     guidance.noProgress();
                     infoLog("skip duplicate coverage");

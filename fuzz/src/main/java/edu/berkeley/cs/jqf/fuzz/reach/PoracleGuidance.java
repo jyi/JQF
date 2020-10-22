@@ -29,10 +29,7 @@
 package edu.berkeley.cs.jqf.fuzz.reach;
 
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
+import java.nio.file.*;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
@@ -151,7 +148,15 @@ public class PoracleGuidance extends ZestGuidance {
     class InputComparator implements Comparator<Input> {
         @Override
         public int compare(Input i1, Input i2) {
-            return compare(i1.getDists(), i2.getDists());
+            return compare(i1.getDistance(), i2.getDistance());
+        }
+
+        private int compare(Distance dist1, Distance dist2) {
+            assert dist1 != null;
+            assert dist2 != null;
+            double[] distArray1 = dist1.getDistArray();
+            double[] distArray2 = dist2.getDistArray();
+            return compare(distArray1, distArray2);
         }
 
         public int compare(double[] dists1, double[] dists2) {
@@ -169,9 +174,32 @@ public class PoracleGuidance extends ZestGuidance {
         }
     }
 
+    public class Distance {
+
+        private final double versionDistCallerExit;
+        private final double versionDistCalleeExit;
+        private final double versionDistCalleeEntry;
+
+        public Distance() {
+            this.versionDistCallerExit = 0;
+            this.versionDistCalleeExit = 0;
+            this.versionDistCalleeEntry = 0;
+        }
+
+        public Distance(double versionDistCallerExit, double versionDistCalleeExit, double versionDistCalleeEntry) {
+            this.versionDistCallerExit = versionDistCallerExit;
+            this.versionDistCalleeExit = versionDistCalleeExit;
+            this.versionDistCalleeEntry = versionDistCalleeEntry;
+        }
+
+        public double[] getDistArray() {
+            return new double[] {versionDistCallerExit, versionDistCalleeExit, versionDistCalleeEntry};
+        }
+    }
+
     public class ComparableInput extends LinearInput {
 
-        private double[] dists;
+        private Distance distance;
 
         public ComparableInput() {
             super();
@@ -181,12 +209,12 @@ public class PoracleGuidance extends ZestGuidance {
             super(other);
         }
 
-        public void setDists(double[] dists) {
-            this.dists = dists;
+        public Distance getDistance() {
+            return this.distance;
         }
 
-        public double[] getDists() {
-            return dists;
+        public void setDistance(Distance distance) {
+            this.distance = distance;
         }
 
         @Override
@@ -228,12 +256,20 @@ public class PoracleGuidance extends ZestGuidance {
     public class ResultOfOrg {
         private final Input<?> input;
         private final File inputFile;
+        private final boolean valid;
+        private final Distance dist;
         private boolean inputNotIgnored;
+        private boolean newCoverageFound;
+        private String why;
 
-        public ResultOfOrg(boolean inputNotIgnored, Input<?> input, File inputFile) {
+        public ResultOfOrg(boolean inputNotIgnored, Input<?> input, File inputFile, boolean newCoverageFound, boolean valid, String why) {
             this.inputNotIgnored = inputNotIgnored;
             this.input = input;
             this.inputFile = inputFile;
+            this.newCoverageFound = newCoverageFound;
+            this.valid = valid;
+            this.why = why;
+            this.dist = new Distance();
         }
 
         public boolean isInputNotIgnored() {
@@ -247,20 +283,40 @@ public class PoracleGuidance extends ZestGuidance {
         public File getInputFile() {
             return this.inputFile;
         }
+
+        public boolean isNewCoverageFound() {
+            return this.newCoverageFound;
+        }
+
+        public String getWhy() {
+            return why;
+        }
+
+        public void setWhy(String why) {
+            this.why = why;
+        }
+
+        public boolean isValid() {
+            return this.valid;
+        }
+
+        public Distance getDistance() {
+            return this.dist;
+        }
     }
 
     public class ResultOfPatch {
 
         private final boolean newCoverageFound;
-        private final double[] distances;
-        private final String why;
+        private final Distance dist;
+        private String why;
         private final boolean valid;
 
-        public ResultOfPatch(boolean newCoverageFound, String why, boolean valid, double[] dists) {
+        public ResultOfPatch(boolean newCoverageFound, String why, boolean valid, Distance dist) {
             this.newCoverageFound = newCoverageFound;
             this.why = why;
             this.valid = valid;
-            this.distances = dists;
+            this.dist = dist;
         }
 
         public boolean isValid() {
@@ -275,8 +331,12 @@ public class PoracleGuidance extends ZestGuidance {
             return newCoverageFound;
         }
 
-        public double[] getDistances() {
-            return distances;
+        public Distance getDistance() {
+            return dist;
+        }
+
+        public void setWhy(String why) {
+            this.why = why;
         }
     }
 
@@ -308,18 +368,32 @@ public class PoracleGuidance extends ZestGuidance {
         this.notIgnoreDirectory.mkdirs();
     }
 
-    public boolean shouldSaveInput(ResultOfPatch resultOfPatch) {
-        // TODO: consider the case where resultOfPatch is null
-        if (resultOfPatch == null) return false;
-
-        boolean newCoverageFound = resultOfPatch.isNewCoverageFound();
-        double[] dists = resultOfPatch.getDistances();
-        if (savedInputs.isEmpty()) return true;
+    public boolean shouldSaveInput(ResultOfOrg resultOfOrg, ResultOfPatch resultOfPatch) {
+        boolean newCoverageFound = false;
+        Distance dist = null;
+        if (resultOfPatch != null) {
+            newCoverageFound = resultOfPatch.isNewCoverageFound();
+            dist = resultOfPatch.getDistance();
+        } else {
+            newCoverageFound = resultOfOrg.isNewCoverageFound();
+            dist = resultOfOrg.getDistance();
+        }
 
         if (newCoverageFound) {
+            if (savedInputs.isEmpty()) return true;
+
             Input best = this.savedInputs.get(savedInputs.size() - 1);
-            int result = (new InputComparator()).compare(dists, best.getDists());
-            if (result > 0) return true;
+            int result = (new InputComparator()).compare(dist, best.getDistance());
+            if (result > 0) {
+                if (resultOfPatch != null) {
+                    String why = resultOfPatch.getWhy() + "+dist";
+                    resultOfPatch.setWhy(why);
+                } else {
+                    String why = resultOfOrg.getWhy() + "+dist";
+                    resultOfOrg.setWhy(why);
+                }
+                return true;
+            }
         }
 
         long elapsedTime = new Date().getTime() - startTime.getTime();
@@ -328,14 +402,19 @@ public class PoracleGuidance extends ZestGuidance {
         else return false;
     }
 
-    // public void saveInputs(double ... dist)
-    public void saveInputs(String reason, boolean valid, double... dist) {
+    public void saveInputs(String reason, boolean valid) {
         Set<Object> responsibilities = computeResponsibilities(valid);
-        GuidanceException.wrap(() -> saveCurrentInput(dist, responsibilities, reason));
+        GuidanceException.wrap(() -> saveCurrentInput(responsibilities, reason));
+    }
+
+    public void saveInputs(String reason, boolean valid, Distance dist) {
+        this.currentInput.setDistance(dist);
+        Set<Object> responsibilities = computeResponsibilities(valid);
+        GuidanceException.wrap(() -> saveCurrentInput(responsibilities, reason));
     }
 
     /* Saves an interesting input to the queue. */
-    protected void saveCurrentInput(double[] dist, Set<Object> responsibilities, String why) throws IOException {
+    protected void saveCurrentInput(Set<Object> responsibilities, String why) throws IOException {
         this.curCorpusSize++;
 
         // First, save to disk (note: we issue IDs to everyone, but only write to disk  if valid)
@@ -353,9 +432,6 @@ public class PoracleGuidance extends ZestGuidance {
         }
 
         // Second, save to queue
-        if (currentInput instanceof ComparableInput && dist != null) {
-            ((ComparableInput) currentInput).setDists(dist);
-        }
         savedInputs.add(currentInput);
 
         // Third, store basic book-keeping data
@@ -604,17 +680,18 @@ public class PoracleGuidance extends ZestGuidance {
             versionDistCalleeExit = getVersionDistance(inputID, callees, PointCutLocation.EXIT);
             versionDistCalleeEntry = getVersionDistance(inputID, callees, PointCutLocation.ENTRY);
         }
-        double[] dists = new double[]{versionDistCallerExit, versionDistCalleeExit, versionDistCalleeEntry};
+        Distance dist = new Distance(versionDistCallerExit, versionDistCalleeExit, versionDistCalleeEntry);
 
-        ResultOfPatch resultOfPatch = new ResultOfPatch(newCoverageFound, why, valid, dists);
+        ResultOfPatch resultOfPatch = new ResultOfPatch(newCoverageFound, why, valid, dist);
         return resultOfPatch;
     }
 
-    public String distsToString(double[] dists) {
+    public String distsToString(Distance dist) {
+        double[] distArray = dist.getDistArray();
         StringBuilder sb = new StringBuilder("[");
-        for (int i = 0; i < dists.length; i++) {
-            sb.append(dists[i]);
-            if (i < dists.length - 1) sb.append(", ");
+        for (int i = 0; i < distArray.length; i++) {
+            sb.append(distArray[i]);
+            if (i < distArray.length - 1) sb.append(", ");
         }
         sb.append("]");
         return sb.toString();
@@ -698,15 +775,17 @@ public class PoracleGuidance extends ZestGuidance {
                 e.printStackTrace();
             }
         }
-        // return false when the two outputs differ from each other
+
         if (this.isDiffOutFound) {
             // save the current input into diff_out dir
             try {
-                Path inFile = Paths.get(path, inputID);
-                Files.createFile(inFile);
-                String msg = "diff_output is found";
-                Files.write(inFile, msg.getBytes(), StandardOpenOption.APPEND);
                 diffOutFound = true;
+                Path inFile = Paths.get(path, inputID);
+                if (Files.exists(inFile)) {
+                    Files.delete(inFile);
+                }
+                Files.createFile(inFile);
+                writeCurrentInputToFile(inFile.toFile());
             } catch (IOException e) {
                 infoLog("Something went wrong while writing diff-revealing input");
                 System.err.println("Something went wrong while writing diff-revealing input");
@@ -766,7 +845,7 @@ public class PoracleGuidance extends ZestGuidance {
                 savedInputs = savedInputs.subList(savedInputs.size() - maxCorpusSize, savedInputs.size());
                 infoLog("saved distances:");
                 for (Input input: savedInputs) {
-                    infoLog(distsToString(input.getDists()));
+                    infoLog(distsToString(input.getDistance()));
                 }
             }
 
@@ -875,9 +954,41 @@ public class PoracleGuidance extends ZestGuidance {
         }
 
         boolean newCoverageFound = false;
+        String why = "";
         // Coverage before
         int nonZeroBefore = totalCoverageOfOrg.getNonZeroCount();
         int validNonZeroBefore = validCoverageOfOrg.getNonZeroCount();
+
+        // Update total coverage
+        boolean coverageBitsUpdated = totalCoverageOfOrg.updateBits(runCoverageOfOrg);
+        boolean valid = result == Result.SUCCESS;
+        if (valid) {
+            validCoverageOfOrg.updateBits(runCoverageOfOrg);
+        }
+
+        // Coverage after
+        int nonZeroAfter = totalCoverageOfPatch.getNonZeroCount();
+        if (nonZeroAfter > maxCoverageOfPatch) {
+            maxCoverageOfPatch = nonZeroAfter;
+        }
+
+        if (SAVE_NEW_COUNTS && coverageBitsUpdated) {
+            newCoverageFound = true;
+            why = why + "+count";
+        }
+
+        // Save if new total coverage found
+        if (nonZeroAfter > nonZeroBefore) {
+            newCoverageFound = true;
+            why = why + "+cov";
+        }
+
+        // Save if new valid coverage is found
+        int validNonZeroAfter = validCoverageOfPatch.getNonZeroCount();
+        if (this.validityFuzzing && validNonZeroAfter > validNonZeroBefore) {
+            newCoverageFound = true;
+            why = why + "+valid";
+        }
 
         // displaying stats on every interval is only enabled for AFL-like stats screen
         if (console != null && !LIBFUZZER_COMPAT_OUTPUT) {
@@ -899,7 +1010,7 @@ public class PoracleGuidance extends ZestGuidance {
             GuidanceException.wrap(() -> writeCurrentInputToFile(saved));
         }
 
-        return new ResultOfOrg(inputNotIgnored, currentInput, inputFile);
+        return new ResultOfOrg(inputNotIgnored, currentInput, inputFile, newCoverageFound, valid, why);
     }
 
     public boolean isWideningPlateauReached() {

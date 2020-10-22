@@ -4,10 +4,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
+import java.nio.file.*;
 import java.util.Arrays;
 
 public class Log {
@@ -41,8 +38,9 @@ public class Log {
         }
 
         public static boolean isDiffOutputFound() {
-            if (outputForOrg == null && outputForPatch != null) return true;
-            if (outputForOrg != null && outputForPatch == null) return true;
+            assert outputForOrg != null;
+            assert outputForPatch != null;
+
             if (outputForOrg.contains("IGNORE_OUTPUT")) return false;
 
             try {
@@ -347,6 +345,14 @@ public class Log {
         Path inFile;
         String inputID = System.getProperty("jqf.ei.inputID");
         if (inputID == null) {
+            if (!Files.exists(FileSystems.getDefault().getPath(logDir))) {
+                try {
+                    Files.createDirectories(FileSystems.getDefault().getPath(logDir));
+                } catch (IOException e) {
+                    System.err.println("Failed to create a dir: " + logDir);
+                    e.printStackTrace();
+                }
+            }
             inFile = Paths.get(logDir, "IN.log");
         } else {
             try {

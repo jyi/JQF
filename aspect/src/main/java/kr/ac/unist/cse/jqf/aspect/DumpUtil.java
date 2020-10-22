@@ -21,6 +21,7 @@ public class DumpUtil {
     private static boolean isTheTargetHit = false;
     private static boolean isInsideTargetMethod = false;
     public static boolean runOrgVerAgain = false;
+    public static boolean duringDumping = false;
 
     public static List<MethodInfo> getCallerChain() {
         return callerChain;
@@ -48,34 +49,52 @@ public class DumpUtil {
 
     // dump at an exit point
     public static void dumpAtExit(Object returnVal, JoinPoint target) {
-        XStream stream = new XStream();
-        String xml = null;
-        if (target.getTarget() == null)
-            xml = stream.toXML(target.getStaticPart());
-        else
-            xml = stream.toXML(target.getTarget());
-        if (returnVal != null)
-            xml = String.format("<values>\n<return>\n%s\n</return>\n%s\n</values>", stream.toXML(returnVal), xml);
-        Log.writeToFile(xml, target.getSignature().getName() + "Exit" + ".xml");
+        try {
+            duringDumping = true;
+            XStream stream = new XStream();
+            String xml = null;
+            if (target.getTarget() == null)
+                xml = stream.toXML(target.getStaticPart());
+            else
+                xml = stream.toXML(target.getTarget());
+            if (returnVal != null)
+                xml = String.format("<values>\n<return>\n%s\n</return>\n%s\n</values>", stream.toXML(returnVal), xml);
+            Log.writeToFile(xml, target.getSignature().getName() + "Exit" + ".xml");
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            duringDumping = false;
+        }
     }
 
     // dump at an entry point
-    public static void dumpAtEntry(JoinPoint target) {
-        Object[] args = target.getArgs();
-        XStream stream = new XStream();
-        String xml = null;
-        if (target.getTarget() == null)
-            xml = stream.toXML(target.getStaticPart());
-        else
-            xml = stream.toXML(target.getTarget());
-        if (args != null) {
-            String argsXml = stream.toXML(args);
-            xml = String.format("<values>\n<args>\n%s\n</args>\n%s\n</values>", argsXml, xml);
+    public static void dumpAtEntry(JoinPoint jp) {
+        try {
+            duringDumping = true;
+            Object[] args = jp.getArgs();
+            XStream stream = new XStream();
+            String xml = null;
+            if (jp.getTarget() == null) {
+                xml = stream.toXML(jp.getStaticPart());
+            } else {
+                Object target = jp.getTarget();
+                xml = stream.toXML(target);
+            }
+            if (args != null) {
+                String argsXml = stream.toXML(args);
+                xml = String.format("<values>\n<args>\n%s\n</args>\n%s\n</values>", argsXml, xml);
+            }
+            Log.writeToFile(xml, jp.getSignature().getName() + "Entry" + ".xml");
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            duringDumping = false;
         }
-        Log.writeToFile(xml, target.getSignature().getName() + "Entry" + ".xml");
     }
 
     public static boolean isInterestingExit(JoinPoint jp) {
+        if (DumpUtil.duringDumping) return false;
+
         if (DumpUtil.runOrgVerAgain) {
             Signature signature = jp.getSignature();
             MethodInfo m = new MethodInfo(signature.getDeclaringTypeName(), signature.getName());
@@ -105,6 +124,8 @@ public class DumpUtil {
     }
 
     public static boolean isInterestingEntry(JoinPoint jp) {
+        if (DumpUtil.duringDumping) return false;
+
         if (DumpUtil.runOrgVerAgain) {
             Signature signature = jp.getSignature();
             MethodInfo m = new MethodInfo(signature.getDeclaringTypeName(), signature.getName());

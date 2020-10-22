@@ -32,7 +32,7 @@ package edu.berkeley.cs.jqf.fuzz.repro;
 import java.io.File;
 
 import edu.berkeley.cs.jqf.fuzz.junit.GuidedFuzzing;
-import edu.berkeley.cs.jqf.fuzz.reach.Log;
+import kr.ac.unist.cse.jqf.Log;
 import edu.berkeley.cs.jqf.instrument.InstrumentingClassLoader;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;

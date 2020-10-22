@@ -1,38 +1,5 @@
 #!/bin/bash
 
-die() {
-    printf '%s\n' "$1" >&2
-    exit 1
-}
+CP=$CLASSPATH:$JQF_DIR/fuzz/target/classes:$JQF_DIR/fuzz/target/dependency/*:$JQF_DIR/instrument/target/dependency/*
 
-# parse options
-zest_args=""
-while :; do
-    if [[ $# > 0 ]]; then
-        case $1 in
-            --project-cp)
-                if [ "$2" ]; then
-                    project_cp=$2
-                    shift
-                    shift
-                else
-                    die 'ERROR: "--project-cp" requires a non-empty option argument.'
-                fi
-                ;;
-            *)
-                zest_args="$zest_args $1"
-                shift
-                ;;
-        esac
-    else
-        break
-    fi
-done
-
-echo "project_cp: $project_cp"
-echo "options: $options"
-
-CP=$JQF_DIR/fuzz/target/classes:$CLASSPATH
-CP=$project_cp:$CP
-
-java -cp $CP edu.berkeley.cs.jqf.fuzz.repro.ReproDriver $zest_args
+java -cp $CP edu.berkeley.cs.jqf.fuzz.repro.ReproDriver $@

@@ -48,6 +48,7 @@ import edu.berkeley.cs.jqf.fuzz.ei.ExecutionIndex.Prefix;
 import edu.berkeley.cs.jqf.fuzz.ei.ExecutionIndex.Suffix;
 import edu.berkeley.cs.jqf.fuzz.guidance.GuidanceException;
 import edu.berkeley.cs.jqf.fuzz.guidance.Result;
+import edu.berkeley.cs.jqf.fuzz.reach.PoracleGuidance;
 import edu.berkeley.cs.jqf.fuzz.util.Coverage;
 import edu.berkeley.cs.jqf.fuzz.util.ProducerHashMap;
 import edu.berkeley.cs.jqf.instrument.tracing.SingleSnoop;
@@ -590,7 +591,12 @@ public class ExecutionIndexingGuidance extends ZestGuidance {
         }
 
         @Override
-        public double[] getDists() {
+        public void setDistance(PoracleGuidance.Distance distance) {
+            assert false;
+        }
+
+        @Override
+        public PoracleGuidance.Distance getDistance() {
             assert false;
             return null;
         }

@@ -32,7 +32,8 @@ package edu.berkeley.cs.jqf.fuzz.repro;
 import java.io.File;
 
 import edu.berkeley.cs.jqf.fuzz.junit.GuidedFuzzing;
-import edu.berkeley.cs.jqf.fuzz.reach.Log;
+import kr.ac.unist.cse.jqf.Log;
+import edu.berkeley.cs.jqf.instrument.InstrumentingClassLoader;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -50,6 +51,9 @@ public class ReproDriver implements Runnable {
 
     @Option(names = "--logdir", description = "log directory")
     public String logDir = null;
+
+    @Option(names = "--cp", description = "classpath")
+    public String classPath = null;
 
     @Option(names = "--run-buggy-version", description =  "do you run a buggy version?")
     public boolean runBuggyVersion = false;
@@ -72,8 +76,12 @@ public class ReproDriver implements Runnable {
             // Load the guidance
             ReproGuidance guidance = new ReproGuidance(testInputFiles, traceDir, null);
 
+            ClassLoader classLoader = new InstrumentingClassLoader(
+                    this.classPath.split(File.pathSeparator),
+                    ReproDriver.class.getClassLoader());
+
             // Run the Junit test
-            GuidedFuzzing.run(testClassName, testMethodName, guidance, System.out);
+            GuidedFuzzing.run(testClassName, testMethodName, classLoader, guidance, System.out);
 
             if (guidance.getBranchesCovered() != null) {
                 String cov = "";
