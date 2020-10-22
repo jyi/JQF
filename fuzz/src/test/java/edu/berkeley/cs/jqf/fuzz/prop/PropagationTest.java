@@ -110,7 +110,7 @@ public class PropagationTest {
                 "--duration", "12h",
                 "--exploreDuration", "3h",
                 //"--delta", "1e-6",
-                "-o", "../src/test/resources/fuzz-results-patch",
+                "-o", "../src/test/resources/fuzz-results",
                 "../src/test/resources/patches/Patch27/Math2b/target/test-classes:../src/test/resources/patches/Patch27/Math2b/target/classes:../../aspect/tracing.jar",
                 "../src/test/resources/patches/Patch27/Math2p/target/test-classes:../src/test/resources/patches/Patch27/Math2p/target/classes:../../aspect/tracing.jar",
                 "org.apache.commons.math3.distribution.JQF_HypergeometricDistributionTest", "testMath1021"});
