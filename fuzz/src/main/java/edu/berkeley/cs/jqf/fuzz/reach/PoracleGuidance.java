@@ -84,7 +84,7 @@ public class PoracleGuidance extends ZestGuidance {
     protected int wideningPlateauThreshold =
             System.getProperty("jqf.ei.WIDENING_PLATEAU_THRESHOLD") != null?
                     Integer.getInteger("jqf.ei.WIDENING_PLATEAU_THRESHOLD") : 10;
-    private boolean isWideningPlateauReached = false;
+    public boolean isWideningPlateauReached = false;
     private long inputIdx = 0;
     private String inputID = null;
     private String parentID = null;
@@ -225,12 +225,12 @@ public class PoracleGuidance extends ZestGuidance {
         }
     }
 
-    public class HandleResult {
+    public class ResultOfOrg {
         private final Input<?> input;
         private final File inputFile;
         private boolean inputNotIgnored;
 
-        public HandleResult(boolean inputNotIgnored, Input<?> input, File inputFile) {
+        public ResultOfOrg(boolean inputNotIgnored, Input<?> input, File inputFile) {
             this.inputNotIgnored = inputNotIgnored;
             this.input = input;
             this.inputFile = inputFile;
@@ -249,9 +249,35 @@ public class PoracleGuidance extends ZestGuidance {
         }
     }
 
-    public void reset() {
-        this.isWideningPlateauReached = false;
-        Log.turnOnRunBuggyVersion();
+    public class ResultOfPatch {
+
+        private final boolean newCoverageFound;
+        private final double[] distances;
+        private final String why;
+        private final boolean valid;
+
+        public ResultOfPatch(boolean newCoverageFound, String why, boolean valid, double[] dists) {
+            this.newCoverageFound = newCoverageFound;
+            this.why = why;
+            this.valid = valid;
+            this.distances = dists;
+        }
+
+        public boolean isValid() {
+            return valid;
+        }
+
+        public String getWhy() {
+            return why;
+        }
+
+        public boolean isNewCoverageFound() {
+            return newCoverageFound;
+        }
+
+        public double[] getDistances() {
+            return distances;
+        }
     }
 
     private double getDiffVal(Object v) {
@@ -282,10 +308,15 @@ public class PoracleGuidance extends ZestGuidance {
         this.notIgnoreDirectory.mkdirs();
     }
 
-    private boolean shouldKeep(boolean toSave, double[] dists) {
+    public boolean shouldSaveInput(ResultOfPatch resultOfPatch) {
+        // TODO: consider the case where resultOfPatch is null
+        if (resultOfPatch == null) return false;
+
+        boolean newCoverageFound = resultOfPatch.isNewCoverageFound();
+        double[] dists = resultOfPatch.getDistances();
         if (savedInputs.isEmpty()) return true;
 
-        if (toSave) {
+        if (newCoverageFound) {
             Input best = this.savedInputs.get(savedInputs.size() - 1);
             int result = (new InputComparator()).compare(dists, best.getDists());
             if (result > 0) return true;
@@ -428,6 +459,10 @@ public class PoracleGuidance extends ZestGuidance {
         noProgressCount++;
     }
 
+    public void resetProgressCount() {
+        noProgressCount = 0;
+    }
+
     public void checkProgress() {
         if (USE_WIDENING_PLATEAU_THRESHOLD && !rangeFixed && noProgressCount > wideningPlateauThreshold) {
             infoLog("A widening plateau is reached!!!");
@@ -495,7 +530,7 @@ public class PoracleGuidance extends ZestGuidance {
         return result;
     }
 
-    public void handleResultOfPatch(Result result, boolean targetHit) {
+    public ResultOfPatch handleResultOfPatch(Result result, boolean targetHit) {
         // Stop timeout handling
         this.runStart = null;
 
@@ -509,7 +544,7 @@ public class PoracleGuidance extends ZestGuidance {
         }
 
         // Possibly save input
-        boolean toSave = false;
+        boolean newCoverageFound = false;
         String why = "";
 
         // Coverage before
@@ -535,7 +570,7 @@ public class PoracleGuidance extends ZestGuidance {
         }
 
         if (SAVE_NEW_COUNTS && coverageBitsUpdated) {
-            toSave = true;
+            newCoverageFound = true;
             why = why + "+count";
         }
 
@@ -543,7 +578,7 @@ public class PoracleGuidance extends ZestGuidance {
         if (nonZeroAfter > nonZeroBefore) {
             // Must be responsible for some branch
             assert (responsibilities.size() > 0);
-            toSave = true;
+            newCoverageFound = true;
             why = why + "+cov";
         }
 
@@ -553,7 +588,7 @@ public class PoracleGuidance extends ZestGuidance {
             // Must be responsible for some branch
             assert (responsibilities.size() > 0);
             currentInput.valid = true;
-            toSave = true;
+            newCoverageFound = true;
             why = why + "+valid";
         }
 
@@ -571,18 +606,11 @@ public class PoracleGuidance extends ZestGuidance {
         }
         double[] dists = new double[]{versionDistCallerExit, versionDistCalleeExit, versionDistCalleeEntry};
 
-        if (shouldKeep(toSave, dists)) {
-            noProgressCount = 0; // reset
-            why = why + "+dist";
-            infoLog("new distances: " + distsToString(dists));
-            saveInputs(why, valid, dists);
-        } else {
-            noProgress();
-            infoLog("skip duplicate coverage");
-        }
+        ResultOfPatch resultOfPatch = new ResultOfPatch(newCoverageFound, why, valid, dists);
+        return resultOfPatch;
     }
 
-    private String distsToString(double[] dists) {
+    public String distsToString(double[] dists) {
         StringBuilder sb = new StringBuilder("[");
         for (int i = 0; i < dists.length; i++) {
             sb.append(dists[i]);
@@ -828,13 +856,11 @@ public class PoracleGuidance extends ZestGuidance {
     }
 
 
-    public HandleResult handleResultOfOrg(Result result, Throwable error) throws GuidanceException {
+    public ResultOfOrg handleResultOfOrg(Result result, Throwable error) throws GuidanceException {
         boolean inputNotIgnored = false;
 
         // Stop timeout handling
         this.runStart = null;
-
-        boolean valid = result == Result.SUCCESS;
 
         if (Log.getActualCount() > 0) {
             // Trim input (remove unused keys)
@@ -847,6 +873,11 @@ public class PoracleGuidance extends ZestGuidance {
             inputs.add(currentInput);
             inputNotIgnored = true;
         }
+
+        boolean newCoverageFound = false;
+        // Coverage before
+        int nonZeroBefore = totalCoverageOfOrg.getNonZeroCount();
+        int validNonZeroBefore = validCoverageOfOrg.getNonZeroCount();
 
         // displaying stats on every interval is only enabled for AFL-like stats screen
         if (console != null && !LIBFUZZER_COMPAT_OUTPUT) {
@@ -868,7 +899,7 @@ public class PoracleGuidance extends ZestGuidance {
             GuidanceException.wrap(() -> writeCurrentInputToFile(saved));
         }
 
-        return new HandleResult(inputNotIgnored, currentInput, inputFile);
+        return new ResultOfOrg(inputNotIgnored, currentInput, inputFile);
     }
 
     public boolean isWideningPlateauReached() {

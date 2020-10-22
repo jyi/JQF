@@ -346,21 +346,16 @@ public class FuzzStatement extends Statement {
                     }
                 }
 
-                // Inform guidance about the outcome of this trial
-                PoracleGuidance.HandleResult info = guidance.handleResultOfOrg(result, error);
-                if (info.isInputNotIgnored()) {
+                PoracleGuidance.ResultOfOrg resultOfOrg = guidance.handleResultOfOrg(result, error);
+                PoracleGuidance.ResultOfPatch resultOfPatch = null;
+                if (resultOfOrg.isInputNotIgnored()) {
                     guidance.infoLog("Succeeded to log out actual");
                     guidance.fixRange();
                     // run patched version
                     assert guidance.getCurSaveFileName() != null;
-                    ReproGuidance reproGuidance = new ReproGuidance(info.getInputFile(), null,
-                            guidance.getOutputDirectory());
 
                     // we call the patched version
-                    System.setProperty("jqf.ei.run_patch", "true");
-                    run(testClass.getName(), method.getName(), this.loaderForPatch, reproGuidance);
-                    System.setProperty("jqf.ei.run_patch", "false");
-                    guidance.reset();
+                    runPatch(guidance, resultOfOrg);
                     guidance.setDiffOutputFound(isDiffOutputFound());
 
                     boolean targetHit = false;
@@ -369,7 +364,7 @@ public class FuzzStatement extends Statement {
                         // we call the original version again
                         // we should retrieve the class loader for the buggy version
                         DumpUtil.runOrgVerAgain = true;
-                        ReproGuidance reproGuidance2 = new ReproGuidance(info.getInputFile(), null,
+                        ReproGuidance reproGuidance2 = new ReproGuidance(resultOfOrg.getInputFile(), null,
                                 guidance.getOutputDirectory());
                         run(testClass.getName(), method.getName(), ZestCLI2.loaderForOrg, reproGuidance2);
                         DumpUtil.runOrgVerAgain = false;
@@ -378,9 +373,17 @@ public class FuzzStatement extends Statement {
                         DumpUtil.enterMethods.clear();
                     }
 
-                    guidance.handleResultOfPatch(result, targetHit);
+                    resultOfPatch = guidance.handleResultOfPatch(result, targetHit);
+                }
+
+                if (guidance.shouldSaveInput(resultOfPatch)) {
+                    guidance.resetProgressCount();
+                    String why = resultOfPatch.getWhy() + "+dist";
+                    infoLog("new distances: " + guidance.distsToString(resultOfPatch.getDistances()));
+                    guidance.saveInputs(why, resultOfPatch.isValid(), resultOfPatch.getDistances());
                 } else {
                     guidance.noProgress();
+                    infoLog("skip duplicate coverage");
                 }
 
                 guidance.checkProgress();
@@ -403,6 +406,17 @@ public class FuzzStatement extends Statement {
                 throw new MultipleFailureException(failures);
             }
         }
+    }
+
+    private void runPatch(PoracleGuidance guidance, PoracleGuidance.ResultOfOrg resultOfOrg) throws ClassNotFoundException {
+        ReproGuidance reproGuidance = new ReproGuidance(resultOfOrg.getInputFile(), null,
+                guidance.getOutputDirectory());
+        System.setProperty("jqf.ei.run_patch", "true");
+        run(testClass.getName(), method.getName(), this.loaderForPatch, reproGuidance);
+        System.setProperty("jqf.ei.run_patch", "false");
+
+        guidance.isWideningPlateauReached = false;
+        Log.turnOnRunBuggyVersion();
     }
 
     private void run(String className, String methodName, ClassLoader loader, ReproGuidance reproGuidance) throws ClassNotFoundException {
