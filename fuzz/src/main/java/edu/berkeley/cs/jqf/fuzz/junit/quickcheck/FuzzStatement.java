@@ -295,6 +295,7 @@ public class FuzzStatement extends Statement {
                                 .map(g -> g.generate(random, genStatus))
                                 .toArray();
 
+                        Log.resetLogDirForInput();
                         Log.logIn(args);
 
                         // Let guidance observe the generated input args

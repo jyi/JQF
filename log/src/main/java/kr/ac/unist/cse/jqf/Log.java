@@ -72,11 +72,10 @@ public class Log {
         Log.runBuggyVersion = false;
     }
 
-    public static void writeToFile(String xml, String filename) {
+    private static String getLogDir() {
         String logDir = System.getProperty("jqf.ei.logDir");
         if (logDir == null) {
-            System.out.println("out: " + xml);
-            return;
+            return null;
         }
 
         if (Boolean.getBoolean("jqf.ei.run_two_versions")) {
@@ -87,6 +86,15 @@ public class Log {
             }
         }
 
+        return logDir;
+    }
+
+    public static void writeToFile(String xml, String filename) {
+        String logDir = getLogDir();
+        if (logDir == null) {
+            return;
+        }
+        
         Path outFile;
         String inputID = System.getProperty("jqf.ei.inputID");
         if (inputID == null) {
@@ -131,6 +139,24 @@ public class Log {
         actualCount = 0;
         LogResult.clear();
     }
+
+    public static void resetLogDirForInput() {
+        String logDir = getLogDir();
+        String inputID = System.getProperty("jqf.ei.inputID");
+        assert inputID != null;
+        Path logDirForInput = FileSystems.getDefault().getPath(logDir, inputID);
+        if (Files.exists(logDirForInput)) {
+            try {
+                Files.walk(logDirForInput)
+                        .map(Path::toFile)
+                        .forEach(File::delete);
+            } catch (IOException e) {
+                System.err.println("Failed to delete " + logDirForInput);
+                e.printStackTrace();
+            }
+        }
+    }
+
 
     public static int getIgnoreCount() {
         return ignoreCount;

@@ -82,13 +82,7 @@ public class PropagationTest {
     }
 
     @Test
-    public void runZestCLI2_patch27() throws IOException {
-        // turn on the following to see instrumentation log
-        // System.setProperty("janala.verbose", "true");
-        // String currentDir = System.getProperty("user.dir");
-        //System.setProperty("org.aspectj.weaver.loadtime.configuration", "file:../aspect/aop.xml");
-        // System.setProperty("org.aspectj.weaver.loadtime.configuration", "file:/home/elkhan/Remote/poracle/modules/JQF/aspect/aop.xml");
-
+    public void runZestCLI2_patch27() {
         Path fuzz_results_patch_dir = FileSystems.getDefault().getPath("..", "src", "test", "resources", "fuzz-results-patch");
         Path log_dir = FileSystems.getDefault().getPath("..", "src", "test", "resources", "log");
 
