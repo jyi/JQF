@@ -25,3 +25,5 @@ src/test/resources/fuzz-results-patch/*
 .classpath
 .settings
 src/test/resources/log/*
+**/all-tests.txt
+**/failing_tests
