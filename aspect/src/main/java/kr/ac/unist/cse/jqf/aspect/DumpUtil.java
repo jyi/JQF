@@ -144,7 +144,7 @@ public class DumpUtil {
         return true;
     }
 
-    public static boolean isTargetCallee(JoinPoint jp) {
+    public static boolean isCallee(JoinPoint jp) {
         Signature signature = jp.getSignature();
         MethodInfo m = new MethodInfo(signature.getDeclaringTypeName(), signature.getName());
 
@@ -159,7 +159,7 @@ public class DumpUtil {
         return m.equals(targetInfo);
     }
 
-    public static void addTargetCallee(JoinPoint jp) {
+    public static void addCallee(JoinPoint jp) {
         Signature signature = jp.getSignature();
         MethodInfo m = new MethodInfo(signature.getDeclaringTypeName(), signature.getName());
 
@@ -181,5 +181,9 @@ public class DumpUtil {
 
     public static boolean insideTargetMethod() {
         return DumpUtil.isInsideTargetMethod;
+    }
+
+    public static void reset() {
+        calleesOfTaregetMethod.clear();
     }
 }

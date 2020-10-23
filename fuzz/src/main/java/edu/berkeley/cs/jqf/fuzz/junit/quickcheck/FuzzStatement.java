@@ -297,6 +297,7 @@ public class FuzzStatement extends Statement {
 
                         Log.resetLogDirForInput();
                         Log.logIn(args);
+                        DumpUtil.reset();
 
                         // Let guidance observe the generated input args
                         guidance.observeGeneratedArgs(args);
@@ -476,6 +477,7 @@ public class FuzzStatement extends Statement {
                                 .toArray();
 
                         Log.logIn(args);
+                        DumpUtil.reset();
 
                         // Let guidance observe the generated input args
                         guidance.observeGeneratedArgs(args);

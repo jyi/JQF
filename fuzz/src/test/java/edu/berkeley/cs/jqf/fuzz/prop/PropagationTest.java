@@ -155,6 +155,35 @@ public class PropagationTest {
     }
 
     @Test
+    public void runZestCLI2_patch181() {
+        Path fuzz_results_dir = FileSystems.getDefault().getPath("..", "src", "test", "resources", "fuzz-results");
+        Path log_dir = FileSystems.getDefault().getPath("..", "src", "test", "resources", "log");
+
+        if (fuzz_results_dir.toFile().exists()) {
+            executeCommand("rm -rf " + fuzz_results_dir);
+        }
+        if (log_dir.toFile().exists()) {
+            executeCommand("rm -rf " + log_dir);
+        }
+
+        ZestCLI2.main(new String[] {
+                "--target", "org/joda/time/format/DateTimeParserBucket.java:359",
+                "--logdir", "../src/test/resources/log",
+                "--seed", "885441",
+                "--max-corpus-size", "100",
+                "--widening-plateau-threshold", "50",
+                "--verbose",
+                "--max-mutations", "200",
+                "--duration", "1h",
+                "--exploreDuration", "15m",
+                //"--delta", "1e-6",
+                "-o", fuzz_results_dir.toString(),
+                "../src/test/resources/patches/Patch181/Time7b/target/test-classes:../src/test/resources/patches/Patch181/Time7b/target/classes:../../aspect/tracing.jar",
+                "../src/test/resources/patches/Patch181/Time7p/target/test-classes:../src/test/resources/patches/Patch181/Time7p/target/classes:../../aspect/tracing.jar",
+                "org.joda.time.format.JQF_TestDateTimeFormatter", "testParseInto_monthDay_feb29_tokyo_endOfYear"});
+    }
+
+    @Test
     public void runZestCLI2_patch197() throws IOException {
         //System.setProperty("org.aspectj.weaver.loadtime.configuration", "aspect/aop.xml");
 

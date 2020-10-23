@@ -340,24 +340,51 @@ public class PoracleGuidance extends ZestGuidance {
         }
     }
 
-    private double getDiffVal(Object v) {
-        double val = Double.NaN;
-        if (v instanceof String) {
-            boolean done = true;
-            String s = (String) v;
-            try {
-                val = Double.parseDouble(s);
-            } catch (NumberFormatException e) {
-                done = false;
-            }
-
-            if (!done) {
-                if(s.equals("true")||s.equals("false")){
-                    val = s.equals("true")?1:0;
-                }
-            }
+    private double toDouble(String str) throws ConversionToDoubleFailure {
+        try {
+            return Double.parseDouble(str);
+        } catch (NumberFormatException e) {
+            throw new ConversionToDoubleFailure();
         }
-        return val;
+    }
+
+    private double toDouble(Object obj) throws ConversionToDoubleFailure {
+        if (obj == null) {
+            return 0;
+        }
+        if (obj instanceof Integer) {
+            return ((Integer) obj).intValue();
+        }
+        if (obj instanceof Double) {
+            return ((Double) obj).doubleValue();
+        }
+        if (obj instanceof Long) {
+            return ((Long) obj).longValue();
+        }
+        if (obj instanceof Short) {
+            return ((Short) obj).shortValue();
+        }
+        if (obj instanceof Byte) {
+            return ((Byte) obj).byteValue();
+        }
+        if (obj instanceof Character) {
+            return ((Character) obj).charValue();
+        }
+        if (obj instanceof Float) {
+            return ((Float) obj).floatValue();
+        }
+        if (obj instanceof Boolean) {
+            boolean boolVal = ((Boolean) obj).booleanValue();
+            if (boolVal == true) return 1;
+            if (boolVal == false) return 0;
+        }
+        if (obj instanceof String) {
+            String str = (String) obj;
+            if (str.equals("true")) return 1;
+            if (str.equals("false")) return 0;
+            else return toDouble(str);
+        }
+        throw new ConversionToDoubleFailure();
     }
 
     @Override
@@ -495,27 +522,27 @@ public class PoracleGuidance extends ZestGuidance {
                     if (cmp.getControlDetails().getParentXPath().contains("random"))
                         continue;
 
-                    Object v1 = cmp.getControlDetails().getValue();
-                    double val1 = getDiffVal(v1);
-                    Comparison.Detail test = cmp.getTestDetails();
-                    Object v2 = test.getValue();
-                    double val2 = getDiffVal(v2);
-                    if (val1 == Double.MAX_VALUE || val1 == Double.MIN_VALUE || val2 == Double.MAX_VALUE || val2 == Double.MIN_VALUE)
-                        continue;
-                    if (Double.isNaN(val1) || Double.isNaN(val2)) {
-                        String s1 = (String) v1;
-                        String s2 = (String) v2;
-                        LevenshteinDistance levenshteinDistance = new LevenshteinDistance();
-                        double strDist = levenshteinDistance.apply(s1, s2);
-                        if (strDist == Double.MAX_VALUE || strDist == Double.MIN_VALUE) continue;
-                        distance += strDist;
-                    } else {
+                    Object obj1 = null;
+                    Object obj2 = null;
+                    try {
+                        obj1 = cmp.getControlDetails().getValue();
+                        double val1 = toDouble(obj1);
+                        Comparison.Detail test = cmp.getTestDetails();
+                        obj2 = test.getValue();
+                        double val2 = toDouble(obj2);
                         distance += Math.abs(val1 - val2);
+                    } catch (ConversionToDoubleFailure e) {
+                        String str1 = "";
+                        String str2 = "";
+                        if (obj1 != null) str1 = obj1.toString();
+                        if (obj2 != null) str2 = obj2.toString();
+                        distance = new LevenshteinDistance().apply(str1, str2);
                     }
                 }
-            } catch (IOException e) {
+            } catch (Exception e) {
                 infoLog("Failed to read xml files");
                 System.err.println("Failed to read xml files");
+                System.err.println(e.toString());
                 e.printStackTrace();
             }
         }

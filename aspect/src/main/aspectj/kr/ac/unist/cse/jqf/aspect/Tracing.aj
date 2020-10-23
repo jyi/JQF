@@ -1,13 +1,11 @@
 package kr.ac.unist.cse.jqf.aspect;
 
-import org.aspectj.weaver.Dump;
-
 public aspect Tracing {
     private pointcut methodPC () :
             execution(* *(..));
 
         after () returning (Object o): methodPC() {
-            if (DumpUtil.isTargetCallee(thisJoinPoint)) {
+            if (DumpUtil.isCallee(thisJoinPoint)) {
                 DumpUtil.insideTargetMethod(true);
             }
             if (DumpUtil.isInterestingExit(thisJoinPoint)) {
@@ -23,7 +21,10 @@ public aspect Tracing {
         before (): methodPC() {
             if (DumpUtil.isInterestingEntry(thisJoinPoint)) {
                 DumpUtil.insideTargetMethod(false);
-                DumpUtil.addTargetCallee(thisJoinPoint);
+                // we consider only the first callee
+                if (DumpUtil.getCalleesOfTaregetMethod().size() <= 0) {
+                    DumpUtil.addCallee(thisJoinPoint);
+                }
                 DumpUtil.dumpAtEntry(thisJoinPoint);
                 if (!DumpUtil.runOrgVerAgain) {
                     DumpUtil.addEnterMethod(thisJoinPoint);
