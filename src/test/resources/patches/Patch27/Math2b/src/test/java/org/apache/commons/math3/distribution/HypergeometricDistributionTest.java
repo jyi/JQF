@@ -300,16 +300,17 @@ public class HypergeometricDistributionTest extends IntegerDistributionAbstractT
     }
 
     @Test
-    public void testMath1021_variation() {
-        int popSize = 43130568;
+    public void testMath1021_prime() {
+        int popSize = 42976363;
         int n = 50;
         int sampleSize = 41952090;
-        double p = 0.9176672111146251;
+        double p = 0.9999534848881836;
 
         HypergeometricDistribution dist = new HypergeometricDistribution(popSize, sampleSize, n);
 
         // the original test stmt: int sample = dist.sample();
         // the body of sample(): inverseCumulativeProbability(random.nextDouble());
         int actual = dist.inverseCumulativeProbability(p);
+        System.out.println("actual: " + actual);
     }
 }
