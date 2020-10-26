@@ -34,6 +34,9 @@ import edu.berkeley.cs.jqf.fuzz.junit.GuidedFuzzing;
 import edu.berkeley.cs.jqf.fuzz.reach.PoracleGuidance;
 import edu.berkeley.cs.jqf.fuzz.reach.Target;
 import edu.berkeley.cs.jqf.instrument.InstrumentingClassLoader;
+import javassist.ClassPool;
+import javassist.CtClass;
+import javassist.NotFoundException;
 import kr.ac.unist.cse.jqf.Log;
 import org.junit.runner.Result;
 import picocli.CommandLine;
@@ -45,6 +48,7 @@ import java.time.Duration;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.stream.Collectors;
 
 /**
  * CLI for Zest based guidance.
@@ -255,7 +259,6 @@ public class ZestCLI2 implements Runnable {
         System.setProperty("jqf.ei.widenProportion", String.valueOf(this.widenProportion));
         System.setProperty("jqf.ei.delta", String.valueOf(delta));
 
-
         try {
             ClassLoader loaderForOrg = new InstrumentingClassLoader(
                     this.classPathForOrg.split(File.pathSeparator),
@@ -267,6 +270,7 @@ public class ZestCLI2 implements Runnable {
             ZestGuidance guidance;
             if (targets != null) {
                 System.setProperty("jqf.ei.targets", Arrays.toString(targets));
+                extractTargetMethod(targets);
                 guidance = seedFiles.length > 0 ?
                         new PoracleGuidance(title, this.seed, duration, exploreDuration, this.outputDirectory, seedFiles) :
                         new PoracleGuidance(title, this.seed, duration, exploreDuration, this.outputDirectory);
@@ -292,6 +296,27 @@ public class ZestCLI2 implements Runnable {
         }
 
     }
+
+    private void extractTargetMethod(Target[] targets) {
+        ClassPool pool = ClassPool.getDefault();
+        try {
+            for (String cp: removeJar(this.classPathForPatch).split(":")) {
+                pool.insertClassPath(cp);
+            }
+            for (Target target: targets) {
+                CtClass cc = pool.get(target.getClassName());
+                // TODO: find a target method
+            }
+        } catch (NotFoundException e) {
+            e.printStackTrace();
+            System.exit(2);
+        }
+    }
+
+    private String removeJar(String classPath) {
+        return Arrays.stream(classPath.split(":")).filter(s -> !s.endsWith(".jar")).collect(Collectors.joining(":"));
+    }
+
     public static void main(String[] args) {
         int exitCode = new CommandLine(new ZestCLI2())
                 .registerConverter(Duration.class, v -> {

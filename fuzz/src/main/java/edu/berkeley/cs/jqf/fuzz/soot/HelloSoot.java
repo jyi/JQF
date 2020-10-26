@@ -14,7 +14,7 @@ import java.util.List;
 
 public class HelloSoot {
 
-    public static String sourceDirectory = FizzBuzz.class.getProtectionDomain().getCodeSource().getLocation().getPath(); // System.getProperty("user.dir") + File.separator + "demo" + File.separator + "HelloSoot";
+    public static String sourceDirectory = FizzBuzz.class.getProtectionDomain().getCodeSource().getLocation().getPath();
     public static String clsName = FizzBuzz.class.getName();
     public static String methodName = "printFizzBuzz";
 
@@ -33,7 +33,6 @@ public class HelloSoot {
         // sc.setApplicationClass();
         Scene.v().loadNecessaryClasses();
         Scene scene = Scene.v();
-        System.out.println("");
     }
 
     public static void main(String[] args) {

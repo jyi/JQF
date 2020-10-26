@@ -31,4 +31,8 @@ public class Target {
   public String toString() {
     return filename + ":" + linenum;
   }
+
+  public String getClassName() {
+    return this.filename.replace(".java", "").replace("/", ".");
+  }
 }
