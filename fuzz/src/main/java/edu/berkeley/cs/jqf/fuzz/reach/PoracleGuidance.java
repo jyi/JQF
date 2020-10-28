@@ -176,24 +176,29 @@ public class PoracleGuidance extends ZestGuidance {
 
     public class Distance {
 
+        private final double distToTraget;
         private final double versionDistCallerExit;
         private final double versionDistCalleeExit;
         private final double versionDistCalleeEntry;
 
         public Distance() {
+            this.distToTraget = 0;
             this.versionDistCallerExit = 0;
             this.versionDistCalleeExit = 0;
             this.versionDistCalleeEntry = 0;
         }
 
+        // TODO: added distToTarget
         public Distance(double versionDistCallerExit, double versionDistCalleeExit, double versionDistCalleeEntry) {
+            this.distToTraget = 0;
             this.versionDistCallerExit = versionDistCallerExit;
             this.versionDistCalleeExit = versionDistCalleeExit;
             this.versionDistCalleeEntry = versionDistCalleeEntry;
         }
 
         public double[] getDistArray() {
-            return new double[] {versionDistCallerExit, versionDistCalleeExit, versionDistCalleeEntry};
+            // the first one is the most important
+            return new double[] {versionDistCallerExit, versionDistCalleeExit, versionDistCalleeEntry, distToTraget};
         }
     }
 
@@ -698,6 +703,7 @@ public class PoracleGuidance extends ZestGuidance {
         double versionDistCallerExit = 0;
         double versionDistCalleeExit = 0;
         double versionDistCalleeEntry = 0;
+        double distToTarget = 0;
 
         List<MethodInfo> callers = DumpUtil.getCallerChain();
         List<MethodInfo> callees = DumpUtil.getCalleesOfTaregetMethod();
@@ -706,6 +712,8 @@ public class PoracleGuidance extends ZestGuidance {
             versionDistCallerExit = getVersionDistance(inputID, callers, PointCutLocation.EXIT);
             versionDistCalleeExit = getVersionDistance(inputID, callees, PointCutLocation.EXIT);
             versionDistCalleeEntry = getVersionDistance(inputID, callees, PointCutLocation.ENTRY);
+        } else if (!targetHit) {
+            // TODO: compute distToTarget
         }
         Distance dist = new Distance(versionDistCallerExit, versionDistCalleeExit, versionDistCalleeEntry);
 

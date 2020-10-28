@@ -1,5 +1,6 @@
 package edu.berkeley.cs.jqf.fuzz.soot;
 
+import edu.berkeley.cs.jqf.fuzz.soot.examples.Circle;
 import edu.berkeley.cs.jqf.fuzz.soot.examples.FizzBuzz;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -8,8 +9,18 @@ import soot.Scene;
 import soot.SootClass;
 import soot.SootMethod;
 import soot.jimple.JimpleBody;
+import soot.*;
+import soot.jimple.JimpleBody;
+import soot.jimple.internal.JIfStmt;
+import soot.jimple.toolkits.callgraph.CallGraph;
+import soot.options.Options;
+import soot.toolkits.graph.ClassicCompleteUnitGraph;
+import soot.toolkits.graph.UnitGraph;
 
-import java.io.File;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -19,20 +30,47 @@ public class SootTest {
 
     @Test
     public void testMethodsExist() {
-        HelloSoot.setupSoot();
-        SootClass aClass = Scene.v().getSootClass(HelloSoot.clsName);
+        setupSoot(FizzBuzz.class.getProtectionDomain().getCodeSource().getLocation().getPath());
+        SootClass aClass = Scene.v().getSootClass(FizzBuzz.class.getName());
         assertFalse(aClass.isPhantom());
-        SootMethod printFizzBuzzMethod = aClass.getMethodByName(HelloSoot.methodName);
+        SootMethod printFizzBuzzMethod = aClass.getMethodByName("printFizzBuzz");
         int startLine = printFizzBuzzMethod.getJavaSourceStartLineNumber();
         System.out.println("startLine: " + startLine);
-        // printFizzBuzzMethod.getActiveBody().getUnits();
         assertFalse(printFizzBuzzMethod.isPhantom());
         Body body = printFizzBuzzMethod.retrieveActiveBody();
         assertTrue(body instanceof JimpleBody);
     }
 
     @Test
-    public void sootTest() {
+    public void callGraphTest() {
+        setupSoot(Circle.class.getProtectionDomain().getCodeSource().getLocation().getPath());
+        SootClass circleClass = Scene.v().getSootClass(Circle.class.getName());
+        // SootMethod areaMethod = circleClass.getMethod("int area(boolean)");
+        CallGraph callGraph = Scene.v().getCallGraph();
+        Iterator<MethodOrMethodContext> srcMethods = callGraph.sourceMethods();
+        while (srcMethods.hasNext()) {
+            SootMethod srcMethod = srcMethods.next().method();
+            if (!srcMethod.isJavaLibraryMethod()) {
+                System.out.println(srcMethod);
+            }
+        }
+        // assertTrue(Scene.v().getCallGraph().edgesOutOf(areaMethod).hasNext());
+    }
 
+    private static void setupSoot(String sourceDirectory) {
+        G.reset();
+
+//        List<String> process_dir = new ArrayList<>();
+//        process_dir.add(sourceDirectory);
+//        Options.v().set_process_dir(process_dir);
+
+        Options.v().set_allow_phantom_refs(true);
+        Options.v().set_keep_line_number(true);
+        Options.v().set_whole_program(true);
+
+        Scene.v().loadNecessaryClasses();
+        PackManager.v().runPacks();
+        String soot_cp = Options.v().soot_classpath();
+        System.out.println("soot_cp: " + soot_cp);
     }
 }
