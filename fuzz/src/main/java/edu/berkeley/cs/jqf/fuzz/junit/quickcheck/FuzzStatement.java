@@ -337,6 +337,9 @@ public class FuzzStatement extends Statement {
                 } catch (TimeoutException e) {
                     result = TIMEOUT;
                     error = e;
+                } catch (NoSuchMethodError e) {
+                    e.printStackTrace();
+                    System.exit(1);
                 } catch (Throwable e) {
 
                     // Check if this exception was expected

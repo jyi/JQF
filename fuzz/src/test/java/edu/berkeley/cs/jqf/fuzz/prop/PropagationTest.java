@@ -399,4 +399,39 @@ public class PropagationTest {
                 "../src/test/resources/patches/timebug16/Time16p/build/tests:../src/test/resources/patches/timebug16/Time16p/build/classes",
                 "org.joda.time.format.JQF_TestDateTimeFormatter", "testParseInto_monthOnly_baseStartYear"});
     }
+
+    @Test
+    public void runZestCLI2_Mathbug58() throws IOException {
+        Path fuzz_results_patch_dir = FileSystems.getDefault().getPath("..", "src", "test", "resources", "fuzz-results");
+        Path log_dir = FileSystems.getDefault().getPath("..", "src", "test", "resources", "log");
+
+        if (fuzz_results_patch_dir.toFile().exists()) {
+            Files.walk(fuzz_results_patch_dir)
+                    .sorted(Comparator.reverseOrder())
+                    .map(Path::toFile)
+                    .forEach(File::delete);
+        }
+        if (log_dir.toFile().exists()) {
+            Files.walk(log_dir)
+                    .sorted(Comparator.reverseOrder())
+                    .map(Path::toFile)
+                    .forEach(File::delete);
+        }
+
+        ZestCLI2.main(new String[] {
+                "--target", "org/apache/commons/math/optimization/fitting/GaussianFitter.java:121",
+                "--logdir", "../src/test/resources/log",
+                "--seed", "885441",
+                //"--max-corpus-size", "15",
+                "--widening-plateau-threshold", "10",
+                "--max-mutations", "200",
+                "--verbose",
+                "--duration", "60s",
+                "--exploreDuration", "3h",
+                "--delta", "0",
+                "-o", "../src/test/resources/fuzz-results",
+                "../src/test/resources/patches/Mathbug58/Math58b/target/test-classes:../src/test/resources/patches/Mathbug58/Math58b/target/classes:../../aspect/tracing.jar",
+                "../src/test/resources/patches/Mathbug58/Math58p/target/test-classes:../src/test/resources/patches/Mathbug58/Math58p/target/classes:../../aspect/tracing.jar",
+                "org.apache.commons.math.optimization.fitting.JQF_GaussianFitterTest", "testMath519"});
+    }
 }
