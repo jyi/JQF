@@ -5,6 +5,7 @@ import edu.berkeley.cs.jqf.fuzz.soot.examples.FizzBuzz;
 import org.junit.Ignore;
 import org.junit.Test;
 import soot.Body;
+import soot.JastAddJ.Opt;
 import soot.Scene;
 import soot.SootClass;
 import soot.SootMethod;
@@ -48,12 +49,15 @@ public class SootTest {
         // SootMethod areaMethod = circleClass.getMethod("int area(boolean)");
         CallGraph callGraph = Scene.v().getCallGraph();
         Iterator<MethodOrMethodContext> srcMethods = callGraph.sourceMethods();
-        while (srcMethods.hasNext()) {
-            SootMethod srcMethod = srcMethods.next().method();
-            if (!srcMethod.isJavaLibraryMethod()) {
-                System.out.println(srcMethod);
-            }
-        }
+        List<SootMethod> methods = circleClass.getMethods();
+        for(SootMethod method:methods)
+            System.out.println(method.getSignature());
+//        while (srcMethods.hasNext()) {
+//            SootMethod srcMethod = srcMethods.next().method();
+//            if (!srcMethod.isJavaLibraryMethod()) {
+//                System.out.println(srcMethod);
+//            }
+//        }
         // assertTrue(Scene.v().getCallGraph().edgesOutOf(areaMethod).hasNext());
     }
 
@@ -64,13 +68,14 @@ public class SootTest {
 //        process_dir.add(sourceDirectory);
 //        Options.v().set_process_dir(process_dir);
 
-        Options.v().set_allow_phantom_refs(true);
         Options.v().set_keep_line_number(true);
         Options.v().set_whole_program(true);
-
-        Scene.v().loadNecessaryClasses();
-        PackManager.v().runPacks();
+        Options.v().set_prepend_classpath(true);
+        Options.v().set_soot_classpath(sourceDirectory);
+        Scene.v().addBasicClass(Circle.class.getName());
         String soot_cp = Options.v().soot_classpath();
         System.out.println("soot_cp: " + soot_cp);
+        Scene.v().loadNecessaryClasses();
+        PackManager.v().runPacks();
     }
 }
