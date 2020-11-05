@@ -33,21 +33,28 @@ package edu.berkeley.cs.jqf.fuzz.ei;
 import edu.berkeley.cs.jqf.fuzz.junit.GuidedFuzzing;
 import edu.berkeley.cs.jqf.fuzz.reach.PoracleGuidance;
 import edu.berkeley.cs.jqf.fuzz.reach.Target;
+import edu.berkeley.cs.jqf.fuzz.soot.examples.Circle;
 import edu.berkeley.cs.jqf.instrument.InstrumentingClassLoader;
 import javassist.ClassPool;
 import javassist.CtClass;
 import javassist.NotFoundException;
 import kr.ac.unist.cse.jqf.Log;
+import org.junit.Test;
 import org.junit.runner.Result;
 import picocli.CommandLine;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
+import soot.*;
+import soot.jimple.toolkits.callgraph.CallGraph;
+import soot.options.Options;
 
 import java.io.File;
 import java.time.Duration;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
 import java.util.stream.Collectors;
 
 /**
@@ -270,6 +277,7 @@ public class ZestCLI2 implements Runnable {
             ZestGuidance guidance;
             if (targets != null) {
                 System.setProperty("jqf.ei.targets", Arrays.toString(targets));
+                callGraphTest(classPathForOrg,targets[0].getClassName());
                 // TODO: we need to store target methods
                 extractTargetMethod(targets);
                 guidance = seedFiles.length > 0 ?
@@ -296,6 +304,26 @@ public class ZestCLI2 implements Runnable {
             System.exit(2);
         }
 
+    }
+
+    public void callGraphTest(String sourceDirectory, String cls) {
+        setupSoot(sourceDirectory,cls);
+        SootClass targetClass = Scene.v().getSootClass(cls);
+        CallGraph callGraph = Scene.v().getCallGraph();
+//        System.out.println(callGraph.toString());
+    }
+
+    private static void setupSoot(String sourceDirectory,String cls) {
+        G.reset();
+        Options.v().set_keep_line_number(true);
+        Options.v().set_whole_program(true);
+        Options.v().set_prepend_classpath(true);
+        Options.v().set_soot_classpath(sourceDirectory);
+        SootClass appclass = Scene.v().loadClassAndSupport(cls);
+        String soot_cp = Options.v().soot_classpath();
+        System.out.println("soot_cp: " + soot_cp);
+        Scene.v().loadNecessaryClasses();
+        PackManager.v().runPacks();
     }
 
     private void extractTargetMethod(Target[] targets) {
