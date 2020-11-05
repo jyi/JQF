@@ -18,6 +18,7 @@
 package org.apache.commons.math3.optimization.fitting;
 
 import java.util.Random;
+import java.util.stream.DoubleStream;
 
 import org.apache.commons.math3.analysis.function.HarmonicOscillator;
 import org.apache.commons.math3.optimization.general.LevenbergMarquardtOptimizer;
@@ -194,10 +195,54 @@ public class JQF_HarmonicFitterTest {
                 y[i] += random.nextDouble(minDouble, maxDouble);
             return y;
         }
+
+//        public double minDouble() {
+//            return this.minDouble;
+//        }
+//
+//        public double maxDouble() {
+//            return this.maxDouble;
+//        }
     }
 
     @Fuzz
-    public void testMath844(@From(DoubleArrayGen.class) Double[] y) {
+    public void testMath844(@InRange(minInt=-3, maxInt=3, isFixed=true) int y00,
+                            @InRange(minInt=-3, maxInt=3, isFixed=true) int y01,
+                            @InRange(minInt=-3, maxInt=3, isFixed=true) int y02,
+                            @InRange(minInt=-3, maxInt=3, isFixed=true) int y03,
+                            @InRange(minInt=-3, maxInt=3, isFixed=true) int y04,
+                            @InRange(minInt=-3, maxInt=3, isFixed=true) int y05,
+                            @InRange(minInt=-3, maxInt=3, isFixed=true) int y10,
+                            @InRange(minInt=-3, maxInt=3, isFixed=true) int y11,
+                            @InRange(minInt=-3, maxInt=3, isFixed=true) int y12,
+                            @InRange(minInt=-3, maxInt=3, isFixed=true) int y13,
+                            @InRange(minInt=-3, maxInt=3, isFixed=true) int y14,
+                            @InRange(minInt=-3, maxInt=3, isFixed=true) int y15,
+                            @InRange(minInt=-3, maxInt=3, isFixed=true) int y20,
+                            @InRange(minInt=-3, maxInt=3, isFixed=true) int y21,
+                            @InRange(minInt=-3, maxInt=3, isFixed=true) int y22,
+                            @InRange(minInt=-3, maxInt=3, isFixed=true) int y23,
+                            @InRange(minInt=-3, maxInt=3, isFixed=true) int y24,
+                            @InRange(minInt=-3, maxInt=3, isFixed=true) int y25,
+                            @InRange(minInt=-3, maxInt=3, isFixed=true) int y30,
+                            @InRange(minInt=-3, maxInt=3, isFixed=true) int y31,
+                            @InRange(minInt=-3, maxInt=3, isFixed=true) int y32,
+                            @InRange(minInt=-3, maxInt=3, isFixed=true) int y33,
+                            @InRange(minInt=-3, maxInt=3, isFixed=true) int y34,
+                            @InRange(minInt=-3, maxInt=3, isFixed=true) int y35,
+                            @InRange(minInt=-3, maxInt=3, isFixed=true) int y40,
+                            @InRange(minInt=-3, maxInt=3, isFixed=true) int y41,
+                            @InRange(minInt=-3, maxInt=3, isFixed=true) int y42,
+                            @InRange(minInt=-3, maxInt=3, isFixed=true) int y43,
+                            @InRange(minInt=-3, maxInt=3, isFixed=true) int y44,
+                            @InRange(minInt=-3, maxInt=3, isFixed=true) int y45,
+                            @InRange(minInt=-3, maxInt=3, isFixed=true) int y46) {
+        final double[] y = { y00, y01, y02, y03, y04, y05,
+                             y10, y11, y12, y13, y14, y15,
+                             y20, y21, y22, y23, y24, y25,
+                             y30, y31, y32, y33, y34, y35,
+                             y40, y41, y42, y43, y44, y45, y46 };
+
         final int len = y.length;
         final WeightedObservedPoint[] points = new WeightedObservedPoint[len];
         for (int i = 0; i < len; i++) {
@@ -206,13 +251,20 @@ public class JQF_HarmonicFitterTest {
 
         final HarmonicFitter.ParameterGuesser guesser
                 = new HarmonicFitter.ParameterGuesser(points);
-        try {
-            guesser.guess();
-            // we don't know under which condition the output should be preserved.
-            Log.ignoreOut();
-        } catch (Exception e) {
-            Log.logOutIf(!e.getClass().equals(MathIllegalStateException.class), () -> new String[]{e.getClass().toString()},
-                    new String[]{MathIllegalStateException.class.toString()});
+
+        double[] ret = guesser.guess();
+        Log.logOutIf(!isIllegalInput(y), () -> DoubleStream.of(ret).boxed().toArray(Double[]::new));
+    }
+
+    private boolean isIllegalInput(double[] x) {
+        final double[] y = { 0, 1, 2, 3, 2, 1,
+                0, -1, -2, -3, -2, -1,
+                0, 1, 2, 3, 2, 1,
+                0, -1, -2, -3, -2, -1,
+                0, 1, 2, 3, 2, 1, 0 };
+        for (int i = 0; i < x.length; i++) {
+            if (x[i] != y[i]) return false;
         }
+        return true;
     }
 }
