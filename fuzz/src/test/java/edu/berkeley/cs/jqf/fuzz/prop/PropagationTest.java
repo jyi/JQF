@@ -183,10 +183,9 @@ public class PropagationTest {
                 "org.joda.time.format.JQF_TestDateTimeFormatter", "testParseInto_monthDay_feb29_tokyo_endOfYear"});
     }
 
+    // check whether the target is hit
     @Test
     public void runZestCLI2_patch197() throws IOException {
-        //System.setProperty("org.aspectj.weaver.loadtime.configuration", "aspect/aop.xml");
-
         Path fuzz_results_patch_dir = FileSystems.getDefault().getPath("..", "src", "test", "resources", "fuzz-results-patch");
         Path log_dir = FileSystems.getDefault().getPath("..", "src", "test", "resources", "log");
 
@@ -209,9 +208,9 @@ public class PropagationTest {
                 "--duration", "12h",
                 "--exploreDuration", "3h",
                 //"--delta", "1e-6",
-                "-o", "../src/test/resources/fuzz-results-patch",
-                "../src/test/resources/patches/Patch197/Math25b/target/test-classes:../src/test/resources/patches/Patch197/Math25b/target/classes",
-                "../src/test/resources/patches/Patch197/Math25p/target/test-classes:../src/test/resources/patches/Patch197/Math25p/target/classes",
+                "-o", "../src/test/resources/fuzz-results",
+                "../src/test/resources/patches/Patch197/Math25b/target/test-classes:../src/test/resources/patches/Patch197/Math25b/target/classes:../aspect/tracing.jar",
+                "../src/test/resources/patches/Patch197/Math25p/target/test-classes:../src/test/resources/patches/Patch197/Math25p/target/classes:../aspect/tracing.jar",
                 "org.apache.commons.math3.optimization.fitting.JQF_HarmonicFitterTest", "testMath844"});
     }
 
