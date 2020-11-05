@@ -35,6 +35,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.time.Duration;
 
+import com.sun.istack.Nullable;
 import edu.berkeley.cs.jqf.fuzz.ei.ZestGuidance;
 import edu.berkeley.cs.jqf.fuzz.guidance.GuidanceException;
 import edu.berkeley.cs.jqf.fuzz.guidance.Result;
@@ -48,6 +49,7 @@ import kr.ac.unist.cse.jqf.Log;
 import kr.ac.unist.cse.jqf.aspect.DumpUtil;
 import kr.ac.unist.cse.jqf.aspect.MethodInfo;
 import org.apache.commons.text.similarity.LevenshteinDistance;
+import org.jetbrains.annotations.NotNull;
 import org.magicwerk.brownies.collections.BigList;
 import org.xmlunit.builder.DiffBuilder;
 import org.xmlunit.diff.Comparison;
@@ -154,51 +156,101 @@ public class PoracleGuidance extends ZestGuidance {
         private int compare(Distance dist1, Distance dist2) {
             assert dist1 != null;
             assert dist2 != null;
-            double[] distArray1 = dist1.getDistArray();
-            double[] distArray2 = dist2.getDistArray();
-            return compare(distArray1, distArray2);
+            List<List<Double>> distList1 = dist1.getDistList();
+            List<List<Double>> distList2 = dist2.getDistList();
+            return compare(distList1, distList2);
         }
 
-        public int compare(double[] dists1, double[] dists2) {
-            for (int i = 0; i < dists1.length; i++) {
-                double d1 = dists1[i];
-                double d2 = dists2[i];
-                if (d1 == d2) {
-                    continue;
-                } else {
-                    if (d1 > d2) return 1;
-                    else return -1;
+        public int compare(@NotNull List<List<Double>> dists1, @NotNull List<List<Double>> dists2) {
+            assert dists1.size() == dists2.size();
+            for (int i = 0; i < dists1.size(); i++) {
+                List<Double> d1 = dists1.get(i);
+                List<Double> d2 = dists2.get(i);
+                switch (compare2(d1, d2)) {
+                    case 0:
+                        continue;
+                    case 1:
+                        return 1;
+                    case -1:
+                        return -1;
+                    default:
+                        assert false;
                 }
             }
             return 0;
+        }
+
+        private int compare2(@Nullable List<Double> dist1, @Nullable List<Double> dist2) {
+            if (dist1 == null && dist2 == null) return 0;
+            if (dist1 == null && dist2 != null) return -1;
+            if (dist2 == null && dist1 != null) return 1;
+
+            if (dist1.size() == dist2.size()) {
+                for (int i = 0; i < dist1.size(); i++) {
+                    Double d1 = dist1.get(i);
+                    Double d2 = dist2.get(i);
+                    if (d1.equals(d2)) continue;
+                    if (d1 < d2) return -1;
+                    else return 1;
+                }
+                return 0;
+            }
+
+            assert dist1.size() != dist2.size();
+
+            int idx1 = firstNonZeroIndex(dist1);
+            int idx2 = firstNonZeroIndex(dist2);
+
+            if (idx1 < idx2) return -1;
+            if (idx2 < idx1) return 1;
+
+            return 0;
+        }
+
+        private int firstNonZeroIndex(List<Double> lst) {
+            int i = 0;
+            while (i < lst.size()) {
+                Double d = lst.get(i);
+                if (d != 0d) return i;
+                i++;
+            }
+            return lst.size();
         }
     }
 
     public class Distance {
 
         private final double distToTraget;
-        private final double versionDistCallerExit;
-        private final double versionDistCalleeExit;
-        private final double versionDistCalleeEntry;
+        private final @Nullable List<Double> versionDistCallerExit;
+        private final @Nullable List<Double> versionDistCalleeExit;
+        private final @Nullable List<Double> versionDistCalleeEntry;
 
         public Distance() {
             this.distToTraget = 0;
-            this.versionDistCallerExit = 0;
-            this.versionDistCalleeExit = 0;
-            this.versionDistCalleeEntry = 0;
+            this.versionDistCallerExit = null;
+            this.versionDistCalleeExit = null;
+            this.versionDistCalleeEntry = null;
         }
 
         // TODO: added distToTarget
-        public Distance(double versionDistCallerExit, double versionDistCalleeExit, double versionDistCalleeEntry) {
+        public Distance(List<Double> versionDistCallerExit, List<Double> versionDistCalleeExit,
+                        List<Double> versionDistCalleeEntry) {
             this.distToTraget = 0;
             this.versionDistCallerExit = versionDistCallerExit;
             this.versionDistCalleeExit = versionDistCalleeExit;
             this.versionDistCalleeEntry = versionDistCalleeEntry;
         }
 
-        public double[] getDistArray() {
+        public List<List<Double>> getDistList() {
+            ArrayList<Double> distToTragetList = new ArrayList<>();
+            distToTragetList.add(distToTraget);
+
             // the first one is the most important
-            return new double[] {versionDistCallerExit, versionDistCalleeExit, versionDistCalleeEntry, distToTraget};
+            List<List<Double>> distList = new ArrayList<>();
+            distList.add(versionDistCallerExit);
+            distList.add(versionDistCalleeExit);
+            distList.add(versionDistCalleeEntry);
+            return distList;
         }
     }
 
@@ -496,9 +548,12 @@ public class PoracleGuidance extends ZestGuidance {
         return this.diffOutFound;
     }
 
-    private double getDistance(String inputID1, String inputID2, List<MethodInfo> methods,
+    // the first item of the return value is the most important
+    // the last itme of the return value is the distance at the target method
+    private List<Double> getDistance(String inputID1, String inputID2, List<MethodInfo> methods,
                                Version version1, Version version2, PointCutLocation loc) {
-        if (methods == null) return 0;
+        assert methods != null;
+        List<Double> distList = new ArrayList<>();
         double distance = 0d;
         for (int i = methods.size() - 1; i >= 0; i--) {
             MethodInfo m = methods.get(i);
@@ -541,9 +596,10 @@ public class PoracleGuidance extends ZestGuidance {
                         String str2 = "";
                         if (obj1 != null) str1 = obj1.toString();
                         if (obj2 != null) str2 = obj2.toString();
-                        distance = new LevenshteinDistance().apply(str1, str2);
+                        distance += new LevenshteinDistance().apply(str1, str2);
                     }
                 }
+                distList.add(distance);
             } catch (Exception e) {
                 infoLog("Failed to read xml files");
                 System.err.println("Failed to read xml files");
@@ -552,15 +608,11 @@ public class PoracleGuidance extends ZestGuidance {
             }
         }
 
-        return distance;
+        return distList;
     }
 
-    private double getVersionDistance(String inputID, List<MethodInfo> methods, PointCutLocation loc) {
+    private List<Double> getVersionDistance(String inputID, List<MethodInfo> methods, PointCutLocation loc) {
         return getDistance(inputID, inputID, methods, Version.ORG, Version.PATCH, loc);
-    }
-
-    private double getParentDistance(String parentID, String inputID, List<MethodInfo> methods, PointCutLocation loc) {
-        return getDistance(parentID, inputID, methods, Version.PATCH, Version.PATCH, loc);
     }
 
     public void noProgress() {
@@ -700,9 +752,9 @@ public class PoracleGuidance extends ZestGuidance {
             why = why + "+valid";
         }
 
-        double versionDistCallerExit = 0;
-        double versionDistCalleeExit = 0;
-        double versionDistCalleeEntry = 0;
+        List<Double> versionDistCallerExit = null;
+        List<Double> versionDistCalleeExit = null;
+        List<Double> versionDistCalleeEntry = null;
         double distToTarget = 0;
 
         List<MethodInfo> callers = DumpUtil.getCallerChain();
@@ -722,11 +774,11 @@ public class PoracleGuidance extends ZestGuidance {
     }
 
     public String distsToString(Distance dist) {
-        double[] distArray = dist.getDistArray();
+        List<List<Double>> distList = dist.getDistList();
         StringBuilder sb = new StringBuilder("[");
-        for (int i = 0; i < distArray.length; i++) {
-            sb.append(distArray[i]);
-            if (i < distArray.length - 1) sb.append(", ");
+        for (int i = 0; i < distList.size(); i++) {
+            sb.append(distList.get(i));
+            if (i < distList.size() - 1) sb.append(", ");
         }
         sb.append("]");
         return sb.toString();

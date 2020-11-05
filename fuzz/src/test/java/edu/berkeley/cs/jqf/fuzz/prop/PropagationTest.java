@@ -83,7 +83,7 @@ public class PropagationTest {
 
     @Test
     public void runZestCLI2_patch27() {
-        Path fuzz_results_patch_dir = FileSystems.getDefault().getPath("..", "src", "test", "resources", "fuzz-results-patch");
+        Path fuzz_results_patch_dir = FileSystems.getDefault().getPath("..", "src", "test", "resources", "fuzz-results");
         Path log_dir = FileSystems.getDefault().getPath("..", "src", "test", "resources", "log");
 
         if (fuzz_results_patch_dir.toFile().exists()) {
@@ -178,11 +178,12 @@ public class PropagationTest {
                 "--exploreDuration", "15m",
                 //"--delta", "1e-6",
                 "-o", fuzz_results_dir.toString(),
-                "../src/test/resources/patches/Patch181/Time7b/target/test-classes:../src/test/resources/patches/Patch181/Time7b/target/classes:../../aspect/tracing.jar",
-                "../src/test/resources/patches/Patch181/Time7p/target/test-classes:../src/test/resources/patches/Patch181/Time7p/target/classes:../../aspect/tracing.jar",
+                "../src/test/resources/patches/Patch181/Time7b/target/test-classes:../src/test/resources/patches/Patch181/Time7b/target/classes:../aspect/tracing.jar",
+                "../src/test/resources/patches/Patch181/Time7p/target/test-classes:../src/test/resources/patches/Patch181/Time7p/target/classes:../aspect/tracing.jar",
                 "org.joda.time.format.JQF_TestDateTimeFormatter", "testParseInto_monthDay_feb29_tokyo_endOfYear"});
     }
 
+    // correct patch
     // check whether the target is hit
     @Test
     public void runZestCLI2_patch197() throws IOException {
