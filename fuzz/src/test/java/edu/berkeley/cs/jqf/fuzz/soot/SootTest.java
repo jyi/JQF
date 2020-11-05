@@ -14,6 +14,7 @@ import soot.*;
 import soot.jimple.JimpleBody;
 import soot.jimple.internal.JIfStmt;
 import soot.jimple.toolkits.callgraph.CallGraph;
+import soot.jimple.toolkits.callgraph.Edge;
 import soot.options.Options;
 import soot.toolkits.graph.ClassicCompleteUnitGraph;
 import soot.toolkits.graph.ExceptionalUnitGraph;
@@ -56,13 +57,21 @@ public class SootTest {
         SootClass circleClass = Scene.v().getSootClass(Circle.class.getName());
         // SootMethod areaMethod = circleClass.getMethod("int area(boolean)");
         CallGraph callGraph = Scene.v().getCallGraph();
-        System.out.println(callGraph.toString());
+//        System.out.println(callGraph.toString());
         Iterator<MethodOrMethodContext> srcMethods = callGraph.sourceMethods();
         List<SootMethod> methods = circleClass.getMethods();
-        while (srcMethods.hasNext()) {
-            SootMethod srcMethod = srcMethods.next().method();
-            if (!srcMethod.isJavaLibraryMethod()) {
+//        while (srcMethods.hasNext()) {
+//            SootMethod srcMethod = srcMethods.next().method();
+//            if (!srcMethod.isJavaLibraryMethod()) {
 //                System.out.println(srcMethod);
+//            }
+//        }
+
+        Iterator<MethodOrMethodContext> it = callGraph.sourceMethods();
+        while (it.hasNext()) {
+            MethodOrMethodContext mmc = it.next();
+            if (!mmc.method().isJavaLibraryMethod()) {
+                System.out.println(mmc);
             }
         }
         // assertTrue(Scene.v().getCallGraph().edgesOutOf(areaMethod).hasNext());
@@ -77,8 +86,12 @@ public class SootTest {
         Options.v().set_keep_line_number(true);
         Options.v().set_whole_program(true);
         Options.v().set_prepend_classpath(true);
+        // Options.v().set_oaat(true);
         Options.v().set_soot_classpath(sourceDirectory);
-        Scene.v().loadClassAndSupport(cls);
+
+        SootClass appclass = Scene.v().loadClassAndSupport(cls);
+        Scene.v().setMainClass(appclass);
+
         String soot_cp = Options.v().soot_classpath();
         System.out.println("soot_cp: " + soot_cp);
         Scene.v().loadNecessaryClasses();
