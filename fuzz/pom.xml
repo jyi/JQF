@@ -54,8 +54,9 @@
             <artifactId>soot</artifactId>
             <version>4.2.1</version>
             <scope>system</scope>
-            <systemPath>${project.basedir}/../../soot/target/sootclasses-trunk.jar</systemPath>
+            <systemPath>${project.basedir}/../../soot/out/artifacts/soot_jar/soot.jar</systemPath>
         </dependency>
+
 <!--        <dependency>-->
 <!--            <groupId>org.soot-oss</groupId>-->
 <!--            <artifactId>soot</artifactId>-->

@@ -310,6 +310,13 @@ public class ZestCLI2 implements Runnable {
         setupSoot(sourceDirectory,cls,testClassName);
         SootClass targetClass = Scene.v().getSootClass(cls);
         CallGraph callGraph = Scene.v().getCallGraph();
+        Iterator<MethodOrMethodContext> srcMethods = callGraph.sourceMethods();
+        while (srcMethods.hasNext()) {
+            SootMethod srcMethod = srcMethods.next().method();
+            if (!srcMethod.isJavaLibraryMethod()) {
+                System.out.println(srcMethod);
+            }
+        }
 //        System.out.println(callGraph.toString());
     }
 
@@ -320,11 +327,11 @@ public class ZestCLI2 implements Runnable {
         Options.v().set_prepend_classpath(true);
         sourceDirectory+=":"+System.getProperty("java.class.path");
         Options.v().set_soot_classpath(sourceDirectory);
-        SootClass appclass = Scene.v().loadClassAndSupport(testClassName);
-        Scene.v().setMainClass(appclass);
-        SootClass targetclass = Scene.v().loadClassAndSupport(cls);
         String soot_cp = Options.v().soot_classpath();
         System.out.println("soot_cp: " + soot_cp);
+        SootClass targetclass = Scene.v().loadClassAndSupport(cls);
+        SootClass appclass = Scene.v().loadClassAndSupport(testClassName);
+        Scene.v().setMainClass(appclass);
         Scene.v().loadNecessaryClasses();
         PackManager.v().runPacks();
 
