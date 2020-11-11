@@ -277,7 +277,7 @@ public class ZestCLI2 implements Runnable {
             ZestGuidance guidance;
             if (targets != null) {
                 System.setProperty("jqf.ei.targets", Arrays.toString(targets));
-                callGraphTest(classPathForOrg,targets[0].getClassName());
+                callGraphTest(classPathForOrg,targets[0].getClassName(),testClassName);
                 // TODO: we need to store target methods
                 extractTargetMethod(targets);
                 guidance = seedFiles.length > 0 ?
@@ -306,24 +306,28 @@ public class ZestCLI2 implements Runnable {
 
     }
 
-    public void callGraphTest(String sourceDirectory, String cls) {
-        setupSoot(sourceDirectory,cls);
+    public void callGraphTest(String sourceDirectory, String cls,String testClassName) {
+        setupSoot(sourceDirectory,cls,testClassName);
         SootClass targetClass = Scene.v().getSootClass(cls);
         CallGraph callGraph = Scene.v().getCallGraph();
 //        System.out.println(callGraph.toString());
     }
 
-    private static void setupSoot(String sourceDirectory,String cls) {
+    private static void setupSoot(String sourceDirectory,String cls, String testClassName) {
         G.reset();
         Options.v().set_keep_line_number(true);
         Options.v().set_whole_program(true);
         Options.v().set_prepend_classpath(true);
+        sourceDirectory+=":"+System.getProperty("java.class.path");
         Options.v().set_soot_classpath(sourceDirectory);
-        SootClass appclass = Scene.v().loadClassAndSupport(cls);
+        SootClass appclass = Scene.v().loadClassAndSupport(testClassName);
+        Scene.v().setMainClass(appclass);
+        SootClass targetclass = Scene.v().loadClassAndSupport(cls);
         String soot_cp = Options.v().soot_classpath();
         System.out.println("soot_cp: " + soot_cp);
         Scene.v().loadNecessaryClasses();
         PackManager.v().runPacks();
+
     }
 
     private void extractTargetMethod(Target[] targets) {
