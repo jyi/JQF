@@ -169,13 +169,13 @@ public class PropagationTest {
         ZestCLI2.main(new String[] {
                 "--target", "org/joda/time/format/DateTimeParserBucket.java:359",
                 "--logdir", "../src/test/resources/log",
-                "--seed", "885441",
+                "--seed", "88546",
                 "--max-corpus-size", "100",
                 "--widening-plateau-threshold", "50",
                 "--verbose",
                 "--max-mutations", "200",
-                "--duration", "1h",
-                "--exploreDuration", "15m",
+                "--duration", "12h",
+                "--exploreDuration", "30m",
                 //"--delta", "1e-6",
                 "-o", fuzz_results_dir.toString(),
                 "../src/test/resources/patches/Patch181/Time7b/target/test-classes:../src/test/resources/patches/Patch181/Time7b/target/classes:../aspect/tracing.jar",
@@ -285,40 +285,6 @@ public class PropagationTest {
                 "../src/test/resources/patches/Patch172/Math80p/target/test-classes:../src/test/resources/patches/Patch172/Math80p/target/classes",
                 "org.apache.commons.math.linear.JQF_EigenDecompositionImplTest", "testMathpbx02"});
     }
-
-//    @Test
-//    public void runZestCLI2_patch157() throws IOException {
-//        System.setProperty("org.aspectj.weaver.loadtime.configuration", "aspect/aop.xml");
-//
-//        Path fuzz_results_patch_dir = FileSystems.getDefault().getPath("..", "src", "test", "resources", "fuzz-results-patch");
-//        Path log_dir = FileSystems.getDefault().getPath("..", "src", "test", "resources", "log");
-//
-//        if (fuzz_results_patch_dir.toFile().exists()) {
-//            Files.walk(fuzz_results_patch_dir)
-//                    .sorted(Comparator.reverseOrder())
-//                    .map(Path::toFile)
-//                    .forEach(File::delete);
-//        }
-//        if (log_dir.toFile().exists()) {
-//            Files.walk(log_dir)
-//                    .sorted(Comparator.reverseOrder())
-//                    .map(Path::toFile)
-//                    .forEach(File::delete);
-//        }
-//
-//        ZestCLI2.main(new String[] {
-//                "--target", "org/apache/commons/math3/analysis/FunctionUtils.java:146",
-//                "--save-all-inputs",
-//                "--logdir", "../src/test/resources/log",
-//                "--seed", "885441",
-//                "--max-corpus-size", "10",
-//                "--plateau-threshold", "10",
-//                "--verbose",
-//                "-o", "../src/test/resources/fuzz-results-patch",
-//                "../src/test/resources/patches/Patch157/Math24b/target/test-classes:../src/test/resources/patches/Patch157/Math24b/target/classes",
-//                "../src/test/resources/patches/Patch157/Math24p/target/test-classes:../src/test/resources/patches/Patch157/Math24p/target/classes",
-//                "org.apache.commons.math3.analysis.JQF_FunctionUtilsTest", "testMath855"});
-//    }
 
     @Test
     public void runZestCLI2_Patch156() throws IOException {
@@ -433,5 +399,34 @@ public class PropagationTest {
                 "../src/test/resources/patches/Mathbug58/Math58b/target/test-classes:../src/test/resources/patches/Mathbug58/Math58b/target/classes:../../aspect/tracing.jar",
                 "../src/test/resources/patches/Mathbug58/Math58p/target/test-classes:../src/test/resources/patches/Mathbug58/Math58p/target/classes:../../aspect/tracing.jar",
                 "org.apache.commons.math.optimization.fitting.JQF_GaussianFitterTest", "testMath519"});
+    }
+
+    @Test
+    public void runZestCLI2_335_NFL_ACS_PATCH() {
+        Path fuzz_results_dir = FileSystems.getDefault().getPath("..", "src", "test", "resources", "fuzz-results");
+        Path log_dir = FileSystems.getDefault().getPath("..", "src", "test", "resources", "log");
+
+        if (fuzz_results_dir.toFile().exists()) {
+            executeCommand("rm -rf " + fuzz_results_dir);
+        }
+        if (log_dir.toFile().exists()) {
+            executeCommand("rm -rf " + log_dir);
+        }
+
+        ZestCLI2.main(new String[] {
+                "--target", "org/apache/commons/math3/util/MathArrays.java:846",
+                "--logdir", "../src/test/resources/log",
+                "--seed", "88546",
+                "--max-corpus-size", "100",
+                "--widening-plateau-threshold", "50",
+                "--verbose",
+                "--max-mutations", "200",
+                "--duration", "12h",
+                "--exploreDuration", "30m",
+                //"--delta", "1e-6",
+                "-o", fuzz_results_dir.toString(),
+                "../src/test/resources/patches/335_NFL_ACS_Patch_1_1/Math3b/target/test-classes:../src/test/resources/patches/335_NFL_ACS_Patch_1_1/Math3b/target/classes:../aspect/tracing.jar",
+                "../src/test/resources/patches/335_NFL_ACS_Patch_1_1/Math3p/target/test-classes:../src/test/resources/patches/335_NFL_ACS_Patch_1_1/Math3p/target/classes:../aspect/tracing.jar",
+                "org.apache.commons.math3.util.JQF_MathArraysTest", "testLinearCombinationWithSingleElementArray"});
     }
 }

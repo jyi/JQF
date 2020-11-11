@@ -777,7 +777,7 @@ public class PoracleGuidance extends ZestGuidance {
         List<List<Double>> distList = dist.getDistList();
         StringBuilder sb = new StringBuilder("[");
         for (int i = 0; i < distList.size(); i++) {
-            sb.append(distList.get(i));
+            sb.append(distList.get(i) == null? 0 : distList.get(i));
             if (i < distList.size() - 1) sb.append(", ");
         }
         sb.append("]");
