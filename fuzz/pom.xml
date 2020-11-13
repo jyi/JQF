@@ -56,7 +56,6 @@
             <scope>system</scope>
             <systemPath>${project.basedir}/../../soot/out/artifacts/soot_jar/soot.jar</systemPath>
         </dependency>
-
 <!--        <dependency>-->
 <!--            <groupId>org.soot-oss</groupId>-->
 <!--            <artifactId>soot</artifactId>-->

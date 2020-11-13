@@ -309,14 +309,20 @@ public class ZestCLI2 implements Runnable {
     public void callGraphTest(String sourceDirectory, String cls,String testClassName) {
         setupSoot(sourceDirectory,cls,testClassName);
         SootClass targetClass = Scene.v().getSootClass(cls);
+        List<SootMethod> methods = targetClass.getMethods();
+        for(SootMethod m: methods){
+            m.setActiveBody(m.retrieveActiveBody());
+            int x = m.getJavaSourceStartLineNumber();
+            System.out.println(x);
+        }
         CallGraph callGraph = Scene.v().getCallGraph();
         Iterator<MethodOrMethodContext> srcMethods = callGraph.sourceMethods();
-        while (srcMethods.hasNext()) {
-            SootMethod srcMethod = srcMethods.next().method();
-            if (!srcMethod.isJavaLibraryMethod()) {
-                System.out.println(srcMethod);
-            }
-        }
+//        while (srcMethods.hasNext()) {
+//            SootMethod srcMethod = srcMethods.next().method();
+//            if (!srcMethod.isJavaLibraryMethod()) {
+//                System.out.println(srcMethod);
+//            }
+//        }
 //        System.out.println(callGraph.toString());
     }
 
