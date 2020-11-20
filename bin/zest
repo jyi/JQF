@@ -1,4 +1,4 @@
 #!/bin/bash
 
 # java -jar $JQF_DIR/fuzz/target/jqf-fuzz-1.5-SNAPSHOT-zest-cli.jar $@
-java -cp $CLASSPATH:$JQF_DIR/fuzz/target/dependency/*:$JQF_DIR/instrument/target/dependency/*:$JUNIT_QUICKCHECK_DIR/core/target/classes edu.berkeley.cs.jqf.fuzz.ei.ZestCLI2 $@
+java -XX:MaxJavaStackTraceDepth=1000000 -cp $CLASSPATH:$JQF_DIR/fuzz/target/dependency/*:$JQF_DIR/instrument/target/dependency/*:$JUNIT_QUICKCHECK_DIR/core/target/classes edu.berkeley.cs.jqf.fuzz.ei.ZestCLI2 $@
