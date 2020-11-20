@@ -306,24 +306,41 @@ public class ZestCLI2 implements Runnable {
 
     }
 
-    public void callGraphTest(String sourceDirectory, String cls) {
-        setupSoot(sourceDirectory,cls);
+    public void callGraphTest(String sourceDirectory, String cls,String testClassName) {
+        setupSoot(sourceDirectory,cls,testClassName);
         SootClass targetClass = Scene.v().getSootClass(cls);
+        List<SootMethod> methods = targetClass.getMethods();
+        for(SootMethod m: methods){
+            m.setActiveBody(m.retrieveActiveBody());
+            int x = m.getJavaSourceStartLineNumber();
+            System.out.println(x);
+        }
         CallGraph callGraph = Scene.v().getCallGraph();
+        Iterator<MethodOrMethodContext> srcMethods = callGraph.sourceMethods();
+//        while (srcMethods.hasNext()) {
+//            SootMethod srcMethod = srcMethods.next().method();
+//            if (!srcMethod.isJavaLibraryMethod()) {
+//                System.out.println(srcMethod);
+//            }
+//        }
 //        System.out.println(callGraph.toString());
     }
 
-    private static void setupSoot(String sourceDirectory,String cls) {
+    private static void setupSoot(String sourceDirectory,String cls, String testClassName) {
         G.reset();
         Options.v().set_keep_line_number(true);
         Options.v().set_whole_program(true);
         Options.v().set_prepend_classpath(true);
+        sourceDirectory+=":"+System.getProperty("java.class.path");
         Options.v().set_soot_classpath(sourceDirectory);
-        SootClass appclass = Scene.v().loadClassAndSupport(cls);
         String soot_cp = Options.v().soot_classpath();
         System.out.println("soot_cp: " + soot_cp);
+        SootClass targetclass = Scene.v().loadClassAndSupport(cls);
+        SootClass appclass = Scene.v().loadClassAndSupport(testClassName);
+        Scene.v().setMainClass(appclass);
         Scene.v().loadNecessaryClasses();
         PackManager.v().runPacks();
+
     }
 
     private void extractTargetMethod(Target[] targets) {
