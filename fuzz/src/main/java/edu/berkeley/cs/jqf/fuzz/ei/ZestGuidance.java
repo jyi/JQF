@@ -52,6 +52,7 @@ import edu.berkeley.cs.jqf.fuzz.reach.PoracleGuidance;
 import edu.berkeley.cs.jqf.fuzz.util.Coverage;
 import edu.berkeley.cs.jqf.instrument.tracing.events.TraceEvent;
 import kr.ac.unist.cse.jqf.Log;
+import org.magicwerk.brownies.collections.BigList;
 
 import static java.lang.Math.ceil;
 import static java.lang.Math.log;
@@ -126,7 +127,7 @@ public class ZestGuidance implements Guidance {
     /** The directory where all inputs are saved (if enabled). */
     protected File savedAllDirectory;
     /** Set of saved inputs to fuzz. */
-    protected List<Input> savedInputs = new ArrayList<>();
+    protected List<Input> savedInputs = new LinkedList<>();
     /** Queue of seeds to fuzz. */
     protected Deque<Input> seedInputs = new ArrayDeque<>();
     /** Current input that's running -- valid after getInput() and before handleResult(). */
