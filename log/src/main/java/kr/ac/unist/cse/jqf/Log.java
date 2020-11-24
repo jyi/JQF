@@ -138,6 +138,53 @@ public class Log {
         ignoreCount = 0;
         actualCount = 0;
         LogResult.clear();
+        emptyOutFile();
+        emptyInFile();
+    }
+
+    private static void emptyOutFile() {
+        String logDir = System.getProperty("jqf.ei.logDir");
+        Path outFile;
+        String inputID = System.getProperty("jqf.ei.inputID");
+        if (inputID == null) {
+            outFile = Paths.get(logDir, "OUT.log");
+        } else {
+            try {
+                Files.createDirectories(Paths.get(logDir, inputID));
+            } catch (IOException e) {
+                System.err.println("Failed to create directory " + Paths.get(logDir, inputID));
+                e.printStackTrace();
+            }
+            outFile = Paths.get(logDir, inputID, "OUT.log");
+        }
+        try {
+            Files.deleteIfExists(outFile);
+        } catch (IOException e) {
+            System.err.println("Failed to create a file: " + outFile);
+            e.printStackTrace();
+        }
+    }
+    private static void emptyInFile() {
+        String logDir = System.getProperty("jqf.ei.logDir");
+        Path inFile;
+        String inputID = System.getProperty("jqf.ei.inputID");
+        if (inputID == null) {
+            inFile = Paths.get(logDir, "IN.log");
+        } else {
+            try {
+                Files.createDirectories(Paths.get(logDir, inputID));
+            } catch (IOException e) {
+                System.err.println("Failed to create directory " + Paths.get(logDir, inputID));
+                e.printStackTrace();
+            }
+            inFile = Paths.get(logDir, inputID, "IN.log");
+        }
+        try {
+            Files.deleteIfExists(inFile);
+        } catch (IOException e) {
+            System.err.println("Failed to create a file: " + inFile);
+            e.printStackTrace();
+        }
     }
 
     public static void resetLogDirForInput() {
