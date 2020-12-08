@@ -279,7 +279,7 @@ public class ZestCLI2 implements Runnable {
                 System.setProperty("jqf.ei.targets", Arrays.toString(targets));
                 // callGraphTest(classPathForOrg,targets[0].getClassName());
                 // TODO: we need to store target methods
-                extractTargetMethod(targets);
+                //extractTargetMethod(targets);
                 guidance = seedFiles.length > 0 ?
                         new PoracleGuidance(title, this.seed, duration, exploreDuration, this.outputDirectory, seedFiles) :
                         new PoracleGuidance(title, this.seed, duration, exploreDuration, this.outputDirectory);
