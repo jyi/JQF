@@ -270,7 +270,9 @@ public class Log {
     }
 
     protected static void logOut(Object first, Object ... rest) {
-        if (first instanceof String) {
+        if (first == null) {
+            logOut("null");
+        } else if (first instanceof String) {
             logOut((String) first);
         } else if (first instanceof Double) {
             logOut((double) first);
