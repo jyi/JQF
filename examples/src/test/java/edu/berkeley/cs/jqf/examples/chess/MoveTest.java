@@ -48,17 +48,17 @@ public class MoveTest {
 
     @Fuzz
     public void tryMoves(@InRange(minInt=0) int @Size(min=1, max=20)[] choices) {
-        Situation state = initial;
-        Move lastMove = null;
-        for (int i = 0; i < choices.length; i++) {
-            IndexedSeq<Move> moves = state.moves().values().flatten((x) -> x).toIndexedSeq();
-            int k = choices[i] % moves.size();
-            lastMove = moves.apply(k);
-            state = lastMove.situationAfter();
-            //System.out.print(Dumper.apply(lastMove));
-            //System.out.print(" ");
-        }
-        //System.out.println();
+//        Situation state = initial;
+//        Move lastMove = null;
+//        for (int i = 0; i < choices.length; i++) {
+//            IndexedSeq<Move> moves = state.moves().values().flatten((x) -> x).toIndexedSeq();
+//            int k = choices[i] % moves.size();
+//            lastMove = moves.apply(k);
+//            state = lastMove.situationAfter();
+//            //System.out.print(Dumper.apply(lastMove));
+//            //System.out.print(" ");
+//        }
+//        //System.out.println();
     }
 
 }

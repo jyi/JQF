@@ -21,16 +21,17 @@
             <artifactId>istack-commons-runtime</artifactId>
             <version>4.0.0-M3</version>
         </dependency>
-        <dependency>
-            <groupId>org.graphstream</groupId>
-            <artifactId>gs-core</artifactId>
-            <version>1.3</version>
-        </dependency>
-        <dependency>
-            <groupId>org.graphstream</groupId>
-            <artifactId>gs-ui</artifactId>
-            <version>1.3</version>
-        </dependency>
+
+<!--        <dependency>-->
+<!--            <groupId>org.graphstream</groupId>-->
+<!--            <artifactId>gs-core</artifactId>-->
+<!--            <version>1.3</version>-->
+<!--        </dependency>-->
+<!--        <dependency>-->
+<!--            <groupId>org.graphstream</groupId>-->
+<!--            <artifactId>gs-ui</artifactId>-->
+<!--            <version>1.3</version>-->
+<!--        </dependency>-->
 
         <dependency>
             <groupId>javassist</groupId>
@@ -48,7 +49,6 @@
 <!--            <artifactId>junit-quickcheck-generators</artifactId>-->
 <!--        </dependency>-->
 
-
 <!--        <dependency>-->
 <!--            <groupId>org.soot-oss</groupId>-->
 <!--            <artifactId>soot</artifactId>-->
@@ -56,11 +56,12 @@
 <!--            <scope>system</scope>-->
 <!--            <systemPath>${project.basedir}/../../soot/out/artifacts/soot_jar/soot.jar</systemPath>-->
 <!--        </dependency>-->
-        <dependency>
-            <groupId>org.soot-oss</groupId>
-            <artifactId>soot</artifactId>
-            <version>4.2.1</version>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>org.soot-oss</groupId>-->
+<!--            <artifactId>soot</artifactId>-->
+<!--            <version>4.2.1</version>-->
+<!--        </dependency>-->
+
         <dependency>
             <groupId>com.pholser</groupId>
             <artifactId>junit-quickcheck-generators</artifactId>
@@ -142,12 +143,27 @@
             <artifactId>picocli</artifactId>
             <version>4.0.4</version>
         </dependency>
+
         <dependency>
             <groupId>kr.ac.unist.cse.jqf</groupId>
             <artifactId>jqf-log</artifactId>
             <version>1.0-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
+        <dependency>
+            <groupId>kr.ac.unist.plase</groupId>
+            <artifactId>tracing</artifactId>
+            <version>1.0</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/../aspect/tracing.jar</systemPath>
+        </dependency>
+        <dependency>
+            <groupId>kr.ac.unist.cse.jqf</groupId>
+            <artifactId>jqf-aspect</artifactId>
+            <version>1.5-SNAPSHOT</version>
+            <scope>compile</scope>
+        </dependency>
+
         <dependency>
             <groupId>org.apache.bcel</groupId>
             <artifactId>bcel</artifactId>
@@ -163,13 +179,6 @@
             <version>2.7.0</version>
         </dependency>
         <dependency>
-            <groupId>kr.ac.unist.plase</groupId>
-            <artifactId>tracing</artifactId>
-            <version>1.0</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/../aspect/tracing.jar</systemPath>
-        </dependency>
-        <dependency>
             <groupId>org.magicwerk</groupId>
             <artifactId>brownies-collections</artifactId>
             <version>0.9.14</version>
@@ -178,12 +187,6 @@
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-text</artifactId>
             <version>1.9</version>
-        </dependency>
-        <dependency>
-            <groupId>kr.ac.unist.cse.jqf</groupId>
-            <artifactId>jqf-aspect</artifactId>
-            <version>1.5-SNAPSHOT</version>
-            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.jetbrains</groupId>
