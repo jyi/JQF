@@ -585,11 +585,11 @@ public class FuzzStatement extends Statement {
             }
             Method m = gen.getClass().getMethod("configure", InRange.class);
             m.invoke(gen, newRange);
-            if (gen instanceof IntegerGenerator) {
-                infoLog("[" + newRange.minInt() + ", " + newRange.maxInt() + "]");
-            } else if (gen instanceof DoubleGenerator) {
-                infoLog("[" + newRange.minDouble() + ", " + newRange.maxDouble() + "]");
-            }
+//            if (gen instanceof IntegerGenerator) {
+//                infoLog("[" + newRange.minInt() + ", " + newRange.maxInt() + "]");
+//            } else if (gen instanceof DoubleGenerator) {
+//                infoLog("[" + newRange.minDouble() + ", " + newRange.maxDouble() + "]");
+//            }
         } catch (NoSuchMethodException e) {
             infoLog(String.format("Class %s does not have configure(InRange)", gen.getClass()));
         } catch (IllegalAccessException e) {
