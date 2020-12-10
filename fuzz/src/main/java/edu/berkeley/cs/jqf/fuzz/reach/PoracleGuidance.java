@@ -752,6 +752,32 @@ public class PoracleGuidance extends ZestGuidance {
             why = why + "+valid";
         }
 
+        // save the input that reaches the target
+        if (targetHit) {
+            String targetHitPath = outputDirectory.getPath() + File.separator + "target_hit";
+            if(!Files.exists(Paths.get(targetHitPath))) {
+                try {
+                    Files.createDirectories(Paths.get(targetHitPath));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            try {
+                String inputID = System.getProperty("jqf.ei.inputID");
+                Path inFile = Paths.get(targetHitPath, inputID);
+                if (Files.exists(inFile)) {
+                    Files.delete(inFile);
+                }
+                Files.createFile(inFile);
+                writeCurrentInputToFile(inFile.toFile());
+            } catch (IOException e) {
+                infoLog("Something went wrong while writing target-reaching input");
+                System.err.println("Something went wrong while writing target-reaching input");
+                e.printStackTrace();
+            }
+        }
+
         List<Double> versionDistCallerExit = null;
         List<Double> versionDistCalleeExit = null;
         List<Double> versionDistCalleeEntry = null;
@@ -854,10 +880,10 @@ public class PoracleGuidance extends ZestGuidance {
         }
 
         String inputID = System.getProperty("jqf.ei.inputID");
-        String path = outputDirectory.getPath() + File.separator + "diff_out";
-        if(!Files.exists(Paths.get(path))) {
+        String diffOutPath = outputDirectory.getPath() + File.separator + "diff_out";
+        if(!Files.exists(Paths.get(diffOutPath))) {
             try {
-                Files.createDirectories(Paths.get(path));
+                Files.createDirectories(Paths.get(diffOutPath));
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -867,7 +893,7 @@ public class PoracleGuidance extends ZestGuidance {
             // save the current input into diff_out dir
             try {
                 diffOutFound = true;
-                Path inFile = Paths.get(path, inputID);
+                Path inFile = Paths.get(diffOutPath, inputID);
                 if (Files.exists(inFile)) {
                     Files.delete(inFile);
                 }
