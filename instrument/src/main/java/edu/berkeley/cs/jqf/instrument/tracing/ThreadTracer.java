@@ -51,6 +51,7 @@ import janala.logger.inst.*;
  * @author Rohan Padhye
  */
 public class ThreadTracer {
+    public static boolean evaluatingPatch;
     protected final Thread tracee;
     protected final String entryPointClass;
     protected final String entryPointMethod;
@@ -138,7 +139,7 @@ public class ThreadTracer {
      */
     protected final void consume(Instruction ins) {
         // check whether a target is hit
-        if (targets != null) {
+        if (evaluatingPatch && targets != null) {
             emitTargetEvent(ins);
         }
 

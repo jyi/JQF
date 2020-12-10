@@ -183,8 +183,8 @@ public class PropagationTest {
                 "org.joda.time.format.JQF_TestDateTimeFormatter", "testParseInto_monthDay_feb29_tokyo_endOfYear"});
     }
 
-    // correct patch
-    // check whether the target is hit
+    // CORRECT PATCH
+    // TODO: check whether the target is hit
     @Test
     public void runZestCLI2_patch197() throws IOException {
         Path fuzz_results_patch_dir = FileSystems.getDefault().getPath("..", "src", "test", "resources", "fuzz-results-patch");
@@ -250,6 +250,35 @@ public class PropagationTest {
                 "../src/test/resources/patches/Patch32/Math28b/target/test-classes:../src/test/resources/patches/Patch32/Math28b/target/classes",
                 "../src/test/resources/patches/Patch32/Math28p/target/test-classes:../src/test/resources/patches/Patch32/Math28p/target/classes",
                 "org.apache.commons.math3.optimization.linear.JQF_SimplexSolverTest", "testMath828Cycle"});
+    }
+
+    @Test
+    public void runZestCLI2_patch34() {
+        Path fuzz_results_dir = FileSystems.getDefault().getPath("..", "src", "test", "resources", "fuzz-results");
+        Path log_dir = FileSystems.getDefault().getPath("..", "src", "test", "resources", "log");
+
+        if (fuzz_results_dir.toFile().exists()) {
+            executeCommand("rm -rf " + fuzz_results_dir);
+        }
+        if (log_dir.toFile().exists()) {
+            executeCommand("rm -rf " + log_dir);
+        }
+
+        ZestCLI2.main(new String[] {
+                "--target", "org/apache/commons/math3/geometry/euclidean/twod/PolygonsSet.java:136",
+                "--logdir", "../src/test/resources/log",
+                "--seed", "885441",
+                "--max-corpus-size", "100",
+                "--widening-plateau-threshold", "50",
+                "--verbose",
+                "--max-mutations", "200",
+                "--duration", "1h",
+                "--exploreDuration", "10m",
+                //"--delta", "1e-6",
+                "-o", fuzz_results_dir.toString(),
+                "../src/test/resources/patches/Patch34/Math32b/target/test-classes:../src/test/resources/patches/Patch34/Math32b/target/classes:../../aspect/tracing.jar",
+                "../src/test/resources/patches/Patch34/Math32b/target/test-classes:../src/test/resources/patches/Patch34/Math32b/target/classes:../../aspect/tracing.jar",
+                "org.apache.commons.math3.geometry.euclidean.threed.JQF_PolyhedronsSetTest", "testIssue780"});
     }
 
     @Test
@@ -402,6 +431,35 @@ public class PropagationTest {
     }
 
     @Test
+    public void runZestCLI2_patch30() {
+        Path fuzz_results_patch_dir = FileSystems.getDefault().getPath("..", "src", "test", "resources", "fuzz-results");
+        Path log_dir = FileSystems.getDefault().getPath("..", "src", "test", "resources", "log");
+
+        if (fuzz_results_patch_dir.toFile().exists()) {
+            executeCommand("rm -rf " + fuzz_results_patch_dir);
+        }
+        if (log_dir.toFile().exists()) {
+            executeCommand("rm -rf " + log_dir);
+        }
+
+        ZestCLI2.main(new String[] {
+                "--target", "org/apache/commons/math3/distribution/DiscreteDistribution.java:187",
+                "--logdir", "../src/test/resources/log",
+                "--seed", "885441",
+                "--max-corpus-size", "100",
+                "--widening-plateau-threshold", "50",
+                "--verbose",
+                "--max-mutations", "200",
+                "--duration", "12h",
+                "--exploreDuration", "3h",
+                //"--delta", "1e-6",
+                "-o", "../src/test/resources/fuzz-results",
+                "../src/test/resources/patches/Patch30/Math95b/target/test-classes:../src/test/resources/patches/Patch30/Math95b/target/classes:../aspect/tracing.jar",
+                "../src/test/resources/patches/Patch30/Math95p/target/test-classes:../src/test/resources/patches/Patch30/Math95p/target/classes:../aspect/tracing.jar",
+                "org.apache.commons.math.distribution.JQF_FDistributionTest", "testMath1021"});
+    }
+
+    @Test
     public void runZestCLI2_335_NFL_ACS_PATCH() {
         Path fuzz_results_dir = FileSystems.getDefault().getPath("..", "src", "test", "resources", "fuzz-results");
         Path log_dir = FileSystems.getDefault().getPath("..", "src", "test", "resources", "log");
@@ -416,7 +474,7 @@ public class PropagationTest {
         ZestCLI2.main(new String[] {
                 "--target", "org/apache/commons/math3/util/MathArrays.java:846",
                 "--logdir", "../src/test/resources/log",
-                "--seed", "88546",
+                "--seed", "885441",
                 "--max-corpus-size", "100",
                 "--widening-plateau-threshold", "50",
                 "--verbose",

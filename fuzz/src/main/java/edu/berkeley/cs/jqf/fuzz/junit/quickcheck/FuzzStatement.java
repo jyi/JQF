@@ -59,6 +59,7 @@ import edu.berkeley.cs.jqf.fuzz.guidance.StreamBackedRandom;
 import edu.berkeley.cs.jqf.fuzz.Fuzz;
 import edu.berkeley.cs.jqf.fuzz.junit.GuidedFuzzing;
 import edu.berkeley.cs.jqf.fuzz.junit.TrialRunner;
+import edu.berkeley.cs.jqf.instrument.tracing.ThreadTracer;
 import kr.ac.unist.cse.jqf.Log;
 import kr.ac.unist.cse.jqf.aspect.DumpUtil;
 import kr.ac.unist.cse.jqf.fuzz.generator.InRangeFactory;
@@ -507,6 +508,7 @@ public class FuzzStatement extends Statement {
                     }
 
                     // Attempt to run the trial
+                    ThreadTracer.evaluatingPatch = true;
                     new TrialRunner(testClass.getJavaClass(), method, args).run();
 
                     // If we reached here, then the trial must be a success
@@ -538,6 +540,8 @@ public class FuzzStatement extends Statement {
         } catch (GuidanceException e) {
             System.err.println("Fuzzing stopped due to guidance exception: " + e.getMessage());
             e.printStackTrace();
+        } finally {
+            ThreadTracer.evaluatingPatch = false;
         }
 
         if (failures.size() > 0) {

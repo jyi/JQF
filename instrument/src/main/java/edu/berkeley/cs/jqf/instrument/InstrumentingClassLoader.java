@@ -93,6 +93,7 @@ public class InstrumentingClassLoader extends URLClassLoader {
 
         byte[] transformedBytes;
         try {
+            // System.out.println("Transform: " + name);
             transformedBytes = transformer.transform(this, internalName, null, null, bytes);
 
             // additional transformation to dump program states
