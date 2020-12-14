@@ -9,7 +9,6 @@ import com.thoughtworks.xstream.XStream;
 import kr.ac.unist.cse.jqf.Log;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.Signature;
-import org.aspectj.weaver.Dump;
 
 public class DumpUtil {
 
@@ -18,6 +17,8 @@ public class DumpUtil {
     public static Set<MethodInfo> exitMethods = new HashSet<>();
     public static Set<MethodInfo> enterMethods = new HashSet<>();
     private static final List<MethodInfo> calleesOfTaregetMethod = new ArrayList<>();
+    private static Set<String> handledEntry = new HashSet<>();
+    private static Set<String> handledExit = new HashSet<>();
     private static boolean isTheTargetHit = false;
     private static boolean isInsideTargetMethod = false;
     public static boolean runOrgVerAgain = false;
@@ -48,18 +49,23 @@ public class DumpUtil {
     }
 
     // dump at an exit point
-    public static void dumpAtExit(Object returnVal, JoinPoint target) {
+    public static void dumpAtExit(Object returnVal, JoinPoint jp) {
+        if (DumpUtil.handledExit.contains(jp.getSignature().getName())) {
+            return;
+        } else {
+            DumpUtil.handledExit.add(jp.getSignature().getName());
+        }
         try {
             duringDumping = true;
             XStream stream = new XStream();
             String xml = null;
-            if (target.getTarget() == null)
-                xml = stream.toXML(target.getStaticPart());
+            if (jp.getTarget() == null)
+                xml = stream.toXML(jp.getStaticPart());
             else
-                xml = stream.toXML(target.getTarget());
+                xml = stream.toXML(jp.getTarget());
             if (returnVal != null)
                 xml = String.format("<values>\n<return>\n%s\n</return>\n%s\n</values>", stream.toXML(returnVal), xml);
-            Log.writeToFile(xml, target.getSignature().getName() + "Exit" + ".xml");
+            Log.writeToFile(xml, jp.getSignature().getName() + "Exit" + ".xml");
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
@@ -69,6 +75,11 @@ public class DumpUtil {
 
     // dump at an entry point
     public static void dumpAtEntry(JoinPoint jp) {
+        if (DumpUtil.handledEntry.contains(jp.getSignature().getName())) {
+            return;
+        } else {
+            DumpUtil.handledEntry.add(jp.getSignature().getName());
+        }
         try {
             duringDumping = true;
             Object[] args = jp.getArgs();
@@ -185,5 +196,7 @@ public class DumpUtil {
 
     public static void reset() {
         calleesOfTaregetMethod.clear();
+        handledEntry.clear();
+        handledExit.clear();
     }
 }
