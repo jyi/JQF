@@ -10,7 +10,7 @@ import java.util.Arrays;
 public class Log {
 
     public static File logFile;
-    private static boolean verbose = true;
+    public static boolean verbose = true;
 
     public static class LogResult {
         private static String outputForOrg = null;
