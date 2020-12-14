@@ -35,6 +35,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.time.Duration;
 
+import com.pholser.junit.quickcheck.Pair;
 import com.sun.istack.Nullable;
 import edu.berkeley.cs.jqf.fuzz.ei.ZestGuidance;
 import edu.berkeley.cs.jqf.fuzz.guidance.GuidanceException;
@@ -115,6 +116,10 @@ public class PoracleGuidance extends ZestGuidance {
 
     public boolean isRangeFixed() {
         return this.rangeFixed;
+    }
+
+    public void resetRunCoverageOfOrg() {
+        runCoverageOfOrg.clear();
     }
 
     enum Version {
@@ -224,21 +229,28 @@ public class PoracleGuidance extends ZestGuidance {
         private final @Nullable List<Double> versionDistCallerExit;
         private final @Nullable List<Double> versionDistCalleeExit;
         private final @Nullable List<Double> versionDistCalleeEntry;
+        private long pathDist;
+        private long pathDiff;
 
         public Distance() {
             this.distToTraget = 0;
             this.versionDistCallerExit = null;
             this.versionDistCalleeExit = null;
             this.versionDistCalleeEntry = null;
+            this.pathDiff = 0L;
+            this.pathDist = 0L;
         }
 
         // TODO: added distToTarget
         public Distance(List<Double> versionDistCallerExit, List<Double> versionDistCalleeExit,
-                        List<Double> versionDistCalleeEntry) {
+                        List<Double> versionDistCalleeEntry,
+                        Pair<Long, Long> pathDiffDist) {
             this.distToTraget = 0;
             this.versionDistCallerExit = versionDistCallerExit;
             this.versionDistCalleeExit = versionDistCalleeExit;
             this.versionDistCalleeEntry = versionDistCalleeEntry;
+            this.pathDiff = pathDiffDist.first;
+            this.pathDist = pathDiffDist.second;
         }
 
         public List<List<Double>> getDistList() {
@@ -250,6 +262,15 @@ public class PoracleGuidance extends ZestGuidance {
             distList.add(versionDistCallerExit);
             distList.add(versionDistCalleeExit);
             distList.add(versionDistCalleeEntry);
+
+            ArrayList<Double> lst = new ArrayList<>();
+            lst.add(Double.valueOf(pathDiff));
+            distList.add(lst);
+
+            lst = new ArrayList<>();
+            lst.add(Double.valueOf(pathDist));
+            distList.add(lst);
+
             return distList;
         }
     }
@@ -781,19 +802,21 @@ public class PoracleGuidance extends ZestGuidance {
         List<Double> versionDistCallerExit = null;
         List<Double> versionDistCalleeExit = null;
         List<Double> versionDistCalleeEntry = null;
+        Pair<Long, Long> pathDiffDist = new Pair(0L, 0L);
         double distToTarget = 0;
 
         List<MethodInfo> callers = DumpUtil.getCallerChain();
         List<MethodInfo> callees = DumpUtil.getCalleesOfTaregetMethod();
 
         if (targetHit && callers != null && callees != null) {
+            pathDiffDist = this.runCoverageOfPatch.getDistance(this.runCoverageOfOrg);
             versionDistCallerExit = getVersionDistance(inputID, callers, PointCutLocation.EXIT);
             versionDistCalleeExit = getVersionDistance(inputID, callees, PointCutLocation.EXIT);
             versionDistCalleeEntry = getVersionDistance(inputID, callees, PointCutLocation.ENTRY);
         } else if (!targetHit) {
             // TODO: compute distToTarget
         }
-        Distance dist = new Distance(versionDistCallerExit, versionDistCalleeExit, versionDistCalleeEntry);
+        Distance dist = new Distance(versionDistCallerExit, versionDistCalleeExit, versionDistCalleeEntry, pathDiffDist);
 
         ResultOfPatch resultOfPatch = new ResultOfPatch(newCoverageFound, why, valid, dist);
         return resultOfPatch;

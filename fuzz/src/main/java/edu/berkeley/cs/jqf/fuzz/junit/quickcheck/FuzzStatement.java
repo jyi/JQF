@@ -373,6 +373,7 @@ public class FuzzStatement extends Statement {
                         DumpUtil.runOrgVerAgain = true;
                         ReproGuidance reproGuidance2 = new ReproGuidance(resultOfOrg.getInputFile(), null,
                                 guidance.getOutputDirectory());
+                        guidance.resetRunCoverageOfOrg();
                         run(testClass.getName(), method.getName(), ZestCLI2.loaderForOrg, reproGuidance2);
                         DumpUtil.runOrgVerAgain = false;
                         DumpUtil.setTargetHit(false);

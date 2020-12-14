@@ -28,6 +28,8 @@
  */
 package edu.berkeley.cs.jqf.fuzz.util;
 
+import com.pholser.junit.quickcheck.Pair;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -182,7 +184,7 @@ public class Counter {
      *
      * @return a set of indices at which the count is non-zero
      */
-    public Collection<Integer> getNonZeroIndices() {
+    public List<Integer> getNonZeroIndices() {
         List<Integer> indices = new ArrayList<>(size /2);
         for (int i = 0; i < counts.length; i++) {
             int count = counts[i];
@@ -229,5 +231,24 @@ public class Counter {
 
     public void setAtIndex(int idx, int value) {
         this.counts[idx] = value;
+    }
+
+    public Pair<Long, Long> getDistance(Counter otherCounter) {
+        long diff = 0;
+        long dist = 0;
+        List<Integer> nonZeroIndices = getNonZeroIndices();
+        List<Integer> nonZeroIndices2 = otherCounter.getNonZeroIndices();
+        for (int i = 0; i < nonZeroIndices.size(); i++) {
+            try {
+                int count1 = nonZeroIndices.get(i);
+                int count2 = nonZeroIndices2.get(i);
+                if (count1 != count2) {
+                    diff += 1;
+                    dist += Math.abs(count1 - count2);
+                }
+            } catch (IndexOutOfBoundsException e) {
+            }
+        }
+        return new Pair<>(diff, dist);
     }
 }

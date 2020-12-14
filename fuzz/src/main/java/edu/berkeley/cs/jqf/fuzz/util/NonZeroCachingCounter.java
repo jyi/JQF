@@ -44,7 +44,7 @@ public class NonZeroCachingCounter extends Counter {
 
     private int nonZeroCount;
 
-    private Collection<Integer> nonZeroIndices;
+    private ArrayList<Integer> nonZeroIndices;
 
     public NonZeroCachingCounter(int size) {
         super(size);
@@ -84,7 +84,7 @@ public class NonZeroCachingCounter extends Counter {
     }
 
     @Override
-    public Collection<Integer> getNonZeroIndices() {
+    public List<Integer> getNonZeroIndices() {
         return nonZeroIndices;
     }
 

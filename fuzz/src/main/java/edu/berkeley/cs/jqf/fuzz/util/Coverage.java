@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 
+import com.pholser.junit.quickcheck.Pair;
 import edu.berkeley.cs.jqf.instrument.tracing.events.BranchEvent;
 import edu.berkeley.cs.jqf.instrument.tracing.events.CallEvent;
 import edu.berkeley.cs.jqf.instrument.tracing.events.TraceEvent;
@@ -201,4 +202,7 @@ public class Coverage implements TraceEventVisitor {
         return counter.getNonZeroIndices().hashCode();
     }
 
+    public Pair<Long, Long> getDistance(Coverage otherCoverage) {
+        return this.counter.getDistance(otherCoverage.counter);
+    }
 }
