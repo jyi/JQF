@@ -28,16 +28,13 @@
  */
 package edu.berkeley.cs.jqf.instrument;
 
-import java.io.BufferedInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import kr.ac.unist.cse.jqf.Log;
 
 import janala.instrument.SnoopInstructionTransformer;
 import org.aspectj.weaver.loadtime.ClassPreProcessorAgentAdapter;
@@ -93,7 +90,7 @@ public class InstrumentingClassLoader extends URLClassLoader {
 
         byte[] transformedBytes;
         try {
-            // System.out.println("Transform: " + name);
+            infoLog("Transform: " + name);
             transformedBytes = transformer.transform(this, internalName, null, null, bytes);
 
             // additional transformation to dump program states
@@ -115,4 +112,22 @@ public class InstrumentingClassLoader extends URLClassLoader {
                 0, bytes.length);
     }
 
+    public void infoLog(String str, Object... args) {
+        if (Log.verbose) {
+            String line = String.format(str, args);
+            if (Log.logFile != null) {
+                appendLineToFile(Log.logFile, line);
+            } else {
+                System.err.println(line);
+            }
+        }
+    }
+
+    protected void appendLineToFile(File file, String line) {
+        try (PrintWriter out = new PrintWriter(new FileWriter(file, true))) {
+            out.println(line);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }
