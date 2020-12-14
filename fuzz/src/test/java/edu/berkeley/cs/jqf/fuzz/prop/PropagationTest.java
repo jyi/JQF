@@ -277,7 +277,7 @@ public class PropagationTest {
                 //"--delta", "1e-6",
                 "-o", fuzz_results_dir.toString(),
                 "../src/test/resources/patches/Patch34/Math32b/target/test-classes:../src/test/resources/patches/Patch34/Math32b/target/classes:../../aspect/tracing.jar",
-                "../src/test/resources/patches/Patch34/Math32b/target/test-classes:../src/test/resources/patches/Patch34/Math32b/target/classes:../../aspect/tracing.jar",
+                "../src/test/resources/patches/Patch34/Math32p/target/test-classes:../src/test/resources/patches/Patch34/Math32p/target/classes:../../aspect/tracing.jar",
                 "org.apache.commons.math3.geometry.euclidean.threed.JQF_PolyhedronsSetTest", "testIssue780"});
     }
 
