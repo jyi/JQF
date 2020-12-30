@@ -2,7 +2,7 @@ package edu.berkeley.cs.jqf.fuzz.util;
 
 import edu.berkeley.cs.jqf.fuzz.guidance.GuidanceException;
 import edu.berkeley.cs.jqf.fuzz.reach.Target;
-import edu.berkeley.cs.jqf.instrument.tracing.events.TargetEvent;
+import edu.berkeley.cs.jqf.instrument.tracing.events.TargetHitEvent;
 import edu.berkeley.cs.jqf.instrument.tracing.events.TraceEvent;
 import edu.berkeley.cs.jqf.instrument.tracing.events.TraceEventVisitor;
 import kr.ac.unist.cse.jqf.aspect.DumpUtil;
@@ -70,7 +70,7 @@ public class TargetCoverage implements TraceEventVisitor {
     }
 
     @Override
-    public void visitTargetEvent(TargetEvent e) {
+    public void visitTargetEvent(TargetHitEvent e) {
         if (!DumpUtil.isTheTargetHit()) {
             infoLog("Target is hit at %s: %d", e.getFileName(), e.getLineNumber());
             covered.add(new Target(e.getFileName(), e.getLineNumber()));

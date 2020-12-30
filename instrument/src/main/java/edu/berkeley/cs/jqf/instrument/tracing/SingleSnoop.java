@@ -184,6 +184,11 @@ public final class SingleSnoop {
         try { intp.IFEQ(iid, mid, label); } finally { block.set(false); }
     }
 
+    public static void IFEQ(int iid, int mid, int label, String className) {
+        if (block.get()) return; else block.set(true);
+        try { intp.IFEQ(iid, mid, label); } finally { block.set(false); }
+    }
+
     public static void IFNE(int iid, int mid, int label) {
         if (block.get()) return; else block.set(true);
         try { intp.IFNE(iid, mid, label); } finally { block.set(false); }
@@ -994,9 +999,9 @@ public final class SingleSnoop {
         try { intp.GETVALUE_void(); } finally { block.set(false); }
     }
 
-    public static void METHOD_BEGIN(String className, String methodName, String desc) {
+    public static void METHOD_BEGIN(String fileName, String className, String methodName, String desc) {
         if (block.get()) return; else block.set(true);
-        try { intp.METHOD_BEGIN(className, methodName, desc); } finally { block.set(false); }
+        try { intp.METHOD_BEGIN(fileName, className, methodName, desc); } finally { block.set(false); }
     }
 
     public static void METHOD_THROW() {
@@ -1009,9 +1014,9 @@ public final class SingleSnoop {
         try { intp.INVOKEMETHOD_EXCEPTION(); } finally { block.set(false); }
     }
 
-    public static void INVOKEMETHOD_END() {
+    public static void INVOKEMETHOD_END(String owner, String methodName, String desc) {
         if (block.get()) return; else block.set(true);
-        try { intp.INVOKEMETHOD_END(); } finally { block.set(false); }
+        try { intp.INVOKEMETHOD_END(owner, methodName, desc); } finally { block.set(false); }
     }
 
     public static void SPECIAL(int i) {

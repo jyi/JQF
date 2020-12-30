@@ -43,6 +43,7 @@ import edu.berkeley.cs.jqf.fuzz.guidance.Result;
 import edu.berkeley.cs.jqf.fuzz.guidance.TimeoutException;
 import edu.berkeley.cs.jqf.fuzz.util.Coverage;
 import edu.berkeley.cs.jqf.fuzz.util.TargetCoverage;
+import edu.berkeley.cs.jqf.fuzz.util.TargetDistance;
 import edu.berkeley.cs.jqf.instrument.tracing.events.TraceEvent;
 
 import de.hub.se.cfg.CFGAnalysis;
@@ -101,6 +102,8 @@ public class PoracleGuidance extends ZestGuidance {
     /** Cumulative coverage for valid inputs. */
     protected Coverage validCoverageOfOrg = new Coverage();
     protected Coverage validCoverageOfPatch = new Coverage();
+
+    protected TargetDistance targetDistance = new TargetDistance();
 
     /** The maximum number of keys covered by any single input found so far. */
     protected int maxCoverageOfOrg = 0;
@@ -242,10 +245,10 @@ public class PoracleGuidance extends ZestGuidance {
         }
 
         // TODO: added distToTarget
-        public Distance(List<Double> versionDistCallerExit, List<Double> versionDistCalleeExit,
+        public Distance(double distToTarget, List<Double> versionDistCallerExit, List<Double> versionDistCalleeExit,
                         List<Double> versionDistCalleeEntry,
                         Pair<Long, Long> pathDiffDist) {
-            this.distToTraget = 0;
+            this.distToTraget = distToTarget;
             this.versionDistCallerExit = versionDistCallerExit;
             this.versionDistCalleeExit = versionDistCalleeExit;
             this.versionDistCalleeEntry = versionDistCalleeEntry;
@@ -259,10 +262,12 @@ public class PoracleGuidance extends ZestGuidance {
 
             // the first one is the most important
             List<List<Double>> distList = new ArrayList<>();
+            // state difference
             distList.add(versionDistCallerExit);
             distList.add(versionDistCalleeExit);
             distList.add(versionDistCalleeEntry);
 
+            // path difference
             ArrayList<Double> lst = new ArrayList<>();
             lst.add(Double.valueOf(pathDiff));
             distList.add(lst);
@@ -270,6 +275,9 @@ public class PoracleGuidance extends ZestGuidance {
             lst = new ArrayList<>();
             lst.add(Double.valueOf(pathDist));
             distList.add(lst);
+
+            // target distance
+            distList.add(distToTragetList);
 
             return distList;
         }
@@ -816,7 +824,7 @@ public class PoracleGuidance extends ZestGuidance {
         } else if (!targetHit) {
             // TODO: compute distToTarget
         }
-        Distance dist = new Distance(versionDistCallerExit, versionDistCalleeExit, versionDistCalleeEntry, pathDiffDist);
+        Distance dist = new Distance(distToTarget, versionDistCallerExit, versionDistCalleeExit, versionDistCalleeEntry, pathDiffDist);
 
         ResultOfPatch resultOfPatch = new ResultOfPatch(newCoverageFound, why, valid, dist);
         return resultOfPatch;
@@ -1052,6 +1060,9 @@ public class PoracleGuidance extends ZestGuidance {
     protected void handleEvent(TraceEvent e) {
         // Collect totalCoverage
         getRunCoverage().handleEvent(e);
+        if (Boolean.getBoolean("jqf.ei.run_patch")) {
+            targetDistance.handleEvent(e);
+        }
         // Check for possible timeouts every so often
         if (this.singleRunTimeoutMillis > 0
                 // && (++this.branchCount) % 10_000 == 0

@@ -345,13 +345,13 @@ public interface Logger {
 
   public void GETVALUE_void();
 
-  public void METHOD_BEGIN(String owner, String name, String desc);
+  public void METHOD_BEGIN(String fileName, String owner, String name, String desc);
 
   public void METHOD_THROW();
 
   public void INVOKEMETHOD_EXCEPTION();
 
-  public void INVOKEMETHOD_END();
+  public void INVOKEMETHOD_END(String owner, String methodName, String desc);
 
   public void MAKE_SYMBOLIC();
 

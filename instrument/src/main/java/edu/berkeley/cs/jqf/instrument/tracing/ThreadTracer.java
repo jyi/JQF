@@ -30,12 +30,11 @@
 package edu.berkeley.cs.jqf.instrument.tracing;
 
 import java.io.File;
-import java.util.ArrayDeque;
-import java.util.Arrays;
-import java.util.Deque;
+import java.util.*;
 import java.util.function.Consumer;
 
 import edu.berkeley.cs.jqf.instrument.tracing.events.*;
+import janala.instrument.Method;
 import janala.logger.inst.*;
 //import sun.security.util.ArrayUtil;
 
@@ -138,9 +137,16 @@ public class ThreadTracer {
      * @param ins the instruction to process
      */
     protected final void consume(Instruction ins) {
-        // check whether a target is hit
-        if (evaluatingPatch && targets != null) {
-            emitTargetEvent(ins);
+        if (!(ins instanceof SPECIAL || ins instanceof METHOD_BEGIN || ins instanceof INVOKEMETHOD_END)) {
+            String fileName = getFileName(ins);
+            for (Target target : this.targets) {
+                if (target.getLinenum() == ins.mid && target.getFilename().equals(fileName)) {
+                    emit(new TargetHitEvent(ins.iid, null, ins.mid, target.getFilename()));
+                } else {
+                    int distToTarget = getDistToTarget(fileName, ins.mid, target);
+                    emit(new DistanceUpdateEvent(ins.iid, null, ins.mid, target, distToTarget));
+                }
+            }
         }
 
         // Apply the visitor at the top of the stack
@@ -152,36 +158,34 @@ public class ThreadTracer {
         }
     }
 
-    private void emitTargetEvent(Instruction ins) {
-        for (Target target : this.targets) {
-            if (target.getLinenum() == ins.mid) {
-                boolean singleSnoopFound = false;
-                StackTraceElement[] traces = new Exception().getStackTrace();
-                if (traces != null) {
-                    int idx = 0;
-                    for (StackTraceElement te: traces) {
-                        if (te.getClassName().equals("edu.berkeley.cs.jqf.instrument.tracing.SingleSnoop")) {
-                            singleSnoopFound = true;
-                            break;
-                        }
-                        idx++;
-                    }
-                    // the next element behind SingleSnoop is the target candidate
-                    if (singleSnoopFound) {
-                        try {
-                            StackTraceElement candidate = traces[idx + 1];
-                            String candidateFileName = candidate.getClassName().replace(".", File.separator) + ".java";
-                            if (candidateFileName.equals(target.getFilename())) {
-                                emit(new TargetEvent(ins.iid, null, ins.mid, target.getFilename()));
-                            }
-                        } catch (ArrayIndexOutOfBoundsException e) {
-                        }
-                    }
+    private String getFileName(Instruction ins) {
+        String fileName = null;
+        boolean singleSnoopFound = false;
+        StackTraceElement[] traces = new Exception().getStackTrace();
+        if (traces != null) {
+            int idx = 0;
+            for (StackTraceElement te : traces) {
+                if (te.getClassName().equals("edu.berkeley.cs.jqf.instrument.tracing.SingleSnoop")) {
+                    singleSnoopFound = true;
+                    break;
+                }
+                idx++;
+            }
+            // the next element behind SingleSnoop is the target candidate
+            if (singleSnoopFound) {
+                try {
+                    fileName = traces[idx + 1].getClassName().replace(".", File.separator) + ".java";
+                } catch (ArrayIndexOutOfBoundsException e) {
                 }
             }
         }
+        return fileName;
     }
 
+    private int getDistToTarget(String currentFile, int lineNumber, Target target) {
+        // TODO: retrieve the distance
+        return 0;
+    }
 
     private static boolean isReturnOrMethodThrow(Instruction inst) {
         return  inst instanceof ARETURN ||

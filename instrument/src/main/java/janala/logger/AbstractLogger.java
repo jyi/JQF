@@ -694,8 +694,8 @@ public abstract class AbstractLogger implements Logger {
     log(new GETVALUE_void());
   }
 
-  public void METHOD_BEGIN(String owner, String name, String desc) {
-    log(new METHOD_BEGIN(owner, name, desc));
+  public void METHOD_BEGIN(String fileName, String owner, String name, String desc) {
+    log(new METHOD_BEGIN(fileName, owner, name, desc));
   }
 
   public void METHOD_THROW() {  log(new METHOD_THROW());  }
@@ -704,8 +704,8 @@ public abstract class AbstractLogger implements Logger {
     log(new INVOKEMETHOD_EXCEPTION());
   }
 
-  public void INVOKEMETHOD_END() {
-    log(new INVOKEMETHOD_END());
+  public void INVOKEMETHOD_END(String owner, String methodName, String desc) {
+    log(new INVOKEMETHOD_END(owner, methodName, desc));
   }
 
   public void MAKE_SYMBOLIC() {

@@ -15,6 +15,7 @@ public class SnoopInstructionMethodAdapter extends MethodVisitor implements Opco
   Label methodBeginLabel = new Label();
   Label methodEndLabel = new Label();
 
+  private final String source;
   private final String className;
   private final String methodName;
   private final String descriptor;
@@ -22,12 +23,13 @@ public class SnoopInstructionMethodAdapter extends MethodVisitor implements Opco
 
   private final GlobalStateForInstrumentation instrumentationState;
 
-  public SnoopInstructionMethodAdapter(MethodVisitor mv, String className,
+  public SnoopInstructionMethodAdapter(MethodVisitor mv, String source, String className,
       String methodName, String descriptor, String superName,
       GlobalStateForInstrumentation instrumentationState) {
     super(ASM5, mv);
     this.isInit = methodName.equals("<init>");
     this.isSuperInitCalled = false;
+    this.source = source;
     this.className = className;
     this.methodName = methodName;
     this.descriptor = descriptor;
@@ -40,11 +42,12 @@ public class SnoopInstructionMethodAdapter extends MethodVisitor implements Opco
   @Override
   public void visitCode() {
     instrumentationState.incMid();
+    mv.visitLdcInsn(source);
     mv.visitLdcInsn(className);
     mv.visitLdcInsn(methodName);
     mv.visitLdcInsn(descriptor);
     mv.visitMethodInsn(INVOKESTATIC, Config.instance.analysisClass, "METHOD_BEGIN", 
-        "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V", false);
+        "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V", false);
     if (isInit == false) {
       // For non-constructor methods, the outer try-catch blocks wraps around the entire code
       mv.visitLabel(methodBeginLabel);
@@ -704,7 +707,11 @@ public class SnoopInstructionMethodAdapter extends MethodVisitor implements Opco
     mv.visitInsn(ATHROW);
 
     mv.visitLabel(end);
-    mv.visitMethodInsn(INVOKESTATIC, Config.instance.analysisClass, "INVOKEMETHOD_END", "()V", false);
+
+    mv.visitLdcInsn(owner);
+    mv.visitLdcInsn(name);
+    mv.visitLdcInsn(desc);
+    mv.visitMethodInsn(INVOKESTATIC, Config.instance.analysisClass, "INVOKEMETHOD_END", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V", false);
 
     // addValueReadInsn(mv, desc, "GETVALUE_");
   }
@@ -754,7 +761,11 @@ public class SnoopInstructionMethodAdapter extends MethodVisitor implements Opco
         // Mark end of <init>
         // Note: If <init> throws an exception, we do not log it, due to JVM restrictions;
         //   this must be inferred from the logs somehow
-        mv.visitMethodInsn(INVOKESTATIC, Config.instance.analysisClass, "INVOKEMETHOD_END", "()V", false);
+        mv.visitLdcInsn(owner);
+        mv.visitLdcInsn(name);
+        mv.visitLdcInsn(desc);
+        mv.visitMethodInsn(INVOKESTATIC, Config.instance.analysisClass, "INVOKEMETHOD_END",
+                "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V", false);
 
 
 

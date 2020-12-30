@@ -33,10 +33,7 @@ import java.util.Arrays;
 import java.util.Collection;
 
 import com.pholser.junit.quickcheck.Pair;
-import edu.berkeley.cs.jqf.instrument.tracing.events.BranchEvent;
-import edu.berkeley.cs.jqf.instrument.tracing.events.CallEvent;
-import edu.berkeley.cs.jqf.instrument.tracing.events.TraceEvent;
-import edu.berkeley.cs.jqf.instrument.tracing.events.TraceEventVisitor;
+import edu.berkeley.cs.jqf.instrument.tracing.events.*;
 
 /**
  * Utility class to collect branch and function coverage
