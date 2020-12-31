@@ -487,4 +487,34 @@ public class PropagationTest {
                 "../src/test/resources/patches/335_NFL_ACS_Patch_1_1/Math3p/target/test-classes:../src/test/resources/patches/335_NFL_ACS_Patch_1_1/Math3p/target/classes:../aspect/tracing.jar",
                 "org.apache.commons.math3.util.JQF_MathArraysTest", "testLinearCombinationWithSingleElementArray"});
     }
+
+    @Test
+    public void runZestCLI2_time11() {
+        Path fuzz_results_dir = FileSystems.getDefault().getPath("..", "src", "test", "resources", "fuzz-results");
+        Path log_dir = FileSystems.getDefault().getPath("..", "src", "test", "resources", "log");
+
+        if (fuzz_results_dir.toFile().exists()) {
+            executeCommand("rm -rf " + fuzz_results_dir);
+        }
+        if (log_dir.toFile().exists()) {
+            executeCommand("rm -rf " + log_dir);
+        }
+
+        ZestCLI2.main(new String[] {
+                "--threadName", "testThread",
+                "--target", "org/joda/time/tz/ZoneInfoCompiler.java:70",
+                "--logdir", "../src/test/resources/log",
+                "--seed", "885441",
+                "--max-corpus-size", "100",
+                "--widening-plateau-threshold", "50",
+                "--verbose",
+                "--max-mutations", "200",
+                "--duration", "12h",
+                "--exploreDuration", "3h",
+                //"--delta", "1e-6",
+                "-o", fuzz_results_dir.toString(),
+                "../src/test/resources/patches/Time11/Time11b/target/test-classes:../src/test/resources/patches/Time11/Time11b/target/classes:../../aspect/tracing.jar",
+                "../src/test/resources/patches/Time11/Time11p/target/test-classes:../src/test/resources/patches/Time11/Time11p/target/classes:../../aspect/tracing.jar",
+                "org.joda.time.tz.JQF_TestCompiler", "testDateTimeZoneBuilder"});
+    }
 }

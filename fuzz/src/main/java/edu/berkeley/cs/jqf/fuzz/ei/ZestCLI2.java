@@ -87,6 +87,9 @@ public class ZestCLI2 implements Runnable {
     @Option(names = "--logdir", description = "log directory")
     public String logDir = null;
 
+    @Option(names = "--threadName", description = "The name of the thread to monitor")
+    public String threadName = "main";
+
     @Option(names = { "--save-all-inputs" },
             description = "Save all inputs")
     boolean saveAllInputs = false;
@@ -212,6 +215,8 @@ public class ZestCLI2 implements Runnable {
 
         if (logDir != null)
             System.setProperty("jqf.ei.logDir", logDir);
+
+        System.setProperty("jqf.ei.threadName", threadName);
 
         if (this.wideningPlateauThreshold >= 0) {
             System.setProperty("jqf.ei.WIDENING_PLATEAU_THRESHOLD",

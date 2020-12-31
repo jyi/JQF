@@ -1039,13 +1039,12 @@ public class PoracleGuidance extends ZestGuidance {
 
     @Override
     public Consumer<TraceEvent> generateCallBack(Thread thread) {
-        if (appThread != null) {
-            throw new IllegalStateException(PoracleGuidance.class +
-                    " only supports single-threaded apps at the moment");
+        String threadName = System.getProperty("jqf.ei.threadName");
+        if (thread.getName().equals(threadName)) {
+            return this::handleEvent;
+        } else {
+            return this::ignoreEvent;
         }
-        appThread = thread;
-
-        return this::handleEvent;
     }
 
     private Coverage getRunCoverage() {
@@ -1081,6 +1080,8 @@ public class PoracleGuidance extends ZestGuidance {
         }
     }
 
+    protected void ignoreEvent(TraceEvent e) {
+    }
 
     public ResultOfOrg handleResultOfOrg(Result result, Throwable error) throws GuidanceException {
         boolean inputNotIgnored = false;
