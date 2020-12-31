@@ -878,20 +878,8 @@ public class PoracleGuidance extends ZestGuidance {
         logDir = System.getProperty("jqf.ei.logDir");
         maxMutations = Integer.parseInt(System.getProperty("jqf.ei.MAX_MUTATIONS"));
         if (seed != -1) this.random.setSeed(seed);
-        buildCFGAnalysis();
     }
-
-    protected void buildCFGAnalysis() {
-        // TODO: enable it
-//        String classPathForPatch = System.getProperty("jqf.ei.CLASSPATH_FOR_PATCH");
-//        if (classPathForPatch != null) {
-//            Set<String> classes = CFGBuilder.loadInput(classPathForPatch);
-//            Set<String> classesToSkip = new HashSet<>();
-//            String additionalClasses = null;
-//            cfga = CFGBuilder.genCFGForClasses(classes, classesToSkip, additionalClasses);
-//        }
-    }
-
+    
     public void setDiffOutputFound(boolean isDiffOutFound) {
         this.isDiffOutFound = isDiffOutFound;
     }
