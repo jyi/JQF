@@ -1058,7 +1058,7 @@ public class ZestGuidance implements Guidance {
         public abstract PoracleGuidance.Distance getDistance();
     }
 
-                public class LinearInput extends Input<Integer> {
+    public class LinearInput extends Input<Integer> {
 
         /** A list of byte values (0-255) ordered by their index. */
         protected ArrayList<Integer> values;
