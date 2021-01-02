@@ -56,4 +56,6 @@ public @interface Fuzz {
      * @return the path of the input file to replay
      */
     String repro() default "";
+
+    Class[] unexpectedExceptions() default {};
 }
