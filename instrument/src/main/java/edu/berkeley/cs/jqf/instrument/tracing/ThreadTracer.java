@@ -137,19 +137,30 @@ public class ThreadTracer {
      * @param ins the instruction to process
      */
     protected final void consume(Instruction ins) {
+        boolean isTargetHit = false;
         if (!(ins instanceof SPECIAL || ins instanceof METHOD_BEGIN || ins instanceof INVOKEMETHOD_END)) {
-            String fileName = getFileName(ins);
             if (this.targets != null) {
                 for (Target target : this.targets) {
-                    if (target.getLinenum() == ins.mid && target.getFilename().equals(fileName)) {
-                        emit(new TargetHitEvent(ins.iid, null, ins.mid, target.getFilename()));
-                    } else {
-                        int distToTarget = getDistToTarget(fileName, ins.mid, target);
-                        emit(new DistanceUpdateEvent(ins.iid, null, ins.mid, target, distToTarget));
+                    if (target.getLinenum() == ins.mid) {
+                        String fileName = getFileName(ins);
+                        if (target.getFilename().equals(fileName)) {
+                            emit(new TargetHitEvent(ins.iid, null, ins.mid, target.getFilename()));
+                            isTargetHit = true;
+                        }
                     }
                 }
             }
         }
+        
+//        if (!isTargetHit && isConditionalBranch(ins)) {
+//            String fileName = ""; // getFileName(ins);
+//            if (this.targets != null) {
+//                for (Target target : this.targets) {
+//                    int distToTarget = getDistToTarget(fileName, ins.mid, target);
+//                    emit(new DistanceUpdateEvent(ins.iid, null, ins.mid, target, distToTarget));
+//                }
+//            }
+//        }
 
         // Apply the visitor at the top of the stack
         ins.visit(handlers.peek());
@@ -158,6 +169,10 @@ public class ThreadTracer {
             callBackException = null;
             throw e;
         }
+    }
+
+    private boolean isConditionalBranch(Instruction ins) {
+        return ins instanceof ConditionalBranch;
     }
 
     private String getFileName(Instruction ins) {
