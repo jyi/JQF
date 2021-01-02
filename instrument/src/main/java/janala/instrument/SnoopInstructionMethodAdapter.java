@@ -850,6 +850,45 @@ public class SnoopInstructionMethodAdapter extends MethodVisitor implements Opco
     // continue with fall-through code visiting
   }
 
+  private void addConditionalJumpInstrumentation2(int opcode, Label finalBranchTarget,
+                                                 String instMethodName, String instMethodDesc) {
+    int iid = instrumentationState.incAndGetId();
+    Label intermediateBranchTarget = new Label();
+    Label fallthrough = new Label();
+
+    // Perform the original jump, but branch to intermediate label
+    mv.visitJumpInsn(opcode, intermediateBranchTarget);
+    // If we did not jump, skip to the fallthrough
+    mv.visitJumpInsn(GOTO, fallthrough);
+
+    // Now instrument the branch target
+    mv.visitLabel(intermediateBranchTarget);
+    addBipushInsn(mv, 1); // Mark branch as taken
+    addValueReadInsn(mv, "Z", "GETVALUE_"); // Send value to logger (Z for boolean)
+    mv.visitInsn(POP);
+
+    mv.visitLdcInsn(source);
+    addBipushInsn(mv, iid);
+    addBipushInsn(mv, lastLineNumber);
+    addBipushInsn(mv, getLabelNum(finalBranchTarget));
+    mv.visitMethodInsn(INVOKESTATIC, Config.instance.analysisClass, instMethodName, instMethodDesc, false);
+    mv.visitJumpInsn(GOTO, finalBranchTarget); // Go to actual branch target
+
+    // Now instrument the fall through
+    mv.visitLabel(fallthrough);
+    addBipushInsn(mv, 0); // Mark branch as not taken
+    addValueReadInsn(mv, "Z", "GETVALUE_"); // Send value to logger (Z for boolean)
+    mv.visitInsn(POP);
+
+    mv.visitLdcInsn(source);
+    addBipushInsn(mv, iid);
+    addBipushInsn(mv, lastLineNumber);
+    addBipushInsn(mv, getLabelNum(finalBranchTarget));
+    mv.visitMethodInsn(INVOKESTATIC, Config.instance.analysisClass, instMethodName, instMethodDesc, false);
+
+    // continue with fall-through code visiting
+  }
+
   @Override
   public void visitJumpInsn(int opcode, Label label) {
     if (isInit && !isSuperInitCalled) {
@@ -859,46 +898,60 @@ public class SnoopInstructionMethodAdapter extends MethodVisitor implements Opco
 
     switch (opcode) {
       case IFEQ:
-        addConditionalJumpInstrumentation(opcode, label, "IFEQ", "(III)V");
+        addConditionalJumpInstrumentation2(opcode, label,
+                "IFEQ", "(Ljava/lang/String;III)V");
         break;
       case IFNE:
-        addConditionalJumpInstrumentation(opcode, label, "IFNE", "(III)V");
+        addConditionalJumpInstrumentation2(opcode, label,
+                "IFNE", "(Ljava/lang/String;III)V");
         break;
       case IFLT:
-        addConditionalJumpInstrumentation(opcode, label,  "IFLT", "(III)V");
+        addConditionalJumpInstrumentation2(opcode, label,
+                "IFLT", "(Ljava/lang/String;III)V");
         break;
       case IFGE:
-        addConditionalJumpInstrumentation(opcode, label,  "IFGE", "(III)V");
+        addConditionalJumpInstrumentation2(opcode, label,
+                "IFGE", "(Ljava/lang/String;III)V");
         break;
       case IFGT:
-        addConditionalJumpInstrumentation(opcode, label,  "IFGT", "(III)V");
+        addConditionalJumpInstrumentation2(opcode, label,
+                "IFGT", "(Ljava/lang/String;III)V");
         break;
       case IFLE:
-        addConditionalJumpInstrumentation(opcode, label,  "IFLE", "(III)V");
+        addConditionalJumpInstrumentation2(opcode, label,
+                "IFLE", "(Ljava/lang/String;III)V");
         break;
       case IF_ICMPEQ:
-        addConditionalJumpInstrumentation(opcode, label,  "IF_ICMPEQ", "(III)V");
+        addConditionalJumpInstrumentation2(opcode, label,
+                "IF_ICMPEQ", "(Ljava/lang/String;III)V");
         break;
       case IF_ICMPNE:
-        addConditionalJumpInstrumentation(opcode, label,  "IF_ICMPNE", "(III)V");
+        addConditionalJumpInstrumentation2(opcode, label,
+                "IF_ICMPNE", "(Ljava/lang/String;III)V");
         break;
       case IF_ICMPLT:
-        addConditionalJumpInstrumentation(opcode, label,  "IF_ICMPLT", "(III)V");
+        addConditionalJumpInstrumentation2(opcode, label,
+                "IF_ICMPLT", "(Ljava/lang/String;III)V");
         break;
       case IF_ICMPGE:
-        addConditionalJumpInstrumentation(opcode, label,  "IF_ICMPGE", "(III)V");
+        addConditionalJumpInstrumentation2(opcode, label,
+                "IF_ICMPGE", "(Ljava/lang/String;III)V");
         break;
       case IF_ICMPGT:
-        addConditionalJumpInstrumentation(opcode, label,  "IF_ICMPGT", "(III)V");
+        addConditionalJumpInstrumentation2(opcode, label,
+                "IF_ICMPGT", "(Ljava/lang/String;III)V");
         break;
       case IF_ICMPLE:
-        addConditionalJumpInstrumentation(opcode, label,  "IF_ICMPLE", "(III)V");
+        addConditionalJumpInstrumentation2(opcode, label,
+                "IF_ICMPLE", "(Ljava/lang/String;III)V");
         break;
       case IF_ACMPEQ:
-        addConditionalJumpInstrumentation(opcode, label,  "IF_ACMPEQ", "(III)V");
+        addConditionalJumpInstrumentation2(opcode, label,
+                "IF_ACMPEQ", "(Ljava/lang/String;III)V");
         break;
       case IF_ACMPNE:
-        addConditionalJumpInstrumentation(opcode, label,  "IF_ACMPNE", "(III)V");
+        addConditionalJumpInstrumentation2(opcode, label,
+                "IF_ACMPNE", "(Ljava/lang/String;III)V");
         break;
       case GOTO:
         mv.visitJumpInsn(opcode, label);
@@ -907,10 +960,12 @@ public class SnoopInstructionMethodAdapter extends MethodVisitor implements Opco
         mv.visitJumpInsn(opcode, label);
         break;
       case IFNULL:
-        addConditionalJumpInstrumentation(opcode, label,  "IFNULL", "(III)V");
+        addConditionalJumpInstrumentation2(opcode, label,
+                "IFNULL", "(Ljava/lang/String;III)V");
         break;
       case IFNONNULL:
-        addConditionalJumpInstrumentation(opcode, label,  "IFNONNULL", "(III)V");
+        addConditionalJumpInstrumentation2(opcode, label,
+                "IFNONNULL", "(Ljava/lang/String;III)V");
         break;
       default:
         throw new RuntimeException("Unknown jump opcode " + opcode);

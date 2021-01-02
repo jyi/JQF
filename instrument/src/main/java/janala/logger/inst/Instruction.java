@@ -3,6 +3,7 @@ package janala.logger.inst;
 import java.io.Serializable;
 
 public abstract class Instruction implements Serializable {
+  public String fileName;
   public final int iid;
   public final int mid;
 

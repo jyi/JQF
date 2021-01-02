@@ -3,9 +3,10 @@ package janala.logger.inst;
 public class IFGE extends Instruction implements ConditionalBranch {
   int label;
 
-  public IFGE(int iid, int mid, int label) {
+  public IFGE(String fileName, int iid, int mid, int label) {
     super(iid, mid);
     this.label = label;
+    this.fileName = fileName;
   }
 
   public void visit(IVisitor visitor) {

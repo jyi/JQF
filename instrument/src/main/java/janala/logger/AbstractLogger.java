@@ -45,60 +45,60 @@ public abstract class AbstractLogger implements Logger {
     log(new TABLESWITCH(iid, mid, min, max, dflt, labels));
   }
 
-  public void IFEQ(int iid, int mid, int label) {
-    log(new IFEQ(iid, mid, label));
+  public void IFEQ(String fileName, int iid, int mid, int label) {
+    log(new IFEQ(fileName, iid, mid, label));
   }
 
-  public void IFNE(int iid, int mid, int label) {
-    log(new IFNE(iid, mid, label));
+  public void IFNE(String fileName, int iid, int mid, int label) {
+    log(new IFNE(fileName, iid, mid, label));
   }
 
-  public void IFLT(int iid, int mid, int label) {
-    log(new IFLT(iid, mid, label));
+  public void IFLT(String fileName, int iid, int mid, int label) {
+    log(new IFLT(fileName, iid, mid, label));
   }
 
-  public void IFGE(int iid, int mid, int label) {
-    log(new IFGE(iid, mid, label));
+  public void IFGE(String fileName, int iid, int mid, int label) {
+    log(new IFGE(fileName, iid, mid, label));
   }
 
-  public void IFGT(int iid, int mid, int label) {
-    log(new IFGT(iid, mid, label));
+  public void IFGT(String fileName, int iid, int mid, int label) {
+    log(new IFGT(fileName, iid, mid, label));
   }
 
-  public void IFLE(int iid, int mid, int label) {
-    log(new IFLE(iid, mid, label));
+  public void IFLE(String fileName, int iid, int mid, int label) {
+    log(new IFLE(fileName, iid, mid, label));
   }
 
-  public void IF_ICMPEQ(int iid, int mid, int label) {
-    log(new IF_ICMPEQ(iid, mid, label));
+  public void IF_ICMPEQ(String fileName, int iid, int mid, int label) {
+    log(new IF_ICMPEQ(fileName, iid, mid, label));
   }
 
-  public void IF_ICMPNE(int iid, int mid, int label) {
-    log(new IF_ICMPNE(iid, mid, label));
+  public void IF_ICMPNE(String fileName, int iid, int mid, int label) {
+    log(new IF_ICMPNE(fileName, iid, mid, label));
   }
 
-  public void IF_ICMPLT(int iid, int mid, int label) {
-    log(new IF_ICMPLT(iid, mid, label));
+  public void IF_ICMPLT(String fileName, int iid, int mid, int label) {
+    log(new IF_ICMPLT(fileName, iid, mid, label));
   }
 
-  public void IF_ICMPGE(int iid, int mid, int label) {
-    log(new IF_ICMPGE(iid, mid, label));
+  public void IF_ICMPGE(String fileName, int iid, int mid, int label) {
+    log(new IF_ICMPGE(fileName, iid, mid, label));
   }
 
-  public void IF_ICMPGT(int iid, int mid, int label) {
-    log(new IF_ICMPGT(iid, mid, label));
+  public void IF_ICMPGT(String fileName, int iid, int mid, int label) {
+    log(new IF_ICMPGT(fileName, iid, mid, label));
   }
 
-  public void IF_ICMPLE(int iid, int mid, int label) {
-    log(new IF_ICMPLE(iid, mid, label));
+  public void IF_ICMPLE(String fileName, int iid, int mid, int label) {
+    log(new IF_ICMPLE(fileName, iid, mid, label));
   }
 
-  public void IF_ACMPEQ(int iid, int mid, int label) {
-    log(new IF_ACMPEQ(iid, mid, label));
+  public void IF_ACMPEQ(String fileName, int iid, int mid, int label) {
+    log(new IF_ACMPEQ(fileName, iid, mid, label));
   }
 
-  public void IF_ACMPNE(int iid, int mid, int label) {
-    log(new IF_ACMPNE(iid, mid, label));
+  public void IF_ACMPNE(String fileName, int iid, int mid, int label) {
+    log(new IF_ACMPNE(fileName, iid, mid, label));
   }
 
   public void GOTO(int iid, int mid, int label) {
@@ -109,12 +109,12 @@ public abstract class AbstractLogger implements Logger {
     log(new JSR(iid, mid, label));
   }
 
-  public void IFNULL(int iid, int mid, int label) {
-    log(new IFNULL(iid, mid, label));
+  public void IFNULL(String fileName, int iid, int mid, int label) {
+    log(new IFNULL(fileName, iid, mid, label));
   }
 
-  public void IFNONNULL(int iid, int mid, int label) {
-    log(new IFNONNULL(iid, mid, label));
+  public void IFNONNULL(String fileName, int iid, int mid, int label) {
+    log(new IFNONNULL(fileName, iid, mid, label));
   }
 
   public void INVOKEVIRTUAL(int iid, int mid, String owner, String name, String desc) {

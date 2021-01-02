@@ -21,41 +21,41 @@ public interface Logger {
 
   public void TABLESWITCH(int iid, int mid, int min, int max, int dflt, int[] labels);
 
-  public void IFEQ(int iid, int mid, int label);
+  public void IFEQ(String fileName, int iid, int mid, int label);
 
-  public void IFNE(int iid, int mid, int label);
+  public void IFNE(String fileName, int iid, int mid, int label);
 
-  public void IFLT(int iid, int mid, int label);
+  public void IFLT(String fileName, int iid, int mid, int label);
 
-  public void IFGE(int iid, int mid, int label);
+  public void IFGE(String fileName, int iid, int mid, int label);
 
-  public void IFGT(int iid, int mid, int label);
+  public void IFGT(String fileName, int iid, int mid, int label);
 
-  public void IFLE(int iid, int mid, int label);
+  public void IFLE(String fileName, int iid, int mid, int label);
 
-  public void IF_ICMPEQ(int iid, int mid, int label);
+  public void IF_ICMPEQ(String fileName, int iid, int mid, int label);
 
-  public void IF_ICMPNE(int iid, int mid, int label);
+  public void IF_ICMPNE(String fileName, int iid, int mid, int label);
 
-  public void IF_ICMPLT(int iid, int mid, int label);
+  public void IF_ICMPLT(String fileName, int iid, int mid, int label);
 
-  public void IF_ICMPGE(int iid, int mid, int label);
+  public void IF_ICMPGE(String fileName, int iid, int mid, int label);
 
-  public void IF_ICMPGT(int iid, int mid, int label);
+  public void IF_ICMPGT(String fileName, int iid, int mid, int label);
 
-  public void IF_ICMPLE(int iid, int mid, int label);
+  public void IF_ICMPLE(String fileName, int iid, int mid, int label);
 
-  public void IF_ACMPEQ(int iid, int mid, int label);
+  public void IF_ACMPEQ(String fileName, int iid, int mid, int label);
 
-  public void IF_ACMPNE(int iid, int mid, int label);
+  public void IF_ACMPNE(String fileName, int iid, int mid, int label);
 
   public void GOTO(int iid, int mid, int label);
 
   public void JSR(int iid, int mid, int label);
 
-  public void IFNULL(int iid, int mid, int label);
+  public void IFNULL(String fileName, int iid, int mid, int label);
 
-  public void IFNONNULL(int iid, int mid, int label);
+  public void IFNONNULL(String fileName, int iid, int mid, int label);
 
   public void INVOKEVIRTUAL(int iid, int mid, String owner, String name, String desc);
 

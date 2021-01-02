@@ -179,79 +179,79 @@ public final class SingleSnoop {
         try { intp.TABLESWITCH(iid, mid, min, max, dflt, labels); } finally { block.set(false); }
     }
 
-    public static void IFEQ(int iid, int mid, int label) {
+    public static void IFEQ(String fileName, int iid, int mid, int label) {
         if (block.get()) return; else block.set(true);
-        try { intp.IFEQ(iid, mid, label); } finally { block.set(false); }
+        try { intp.IFEQ(fileName, iid, mid, label); } finally { block.set(false); }
     }
 
-    public static void IFEQ(int iid, int mid, int label, String className) {
+    public static void IFEQ(String fileName, int iid, int mid, int label, String className) {
         if (block.get()) return; else block.set(true);
-        try { intp.IFEQ(iid, mid, label); } finally { block.set(false); }
+        try { intp.IFEQ(fileName, iid, mid, label); } finally { block.set(false); }
     }
 
-    public static void IFNE(int iid, int mid, int label) {
+    public static void IFNE(String fileName, int iid, int mid, int label) {
         if (block.get()) return; else block.set(true);
-        try { intp.IFNE(iid, mid, label); } finally { block.set(false); }
+        try { intp.IFNE(fileName, iid, mid, label); } finally { block.set(false); }
     }
 
-    public static void IFLT(int iid, int mid, int label) {
+    public static void IFLT(String fileName, int iid, int mid, int label) {
         if (block.get()) return; else block.set(true);
-        try { intp.IFLT(iid, mid, label); } finally { block.set(false); }
+        try { intp.IFLT(fileName, iid, mid, label); } finally { block.set(false); }
     }
 
-    public static void IFGE(int iid, int mid, int label) {
+    public static void IFGE(String fileName, int iid, int mid, int label) {
         if (block.get()) return; else block.set(true);
-        try { intp.IFGE(iid, mid, label); } finally { block.set(false); }
+        try { intp.IFGE(fileName, iid, mid, label); } finally { block.set(false); }
     }
 
-    public static void IFGT(int iid, int mid, int label) {
+    public static void IFGT(String fileName, int iid, int mid, int label) {
         if (block.get()) return; else block.set(true);
-        try { intp.IFGT(iid, mid, label); } finally { block.set(false); }
+        try { intp.IFGT(fileName, iid, mid, label); } finally { block.set(false); }
     }
 
-    public static void IFLE(int iid, int mid, int label) {
+    public static void IFLE(String fileName, int iid, int mid, int label) {
         if (block.get()) return; else block.set(true);
-        try { intp.IFLE(iid, mid, label); } finally { block.set(false); }
+        try { intp.IFLE(fileName, iid, mid, label); } finally { block.set(false); }
     }
 
-    public static void IF_ICMPEQ(int iid, int mid, int label) {
+    public static void IF_ICMPEQ(String fileName, int iid, int mid, int label) {
         if (block.get()) return; else block.set(true);
-        try { intp.IF_ICMPEQ(iid, mid, label); } finally { block.set(false); }
+        try { intp.IF_ICMPEQ(fileName, iid, mid, label); } finally { block.set(false); }
     }
 
-    public static void IF_ICMPNE(int iid, int mid, int label) {
+    public static void IF_ICMPNE(String fileName, int iid, int mid, int label) {
         if (block.get()) return; else block.set(true);
-        try { intp.IF_ICMPNE(iid, mid, label); } finally { block.set(false); }
+        try { intp.IF_ICMPNE(fileName, iid, mid, label); } finally { block.set(false); }
     }
 
-    public static void IF_ICMPLT(int iid, int mid, int label) {
+    public static void IF_ICMPLT(String fileName, int iid, int mid, int label) {
         if (block.get()) return; else block.set(true);
-        try { intp.IF_ICMPLT(iid, mid, label); } finally { block.set(false); }
+        try { intp.IF_ICMPLT(fileName, iid, mid, label); } finally { block.set(false); }
     }
 
-    public static void IF_ICMPGE(int iid, int mid, int label) {
+    public static void IF_ICMPGE(String fileName, int iid, int mid, int label) {
         if (block.get()) return; else block.set(true);
-        try { intp.IF_ICMPGE(iid, mid, label); } finally { block.set(false); }
+        try { intp.IF_ICMPGE(fileName, iid, mid, label); } finally { block.set(false); }
     }
 
-    public static void IF_ICMPGT(int iid, int mid, int label) {
+    public static void IF_ICMPGT(String fileName, int iid, int mid, int label) {
         if (block.get()) return; else block.set(true);
-        try { intp.IF_ICMPGT(iid, mid, label); } finally { block.set(false); }
+        try { intp.IF_ICMPGT(fileName, iid, mid, label); } finally { block.set(false); }
     }
 
-    public static void IF_ICMPLE(int iid, int mid, int label) {
+    public static void IF_ICMPLE(String fileName, int iid, int mid, int label) {
         if (block.get()) return; else block.set(true);
-        try { intp.IF_ICMPLE(iid, mid, label); } finally { block.set(false); }
+        try { intp.IF_ICMPLE(fileName, iid, mid, label); } finally { block.set(false); }
     }
 
-    public static void IF_ACMPEQ(int iid, int mid, int label) {
+    public static void IF_ACMPEQ(String fileName, int iid, int mid, int label) {
         if (block.get()) return; else block.set(true);
-        try { intp.IF_ACMPEQ(iid, mid, label); } finally { block.set(false); }
+        try { intp.IF_ACMPEQ(fileName, iid, mid, label); } finally { block.set(false); }
     }
 
-    public static void IF_ACMPNE(int iid, int mid, int label) {
+    public static void IF_ACMPNE(String fileName, int iid, int mid, int label) {
         if (block.get()) return; else block.set(true);
-        try { intp.IF_ACMPNE(iid, mid, label); } finally { block.set(false); }
+        try { intp.IF_ACMPNE(fileName, iid, mid, label); } finally { block.set(false); }
     }
 
     public static void GOTO(int iid, int mid, int label) {
@@ -264,14 +264,14 @@ public final class SingleSnoop {
         try { intp.JSR(iid, mid, label); } finally { block.set(false); }
     }
 
-    public static void IFNULL(int iid, int mid, int label) {
+    public static void IFNULL(String fileName, int iid, int mid, int label) {
         if (block.get()) return; else block.set(true);
-        try { intp.IFNULL(iid, mid, label); } finally { block.set(false); }
+        try { intp.IFNULL(fileName, iid, mid, label); } finally { block.set(false); }
     }
 
-    public static void IFNONNULL(int iid, int mid, int label) {
+    public static void IFNONNULL(String fileName, int iid, int mid, int label) {
         if (block.get()) return; else block.set(true);
-        try { intp.IFNONNULL(iid, mid, label); } finally { block.set(false); }
+        try { intp.IFNONNULL(fileName, iid, mid, label); } finally { block.set(false); }
     }
 
     public static void INVOKEVIRTUAL(int iid, int mid, String owner, String name, String desc) {

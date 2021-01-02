@@ -143,24 +143,26 @@ public class ThreadTracer {
                 for (Target target : this.targets) {
                     if (target.getLinenum() == ins.mid) {
                         String fileName = getFileName(ins);
-                        if (target.getFilename().equals(fileName)) {
-                            emit(new TargetHitEvent(ins.iid, null, ins.mid, target.getFilename()));
-                            isTargetHit = true;
+                        if (fileName != null) {
+                            if (target.getFilename().equals(fileName)) {
+                                emit(new TargetHitEvent(ins.iid, null, ins.mid, target.getFilename()));
+                                isTargetHit = true;
+                            }
                         }
                     }
                 }
             }
         }
         
-//        if (!isTargetHit && isConditionalBranch(ins)) {
-//            String fileName = ""; // getFileName(ins);
-//            if (this.targets != null) {
-//                for (Target target : this.targets) {
-//                    int distToTarget = getDistToTarget(fileName, ins.mid, target);
-//                    emit(new DistanceUpdateEvent(ins.iid, null, ins.mid, target, distToTarget));
-//                }
-//            }
-//        }
+        if (!isTargetHit && isConditionalBranch(ins)) {
+            String fileName = getFileNameQuick(ins);
+            if (fileName != null && this.targets != null) {
+                for (Target target : this.targets) {
+                    int distToTarget = getDistToTarget(fileName, ins.mid, target);
+                    emit(new DistanceUpdateEvent(ins.iid, null, ins.mid, target, distToTarget));
+                }
+            }
+        }
 
         // Apply the visitor at the top of the stack
         ins.visit(handlers.peek());
@@ -175,23 +177,31 @@ public class ThreadTracer {
         return ins instanceof ConditionalBranch;
     }
 
+    private String getFileNameQuick(Instruction ins) {
+        return ins.fileName;
+    }
+
     private String getFileName(Instruction ins) {
-        String fileName = null;
+        String fileName = getFileNameQuick(ins);
+        if (fileName != null) return fileName;
+
         boolean singleSnoopFound = false;
         StackTraceElement[] traces = new Exception().getStackTrace();
         if (traces != null) {
-            int idx = 0;
-            for (StackTraceElement te : traces) {
-                if (te.getClassName().equals("edu.berkeley.cs.jqf.instrument.tracing.SingleSnoop")) {
-                    singleSnoopFound = true;
-                    break;
-                }
-                idx++;
-            }
+//            int SingleSnoopIdx = 0;
+//            for (StackTraceElement te : traces) {
+//                if (te.getClassName().equals("edu.berkeley.cs.jqf.instrument.tracing.SingleSnoop")) {
+//                    singleSnoopFound = true;
+//                    break;
+//                }
+//                SingleSnoopIdx++;
+//            }
+            singleSnoopFound = true;
+            int singleSnoopIdx = 4;
             // the next element behind SingleSnoop is the target candidate
             if (singleSnoopFound) {
                 try {
-                    fileName = traces[idx + 1].getClassName().replace(".", File.separator) + ".java";
+                    fileName = traces[singleSnoopIdx + 1].getClassName().replace(".", File.separator) + ".java";
                 } catch (ArrayIndexOutOfBoundsException e) {
                 }
             }
