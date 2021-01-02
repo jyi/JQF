@@ -139,12 +139,14 @@ public class ThreadTracer {
     protected final void consume(Instruction ins) {
         if (!(ins instanceof SPECIAL || ins instanceof METHOD_BEGIN || ins instanceof INVOKEMETHOD_END)) {
             String fileName = getFileName(ins);
-            for (Target target : this.targets) {
-                if (target.getLinenum() == ins.mid && target.getFilename().equals(fileName)) {
-                    emit(new TargetHitEvent(ins.iid, null, ins.mid, target.getFilename()));
-                } else {
-                    int distToTarget = getDistToTarget(fileName, ins.mid, target);
-                    emit(new DistanceUpdateEvent(ins.iid, null, ins.mid, target, distToTarget));
+            if (this.targets != null) {
+                for (Target target : this.targets) {
+                    if (target.getLinenum() == ins.mid && target.getFilename().equals(fileName)) {
+                        emit(new TargetHitEvent(ins.iid, null, ins.mid, target.getFilename()));
+                    } else {
+                        int distToTarget = getDistToTarget(fileName, ins.mid, target);
+                        emit(new DistanceUpdateEvent(ins.iid, null, ins.mid, target, distToTarget));
+                    }
                 }
             }
         }
