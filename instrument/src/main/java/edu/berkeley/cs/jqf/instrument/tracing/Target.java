@@ -2,7 +2,20 @@ package edu.berkeley.cs.jqf.instrument.tracing;
 
 public class Target {
 
+    public static Target[] allTargets = null;
+
+    public static void init(String s) {
+        allTargets = getTargetArray(s);
+    }
+
     public static Target[] getTargetArray(String s) {
+        if (allTargets == null) {
+            allTargets = makeTargetArray(s);
+        }
+        return allTargets;
+    }
+
+    private static Target[] makeTargetArray(String s) {
         if (!s.startsWith("[") && !s.endsWith("]")) {
             throw new RuntimeException("Illformed target array string: " + s);
         }

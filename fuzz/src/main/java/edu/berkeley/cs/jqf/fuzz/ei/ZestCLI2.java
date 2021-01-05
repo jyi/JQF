@@ -281,6 +281,7 @@ public class ZestCLI2 implements Runnable {
             ZestGuidance guidance;
             if (targets != null) {
                 System.setProperty("jqf.ei.targets", Arrays.toString(targets));
+                edu.berkeley.cs.jqf.instrument.tracing.Target.init(Arrays.toString(targets));
                 // callGraphTest(classPathForOrg,targets[0].getClassName());
                 // TODO: we need to store target methods
                 // extractTargetMethod(targets);

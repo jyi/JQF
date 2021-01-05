@@ -103,7 +103,7 @@ public class PoracleGuidance extends ZestGuidance {
     protected Coverage validCoverageOfOrg = new Coverage();
     protected Coverage validCoverageOfPatch = new Coverage();
 
-    protected TargetDistance targetDistance = new TargetDistance();
+    protected TargetDistance targetDistance = TargetDistance.getSingleton();
 
     /** The maximum number of keys covered by any single input found so far. */
     protected int maxCoverageOfOrg = 0;
@@ -244,7 +244,6 @@ public class PoracleGuidance extends ZestGuidance {
             this.pathDist = 0L;
         }
 
-        // TODO: added distToTarget
         public Distance(double distToTarget, List<Double> versionDistCallerExit, List<Double> versionDistCalleeExit,
                         List<Double> versionDistCalleeEntry,
                         Pair<Long, Long> pathDiffDist) {
@@ -257,9 +256,6 @@ public class PoracleGuidance extends ZestGuidance {
         }
 
         public List<List<Double>> getDistList() {
-            ArrayList<Double> distToTragetList = new ArrayList<>();
-            distToTragetList.add(distToTraget);
-
             // the first one is the most important
             List<List<Double>> distList = new ArrayList<>();
             // state difference
@@ -277,6 +273,8 @@ public class PoracleGuidance extends ZestGuidance {
             distList.add(lst);
 
             // target distance
+            ArrayList<Double> distToTragetList = new ArrayList<>();
+            distToTragetList.add(distToTraget);
             distList.add(distToTragetList);
 
             return distList;
@@ -811,18 +809,19 @@ public class PoracleGuidance extends ZestGuidance {
         List<Double> versionDistCalleeExit = null;
         List<Double> versionDistCalleeEntry = null;
         Pair<Long, Long> pathDiffDist = new Pair(0L, 0L);
-        double distToTarget = 0;
 
         List<MethodInfo> callers = DumpUtil.getCallerChain();
         List<MethodInfo> callees = DumpUtil.getCalleesOfTaregetMethod();
 
+        double distToTarget = Double.POSITIVE_INFINITY;
         if (targetHit && callers != null && callees != null) {
+            distToTarget = 0;
             pathDiffDist = this.runCoverageOfPatch.getDistance(this.runCoverageOfOrg);
             versionDistCallerExit = getVersionDistance(inputID, callers, PointCutLocation.EXIT);
             versionDistCalleeExit = getVersionDistance(inputID, callees, PointCutLocation.EXIT);
             versionDistCalleeEntry = getVersionDistance(inputID, callees, PointCutLocation.ENTRY);
         } else if (!targetHit) {
-            // TODO: compute distToTarget
+            distToTarget = targetDistance.getDistance();
         }
         Distance dist = new Distance(distToTarget, versionDistCallerExit, versionDistCalleeExit, versionDistCalleeEntry, pathDiffDist);
 

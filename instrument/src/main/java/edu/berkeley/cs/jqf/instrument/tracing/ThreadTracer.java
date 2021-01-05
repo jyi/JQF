@@ -211,6 +211,7 @@ public class ThreadTracer {
 
     private int getDistToTarget(String currentFile, int lineNumber, Target target) {
         // TODO: retrieve the distance
+        // if distance is not known, return Integer.MAX_VALUE
         return 0;
     }
 
