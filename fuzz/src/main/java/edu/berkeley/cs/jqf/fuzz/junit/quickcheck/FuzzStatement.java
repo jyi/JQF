@@ -53,12 +53,14 @@ import edu.berkeley.cs.jqf.fuzz.guidance.TimeoutException;
 import edu.berkeley.cs.jqf.fuzz.junit.ReproRun;
 import edu.berkeley.cs.jqf.fuzz.random.NoGuidance;
 import edu.berkeley.cs.jqf.fuzz.reach.PoracleGuidance;
+import edu.berkeley.cs.jqf.fuzz.reach.Target;
 import edu.berkeley.cs.jqf.fuzz.repro.ReproGuidance;
 import edu.berkeley.cs.jqf.fuzz.guidance.Result;
 import edu.berkeley.cs.jqf.fuzz.guidance.StreamBackedRandom;
 import edu.berkeley.cs.jqf.fuzz.Fuzz;
 import edu.berkeley.cs.jqf.fuzz.junit.GuidedFuzzing;
 import edu.berkeley.cs.jqf.fuzz.junit.TrialRunner;
+import edu.berkeley.cs.jqf.instrument.InstrumentingClassLoader;
 import edu.berkeley.cs.jqf.instrument.tracing.ThreadTracer;
 import kr.ac.unist.cse.jqf.Log;
 import kr.ac.unist.cse.jqf.aspect.DumpUtil;
@@ -434,6 +436,13 @@ public class FuzzStatement extends Statement {
         ReproGuidance reproGuidance = new ReproGuidance(resultOfOrg.getInputFile(), null,
                 guidance.getOutputDirectory());
         System.setProperty("jqf.ei.run_patch", "true");
+        if (loaderForPatch instanceof InstrumentingClassLoader) {
+            // make sure that target classes are instrumented
+            Target[] targets = Target.getTargetArray(System.getProperty("jqf.ei.targets"));
+            for (Target target: targets) {
+                ((InstrumentingClassLoader) loaderForPatch).instrumentClass(target.getClassName());
+            }
+        }
         run(testClass.getName(), method.getName(), this.loaderForPatch, reproGuidance);
         System.setProperty("jqf.ei.run_patch", "false");
 

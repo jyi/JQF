@@ -271,7 +271,7 @@ public class ZestCLI2 implements Runnable {
         System.setProperty("jqf.ei.delta", String.valueOf(delta));
 
         try {
-            ClassLoader loaderForOrg = new InstrumentingClassLoader(
+            InstrumentingClassLoader loaderForOrg = new InstrumentingClassLoader(
                     this.classPathForOrg.split(File.pathSeparator),
                     ZestCLI2.class.getClassLoader());
             ZestCLI2.loaderForOrg = loaderForOrg;
@@ -294,6 +294,12 @@ public class ZestCLI2 implements Runnable {
                         new ZestGuidance(title, duration, this.outputDirectory);
             }
             guidance.setBlind(blindFuzzing);
+
+            // make sure that target classes are instrumented
+            for (Target target: targets) {
+                loaderForOrg.instrumentClass(target.getClassName());
+            }
+
             // Run the Junit test (original version)
             Result res = GuidedFuzzing.run(testClassName, testMethodName, loaderForOrg, guidance, System.out);
             if (Boolean.getBoolean("jqf.logCoverage")) {
