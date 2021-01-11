@@ -29,7 +29,9 @@
 
 package edu.berkeley.cs.jqf.instrument.tracing;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.util.*;
 import java.util.function.Consumer;
 
@@ -56,6 +58,7 @@ public class ThreadTracer {
     protected final String entryPointMethod;
     protected final Consumer<TraceEvent> callback;
     private final Deque<IVisitor> handlers = new ArrayDeque<>();
+    private HashMap<Target, Integer> fileLineDistMap = new HashMap<>();
 
     // Values set by GETVALUE_* instructions inserted by Janala
     private final Values values = new Values();
@@ -212,7 +215,55 @@ public class ThreadTracer {
     private int getDistToTarget(String currentFile, int lineNumber, Target target) {
         // TODO: retrieve the distance
         // if distance is not known, return Integer.MAX_VALUE
-        return 0;
+        //System.out.println("get dist to target: " + currentFile + ":" + lineNumber + " <-> " + target.toString());
+        if(fileLineDistMap.isEmpty()) {
+            parseCSVFile("/home/plase1/Docker/poracle/modules/WALA/com.ibm.wala.core/out/output.csv");
+        }
+        Target current = new Target(currentFile, lineNumber);
+        if(fileLineDistMap.containsKey(current)) {
+            System.out.println("get dist to target: " + current.toString() + " <-> " + target.toString() + " = " + fileLineDistMap.get(current));
+            return fileLineDistMap.get(current);
+        }
+        return Integer.MAX_VALUE;
+    }
+
+    private void parseCSVFile(String filename) {
+        System.out.println("parse csv file!");
+        com.ibm.wala.cfg.cdg.BasicBlockDistance.main("parse csv file".split(" "));
+        //com.ibm.wala.cfg.cdg.BasicBlockDistance bbd = new com.ibm.wala.cfg.cdg.BasicBlockDistance();
+        //BasicBlockDistance bbd = new BasicBlockDistance();
+        //bbd.test_print();
+        //BasicBlockDistance bbd = new BasicBlockDistance();
+        //bbd.test_print();
+        //Process proc = Runtime.getRuntime().exec("java -jar .jar");
+        FileReader f = null;
+        try {
+            f = new FileReader(filename);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        BufferedReader br = new BufferedReader(f);
+        try {
+            String row = br.readLine();
+            System.out.println(row);
+            while(true) {
+                row = br.readLine();
+                if(row == null) break;
+                String[] temp = row.split(",");
+                //System.out.println(temp[0] + " + " + temp[1] + " + " + temp[2]);
+                Target t = new Target(temp[0], Integer.parseInt(temp[1]));
+                if(fileLineDistMap.containsKey(t)) {
+                    if (fileLineDistMap.get(t) > Integer.parseInt(temp[2])) {
+                        //System.out.println("update " + t.toString() + " to " + temp[2] + " from " + fileLineDistMap.get(t));
+                        fileLineDistMap.put(t, Integer.parseInt(temp[2]));
+                    }
+                } else {
+                    fileLineDistMap.put(t, Integer.parseInt(temp[2]));
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private static boolean isReturnOrMethodThrow(Instruction inst) {

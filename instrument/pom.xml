@@ -3,10 +3,10 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-	    <groupId>edu.berkeley.cs.jqf</groupId>
-	    <artifactId>jqf</artifactId>
-	    <version>1.5-SNAPSHOT</version>
-	</parent>
+        <groupId>edu.berkeley.cs.jqf</groupId>
+        <artifactId>jqf</artifactId>
+        <version>1.5-SNAPSHOT</version>
+    </parent>
 
     <artifactId>jqf-instrument</artifactId>
 
@@ -29,18 +29,18 @@
             <artifactId>aspectjrt</artifactId>
             <version>1.9.6</version>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>org.aspectj</groupId>-->
-<!--            <artifactId>aspectjrt</artifactId>-->
-<!--            <version>1.9.7</version>-->
-<!--            <scope>system</scope>-->
-<!--            <systemPath>${project.basedir}/../../org.aspectj/lib/aspectj/lib/aspectjrt.jar</systemPath>-->
-<!--        </dependency>-->
-<!--        <dependency>-->
-<!--            <groupId>org.aspectj</groupId>-->
-<!--            <artifactId>aspectjweaver</artifactId>-->
-<!--            <version>1.9.6</version>-->
-<!--        </dependency>-->
+        <!--        <dependency>-->
+        <!--            <groupId>org.aspectj</groupId>-->
+        <!--            <artifactId>aspectjrt</artifactId>-->
+        <!--            <version>1.9.7</version>-->
+        <!--            <scope>system</scope>-->
+        <!--            <systemPath>${project.basedir}/../../org.aspectj/lib/aspectj/lib/aspectjrt.jar</systemPath>-->
+        <!--        </dependency>-->
+        <!--        <dependency>-->
+        <!--            <groupId>org.aspectj</groupId>-->
+        <!--            <artifactId>aspectjweaver</artifactId>-->
+        <!--            <version>1.9.6</version>-->
+        <!--        </dependency>-->
         <dependency>
             <groupId>org.aspectj</groupId>
             <artifactId>aspectjtools</artifactId>
@@ -54,12 +54,12 @@
         </dependency>
 
         <!--        <dependency>-->
-<!--            <groupId>org.aspectj</groupId>-->
-<!--            <artifactId>aspectjtools</artifactId>-->
-<!--            <version>1.9.7</version>-->
-<!--            <scope>system</scope>-->
-<!--            <systemPath>${project.basedir}/../../org.aspectj/lib/aspectj/lib/aspectjtools.jar</systemPath>-->
-<!--        </dependency>-->
+        <!--            <groupId>org.aspectj</groupId>-->
+        <!--            <artifactId>aspectjtools</artifactId>-->
+        <!--            <version>1.9.7</version>-->
+        <!--            <scope>system</scope>-->
+        <!--            <systemPath>${project.basedir}/../../org.aspectj/lib/aspectj/lib/aspectjtools.jar</systemPath>-->
+        <!--        </dependency>-->
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
@@ -70,11 +70,12 @@
             <version>1.0-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
+
         <!--        <dependency>-->
-<!--            <groupId>edu.berkeley.cs.jqf</groupId>-->
-<!--            <artifactId>jqf-fuzz</artifactId>-->
-<!--            <scope>test</scope>-->
-<!--        </dependency>-->
+        <!--            <groupId>edu.berkeley.cs.jqf</groupId>-->
+        <!--            <artifactId>jqf-fuzz</artifactId>-->
+        <!--            <scope>test</scope>-->
+        <!--        </dependency>-->
     </dependencies>
 
 
@@ -96,22 +97,22 @@
                         </manifestEntries>
                     </archive>
                 </configuration>
-            </plugin>            
-            <plugin> 
-                <groupId>org.apache.maven.plugins</groupId> 
-                <artifactId>maven-dependency-plugin</artifactId> 
-                <executions> 
-                        <execution> 
-                                <id>copy-dependencies</id> 
-                                <phase>package</phase> 
-                                <goals> 
-                                        <goal>copy-dependencies</goal> 
-                                </goals> 
-                                <configuration> 
-                                        <includeScope>runtime</includeScope> 
-                                </configuration> 
-                        </execution> 
-                </executions> 
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy-dependencies</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <includeScope>runtime</includeScope>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
