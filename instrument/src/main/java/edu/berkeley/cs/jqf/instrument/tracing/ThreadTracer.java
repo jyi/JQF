@@ -39,6 +39,7 @@ import edu.berkeley.cs.jqf.instrument.tracing.events.*;
 import janala.instrument.Method;
 import janala.logger.inst.*;
 //import sun.security.util.ArrayUtil;
+import com.ibm.wala.cfg.cdg.BasicBlockDistance;
 
 /**
  * This class is responsible for tracing for an instruction stream
@@ -58,7 +59,9 @@ public class ThreadTracer {
     protected final String entryPointMethod;
     protected final Consumer<TraceEvent> callback;
     private final Deque<IVisitor> handlers = new ArrayDeque<>();
-    private HashMap<Target, Integer> fileLineDistMap = new HashMap<>();
+    private HashMap<Target, HashMap<Target, Integer>> targetMap = new HashMap<>();
+    public String classPath = "/home/plase1/Docker/poracle/modules/WALA/com.ibm.wala.core/resources/test/Time4p/target/classes";
+    public String outDir = "/home/plase1/Docker/poracle/modules/JQF/out/";
 
     // Values set by GETVALUE_* instructions inserted by Janala
     private final Values values = new Values();
@@ -216,26 +219,25 @@ public class ThreadTracer {
         // TODO: retrieve the distance
         // if distance is not known, return Integer.MAX_VALUE
         //System.out.println("get dist to target: " + currentFile + ":" + lineNumber + " <-> " + target.toString());
-        if(fileLineDistMap.isEmpty()) {
-            parseCSVFile("/home/plase1/Docker/poracle/modules/WALA/com.ibm.wala.core/out/output.csv");
+        if(!targetMap.containsKey(target)) {
+            System.out.println("currentFile: " + currentFile);
+            getDistUsingWALA(this.classPath, target.toString(), this.outDir);
+            targetMap.put(target, parseCSVFile(outDir + "output.csv"));
         }
         Target current = new Target(currentFile, lineNumber);
+        HashMap<Target, Integer> fileLineDistMap = targetMap.get(target);
         if(fileLineDistMap.containsKey(current)) {
-            System.out.println("get dist to target: " + current.toString() + " <-> " + target.toString() + " = " + fileLineDistMap.get(current));
+            //System.out.println("get dist to target: " + current.toString() + " <-> " + target.toString() + " = " + fileLineDistMap.get(current));
             return fileLineDistMap.get(current);
         }
         return Integer.MAX_VALUE;
     }
-
-    private void parseCSVFile(String filename) {
-        System.out.println("parse csv file!");
-        com.ibm.wala.cfg.cdg.BasicBlockDistance.main("parse csv file".split(" "));
-        //com.ibm.wala.cfg.cdg.BasicBlockDistance bbd = new com.ibm.wala.cfg.cdg.BasicBlockDistance();
-        //BasicBlockDistance bbd = new BasicBlockDistance();
-        //bbd.test_print();
-        //BasicBlockDistance bbd = new BasicBlockDistance();
-        //bbd.test_print();
-        //Process proc = Runtime.getRuntime().exec("java -jar .jar");
+    private void getDistUsingWALA(String classPath, String target, String outDir) {
+        BasicBlockDistance bbd = new BasicBlockDistance(outDir);
+        bbd.runWithClassPathFromFile(classPath, target);
+    }
+    private HashMap<Target, Integer> parseCSVFile(String filename) {
+        HashMap<Target, Integer> fileLineDistMap = new HashMap<>();
         FileReader f = null;
         try {
             f = new FileReader(filename);
@@ -245,10 +247,10 @@ public class ThreadTracer {
         BufferedReader br = new BufferedReader(f);
         try {
             String row = br.readLine();
-            System.out.println(row);
+            //System.out.println(row);
             while(true) {
                 row = br.readLine();
-                if(row == null) break;
+                if(row == null) return fileLineDistMap;
                 String[] temp = row.split(",");
                 //System.out.println(temp[0] + " + " + temp[1] + " + " + temp[2]);
                 Target t = new Target(temp[0], Integer.parseInt(temp[1]));
@@ -263,6 +265,7 @@ public class ThreadTracer {
             }
         } catch (Exception e) {
             e.printStackTrace();
+            return null;
         }
     }
 
