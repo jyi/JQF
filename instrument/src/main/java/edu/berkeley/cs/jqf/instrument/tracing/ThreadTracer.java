@@ -224,18 +224,26 @@ public class ThreadTracer {
         //System.out.println("get dist to target: " + currentFile + ":" + lineNumber + " <-> " + target.toString());
         if(!targetMap.containsKey(target)) {
             try {
-                Path outDir = FileSystems.getDefault().getPath(Paths.get(System.getProperty("user.dir")).getParent().toString(),
-                        "out");
+                String out = System.getProperty("jqf.ei.outputDirectory");
+                Path outDir = FileSystems.getDefault().getPath((new File(out)).getAbsolutePath(),
+                         "wala_out").normalize();
+                //System.out.println("outdir: " + outDir.toString());
                 if (outDir.toFile().exists()) {
                     FileUtils.cleanDirectory(outDir.toFile());
                 } else {
                     FileUtils.forceMkdir(outDir.toFile());
                 }
-                // String cp = System.getProperty("jqf.ei.CLASSPATH_FOR_PATCH");
-                Path cp = FileSystems.getDefault().getPath(Paths.get(System.getProperty("user.dir")).getParent().toString(),
-                        "src", "test", "resources", "patches", "Patch180", "Time4p", "target", "classes");
+                String[] cps = System.getProperty("jqf.ei.CLASSPATH_FOR_PATCH").split(":");
+                String classPath = "";
+                for(String cp: cps) {
+                    classPath += (new File(cp)).getCanonicalPath() + ":";
+                }
+                classPath = classPath.substring(0, classPath.length() - 1);
+                //System.out.println("classPath!!!! " + classPath);
+                //Path cp = FileSystems.getDefault().getPath(Paths.get(System.getProperty("user.dir")).getParent().toString(),
+                //        "src", "test", "resources", "patches", "Patch180", "Time4p", "target", "classes");
                 Path outFile = FileSystems.getDefault().getPath(outDir.toString(), "output.csv");
-                getDistUsingWALA(cp.toString(), target.toString(), outFile.toString());
+                getDistUsingWALA(classPath, target.toString(), outFile.toString());
                 targetMap.put(target, parseCSVFile(outFile.toString()));
             } catch (IOException e) {
                 infoLog("Failed to make out dir");

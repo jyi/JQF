@@ -75,7 +75,7 @@
             <artifactId>com.ibm.wala</artifactId>
             <version>1.5.6</version>
             <scope>system</scope>
-            <systemPath>${project.basedir}/../lib/com.ibm.wala.jar</systemPath>
+            <systemPath>${project.basedir}/../../WALA/com.ibm.wala.core/build/libs/com.ibm.wala.jar</systemPath>
         </dependency>
 
         <dependency>

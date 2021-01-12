@@ -234,10 +234,14 @@ public class Counter {
     }
 
     public Pair<Long, Long> getDistance(Counter otherCounter) {
+        //System.out.println("getDistance!!!!!!!!");
         long diff = 0;
         long dist = 0;
         List<Integer> nonZeroIndices = getNonZeroIndices();
         List<Integer> nonZeroIndices2 = otherCounter.getNonZeroIndices();
+        //com.github.gumtreediff.gen.jdt.JdtTreeContext srcTreeCtxt =
+        //        (com.github.gumtreediff.gen.jdt.JdtTreeContext) new com.github.gumtreediff.gen.jdt.JdtTreeGenerator().generateFrom().file(src);
+        //System.out.println("non-zero indices: " + nonZeroIndices.toString());
         for (int i = 0; i < nonZeroIndices.size(); i++) {
             try {
                 int count1 = nonZeroIndices.get(i);
