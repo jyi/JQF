@@ -30,6 +30,7 @@ package edu.berkeley.cs.jqf.fuzz.util;
 
 import com.pholser.junit.quickcheck.Pair;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -234,11 +235,25 @@ public class Counter {
     }
 
     public Pair<Long, Long> getDistance(Counter otherCounter) {
-        //System.out.println("getDistance!!!!!!!!");
+        //System.out.println("Counter:getDistance!!!!!!!!");
         long diff = 0;
         long dist = 0;
         List<Integer> nonZeroIndices = getNonZeroIndices();
         List<Integer> nonZeroIndices2 = otherCounter.getNonZeroIndices();
+        //System.out.println(System.getProperties().toString());
+        String[] cps = System.getProperty("jqf.ei.CLASSPATH_FOR_PATCH").split(":");
+        String classPath = "";
+        try {
+            for(String cp: cps) {
+                classPath += (new File(cp)).getCanonicalPath() + ":";
+            }
+            classPath = classPath.substring(0, classPath.length() - 1);
+            //System.out.println(classPath);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+
         //com.github.gumtreediff.gen.jdt.JdtTreeContext srcTreeCtxt =
         //        (com.github.gumtreediff.gen.jdt.JdtTreeContext) new com.github.gumtreediff.gen.jdt.JdtTreeGenerator().generateFrom().file(src);
         //System.out.println("non-zero indices: " + nonZeroIndices.toString());

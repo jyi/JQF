@@ -252,6 +252,7 @@ public class ThreadTracer {
         }
         Target current = new Target(currentFile, lineNumber);
         HashMap<Target, Integer> fileLineDistMap = targetMap.get(target);
+        if(fileLineDistMap == null || fileLineDistMap.isEmpty()) return Integer.MAX_VALUE;
         if (fileLineDistMap.containsKey(current)) {
             //System.out.println("get dist to target: " + current.toString() + " <-> " + target.toString() + " = " + fileLineDistMap.get(current));
             return fileLineDistMap.get(current);
@@ -269,6 +270,7 @@ public class ThreadTracer {
             f = new FileReader(filename);
         } catch (Exception e) {
             e.printStackTrace();
+            return null;
         }
         BufferedReader br = new BufferedReader(f);
         try {

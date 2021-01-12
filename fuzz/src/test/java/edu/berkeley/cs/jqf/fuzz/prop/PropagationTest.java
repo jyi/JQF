@@ -276,8 +276,8 @@ public class PropagationTest {
                 "--exploreDuration", "10m",
                 //"--delta", "1e-6",
                 "-o", fuzz_results_dir.toString(),
-                "../src/test/resources/patches/Patch34/Math32b/target/test-classes:../src/test/resources/patches/Patch34/Math32b/target/classes:../../aspect/tracing.jar",
-                "../src/test/resources/patches/Patch34/Math32p/target/test-classes:../src/test/resources/patches/Patch34/Math32p/target/classes:../../aspect/tracing.jar",
+                "../src/test/resources/patches/Patch34/Math32b/target/test-classes:../src/test/resources/patches/Patch34/Math32b/target/classes:../aspect/tracing.jar",
+                "../src/test/resources/patches/Patch34/Math32p/target/test-classes:../src/test/resources/patches/Patch34/Math32p/target/classes:../aspect/tracing.jar",
                 "org.apache.commons.math3.geometry.euclidean.threed.JQF_PolyhedronsSetTest", "testIssue780"});
     }
 
@@ -425,8 +425,8 @@ public class PropagationTest {
                 "--exploreDuration", "3h",
                 "--delta", "0",
                 "-o", "../src/test/resources/fuzz-results",
-                "../src/test/resources/patches/Mathbug58/Math58b/target/test-classes:../src/test/resources/patches/Mathbug58/Math58b/target/classes:../../aspect/tracing.jar",
-                "../src/test/resources/patches/Mathbug58/Math58p/target/test-classes:../src/test/resources/patches/Mathbug58/Math58p/target/classes:../../aspect/tracing.jar",
+                "../src/test/resources/patches/Mathbug58/Math58b/target/test-classes:../src/test/resources/patches/Mathbug58/Math58b/target/classes:../aspect/tracing.jar",
+                "../src/test/resources/patches/Mathbug58/Math58p/target/test-classes:../src/test/resources/patches/Mathbug58/Math58p/target/classes:../aspect/tracing.jar",
                 "org.apache.commons.math.optimization.fitting.JQF_GaussianFitterTest", "testMath519"});
     }
 
@@ -513,8 +513,8 @@ public class PropagationTest {
                 "--exploreDuration", "3h",
                 //"--delta", "1e-6",
                 "-o", fuzz_results_dir.toString(),
-                "../src/test/resources/patches/Time11/Time11b/target/test-classes:../src/test/resources/patches/Time11/Time11b/target/classes:../../aspect/tracing.jar",
-                "../src/test/resources/patches/Time11/Time11p/target/test-classes:../src/test/resources/patches/Time11/Time11p/target/classes:../../aspect/tracing.jar",
+                "../src/test/resources/patches/Time11/Time11b/target/test-classes:../src/test/resources/patches/Time11/Time11b/target/classes:../aspect/tracing.jar",
+                "../src/test/resources/patches/Time11/Time11p/target/test-classes:../src/test/resources/patches/Time11/Time11p/target/classes:../aspect/tracing.jar",
                 "org.joda.time.tz.JQF_TestCompiler", "testDateTimeZoneBuilder"});
     }
 
@@ -543,8 +543,8 @@ public class PropagationTest {
                 "--exploreDuration", "3h",
                 //"--delta", "1e-6",
                 "-o", fuzz_results_dir.toString(),
-                "../src/test/resources/patches/Patch182/Time11b/target/test-classes:../src/test/resources/patches/Patch182/Time11b/target/classes:../../aspect/tracing.jar",
-                "../src/test/resources/patches/Patch182/Time11p/target/test-classes:../src/test/resources/patches/Patch182/Time11p/target/classes:../../aspect/tracing.jar",
+                "../src/test/resources/patches/Patch182/Time11b/target/test-classes:../src/test/resources/patches/Patch182/Time11b/target/classes:../aspect/tracing.jar",
+                "../src/test/resources/patches/Patch182/Time11p/target/test-classes:../src/test/resources/patches/Patch182/Time11p/target/classes:../aspect/tracing.jar",
                 "org.joda.time.tz.JQF_TestCompiler", "testDateTimeZoneBuilder"});
     }
 
@@ -572,8 +572,8 @@ public class PropagationTest {
                 "--exploreDuration", "3h",
                 //"--delta", "1e-6",
                 "-o", fuzz_results_dir.toString(),
-                "../src/test/resources/patches/Lang24/Lang24b/target/tests:../src/test/resources/patches/Lang24/Lang24b/target/classes:../../aspect/tracing.jar",
-                "../src/test/resources/patches/Lang24/Lang24p/target/tests:../src/test/resources/patches/Lang24/Lang24p/target/classes:../../aspect/tracing.jar",
+                "../src/test/resources/patches/Lang24/Lang24b/target/tests:../src/test/resources/patches/Lang24/Lang24b/target/classes:../aspect/tracing.jar",
+                "../src/test/resources/patches/Lang24/Lang24p/target/tests:../src/test/resources/patches/Lang24/Lang24p/target/classes:../aspect/tracing.jar",
                 "org.apache.commons.lang3.math.JQF_NumberUtilsTest", "testIsNumber"});
     }
 }
