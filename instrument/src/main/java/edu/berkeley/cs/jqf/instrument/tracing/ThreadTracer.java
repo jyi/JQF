@@ -32,6 +32,7 @@ package edu.berkeley.cs.jqf.instrument.tracing;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.io.IOException;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -43,6 +44,8 @@ import janala.instrument.Method;
 import janala.logger.inst.*;
 //import sun.security.util.ArrayUtil;
 import com.ibm.wala.cfg.cdg.BasicBlockDistance;
+
+import org.apache.commons.io.FileUtils;
 
 /**
  * This class is responsible for tracing for an instruction stream
@@ -161,7 +164,7 @@ public class ThreadTracer {
             }
         }
         
-        if (!isTargetHit && isConditionalBranch(ins)) {
+        if (Boolean.getBoolean("jqf.ei.run_patch") && !isTargetHit && isConditionalBranch(ins)) {
             String fileName = getFileNameQuick(ins);
             if (fileName != null && this.targets != null) {
                 for (Target target : this.targets) {
@@ -220,16 +223,28 @@ public class ThreadTracer {
         // if distance is not known, return Integer.MAX_VALUE
         //System.out.println("get dist to target: " + currentFile + ":" + lineNumber + " <-> " + target.toString());
         if(!targetMap.containsKey(target)) {
-            Path cp = FileSystems.getDefault().getPath(Paths.get(System.getProperty("user.dir")).getParent().toString(),
-                     "src", "test", "resources", "patches", "Patch180", "Time4p", "target", "classes");
-            Path outFile = FileSystems.getDefault().getPath(Paths.get(System.getProperty("user.dir")).getParent().toString(),
-                    "out", "output.csv");
-            getDistUsingWALA(cp.toString(), target.toString(), outFile.toString());
-            targetMap.put(target, parseCSVFile(outFile.toString()));
+            try {
+                Path outDir = FileSystems.getDefault().getPath(Paths.get(System.getProperty("user.dir")).getParent().toString(),
+                        "out");
+                if (outDir.toFile().exists()) {
+                    FileUtils.cleanDirectory(outDir.toFile());
+                } else {
+                    FileUtils.forceMkdir(outDir.toFile());
+                }
+                // String cp = System.getProperty("jqf.ei.CLASSPATH_FOR_PATCH");
+                Path cp = FileSystems.getDefault().getPath(Paths.get(System.getProperty("user.dir")).getParent().toString(),
+                        "src", "test", "resources", "patches", "Patch180", "Time4p", "target", "classes");
+                Path outFile = FileSystems.getDefault().getPath(outDir.toString(), "output.csv");
+                getDistUsingWALA(cp.toString(), target.toString(), outFile.toString());
+                targetMap.put(target, parseCSVFile(outFile.toString()));
+            } catch (IOException e) {
+                infoLog("Failed to make out dir");
+                return Integer.MAX_VALUE;
+            }
         }
         Target current = new Target(currentFile, lineNumber);
         HashMap<Target, Integer> fileLineDistMap = targetMap.get(target);
-        if(fileLineDistMap.containsKey(current)) {
+        if (fileLineDistMap.containsKey(current)) {
             //System.out.println("get dist to target: " + current.toString() + " <-> " + target.toString() + " = " + fileLineDistMap.get(current));
             return fileLineDistMap.get(current);
         }
