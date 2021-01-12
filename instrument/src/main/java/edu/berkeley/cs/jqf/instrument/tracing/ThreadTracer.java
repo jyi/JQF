@@ -32,6 +32,9 @@ package edu.berkeley.cs.jqf.instrument.tracing;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.nio.file.FileSystems;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.function.Consumer;
 
@@ -60,8 +63,6 @@ public class ThreadTracer {
     protected final Consumer<TraceEvent> callback;
     private final Deque<IVisitor> handlers = new ArrayDeque<>();
     private HashMap<Target, HashMap<Target, Integer>> targetMap = new HashMap<>();
-    public String classPath = "/home/plase1/Docker/poracle/modules/WALA/com.ibm.wala.core/resources/test/Time4p/target/classes";
-    public String outDir = "/home/plase1/Docker/poracle/modules/JQF/out/";
 
     // Values set by GETVALUE_* instructions inserted by Janala
     private final Values values = new Values();
@@ -216,13 +217,15 @@ public class ThreadTracer {
     }
 
     private int getDistToTarget(String currentFile, int lineNumber, Target target) {
-        // TODO: retrieve the distance
         // if distance is not known, return Integer.MAX_VALUE
         //System.out.println("get dist to target: " + currentFile + ":" + lineNumber + " <-> " + target.toString());
         if(!targetMap.containsKey(target)) {
-            System.out.println("currentFile: " + currentFile);
-            getDistUsingWALA(this.classPath, target.toString(), this.outDir);
-            targetMap.put(target, parseCSVFile(outDir + "output.csv"));
+            Path cp = FileSystems.getDefault().getPath(Paths.get(System.getProperty("user.dir")).getParent().toString(),
+                     "src", "test", "resources", "patches", "Patch180", "Time4p", "target", "classes");
+            Path outFile = FileSystems.getDefault().getPath(Paths.get(System.getProperty("user.dir")).getParent().toString(),
+                    "out", "output.csv");
+            getDistUsingWALA(cp.toString(), target.toString(), outFile.toString());
+            targetMap.put(target, parseCSVFile(outFile.toString()));
         }
         Target current = new Target(currentFile, lineNumber);
         HashMap<Target, Integer> fileLineDistMap = targetMap.get(target);

@@ -70,6 +70,13 @@
             <version>1.0-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
+        <dependency>
+            <groupId>com.ibm.wala</groupId>
+            <artifactId>com.ibm.wala</artifactId>
+            <version>1.5.6</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/../lib/com.ibm.wala.jar</systemPath>
+        </dependency>
 
         <!--        <dependency>-->
         <!--            <groupId>edu.berkeley.cs.jqf</groupId>-->

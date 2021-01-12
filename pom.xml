@@ -143,13 +143,6 @@
                 <artifactId>jqf-instrument</artifactId>
                 <version>1.5-SNAPSHOT</version>
             </dependency>
-            <dependency>
-                <groupId>com.ibm.wala</groupId>
-                <artifactId>WALA</artifactId>
-                <version>1.5.6</version>
-                <scope>system</scope>
-                <systemPath>${project.basedir}/../WALA/com.ibm.wala.core/build/libs/mywala.jar</systemPath>
-            </dependency>
         </dependencies>
     </dependencyManagement>
 
