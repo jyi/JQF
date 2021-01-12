@@ -34,6 +34,10 @@ import java.lang.instrument.IllegalClassFormatException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.net.URLConnection;
+import java.util.HashSet;
+import java.util.Set;
+
 import kr.ac.unist.cse.jqf.Log;
 
 import janala.instrument.SnoopInstructionTransformer;
@@ -44,10 +48,13 @@ import org.aspectj.weaver.loadtime.ClassPreProcessorAgentAdapter;
  */
 public class InstrumentingClassLoader extends URLClassLoader {
 
+    private final URL[] urls;
+    private Set<String> instrumented = new HashSet<>();
     private ClassFileTransformer transformer = new SnoopInstructionTransformer();
 
     public InstrumentingClassLoader(URL[] urls, ClassLoader parent) {
         super(urls, parent);
+        this.urls = urls;
     }
 
     public InstrumentingClassLoader(String[] paths, ClassLoader parent) throws MalformedURLException {
@@ -62,6 +69,37 @@ public class InstrumentingClassLoader extends URLClassLoader {
         return urls;
     }
 
+    @Override
+    public InputStream getResourceAsStream(String name) {
+        String path = null;
+        InputStream is = null;
+        URLConnection connection = null;
+        for (URL url : this.urls) {
+            try {
+                path = url + name;
+                connection = new URL(path).openConnection();
+                is = connection.getInputStream();
+            } catch (FileNotFoundException e) {
+                // skip
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        if (is != null) {
+            return is;
+        } else {
+            return super.getResourceAsStream(name);
+        }
+    }
+
+    public void instrumentClass(String name) throws ClassNotFoundException {
+        if (!instrumented.contains(name)) {
+            findClass(name);
+            instrumented.add(name);
+        }
+    }
 
     @Override
     public Class<?> findClass(String name) throws ClassNotFoundException {
@@ -70,7 +108,7 @@ public class InstrumentingClassLoader extends URLClassLoader {
         // Try to read the class file in as a resource
         String internalName = name.replace('.', '/');
         String path = internalName.concat(".class");
-        try (InputStream in = super.getResourceAsStream(path)) {
+        try (InputStream in = getResourceAsStream(path)) {
             if (in == null) {
                 throw new ClassNotFoundException("Cannot find class " + name);
             }

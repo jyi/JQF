@@ -32,6 +32,7 @@ import java.io.PrintStream;
 
 import edu.berkeley.cs.jqf.fuzz.JQF;
 import edu.berkeley.cs.jqf.fuzz.guidance.Guidance;
+import edu.berkeley.cs.jqf.instrument.InstrumentingClassLoader;
 import edu.berkeley.cs.jqf.instrument.tracing.SingleSnoop;
 import org.junit.internal.TextListener;
 import org.junit.runner.*;
@@ -114,8 +115,8 @@ public class GuidedFuzzing {
      * @return the Junit-style test result
      */
     public synchronized static Result run(String testClassName, String testMethod,
-                                        ClassLoader loader,
-                                        Guidance guidance, PrintStream out) throws ClassNotFoundException, IllegalStateException {
+                                          ClassLoader loader,
+                                          Guidance guidance, PrintStream out) throws ClassNotFoundException, IllegalStateException {
         Class<?> testClass =
                 java.lang.Class.forName(testClassName, true, loader);
 
