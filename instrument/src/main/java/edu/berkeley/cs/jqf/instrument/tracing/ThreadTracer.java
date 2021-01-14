@@ -163,7 +163,7 @@ public class ThreadTracer {
                 }
             }
         }
-        
+
         if (Boolean.getBoolean("jqf.ei.run_patch") && !isTargetHit && isConditionalBranch(ins)) {
             String fileName = getFileNameQuick(ins);
             if (fileName != null && this.targets != null) {
@@ -233,10 +233,14 @@ public class ThreadTracer {
                 } else {
                     FileUtils.forceMkdir(outDir.toFile());
                 }
-                String[] cps = System.getProperty("jqf.ei.CLASSPATH_FOR_PATCH").split(":");
+                String[] cps = System.getProperty("jqf.ei.CLASSPATH_FOR_PATCH").split("[:;]");
                 String classPath = "";
                 for(String cp: cps) {
-                    classPath += (new File(cp)).getCanonicalPath() + ":";
+                    if((new File(cp)).exists()) {
+                        classPath += (new File(cp)).getCanonicalPath() + ":";
+                    } else {
+                        System.out.println("####path does not exist: " + cp);
+                    }
                 }
                 classPath = classPath.substring(0, classPath.length() - 1);
                 //System.out.println("classPath!!!! " + classPath);
