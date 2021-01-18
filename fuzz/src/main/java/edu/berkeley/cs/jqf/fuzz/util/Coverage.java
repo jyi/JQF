@@ -28,13 +28,16 @@
  */
 package edu.berkeley.cs.jqf.fuzz.util;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
+import java.io.File;
+import java.nio.file.FileSystems;
+import java.nio.file.Path;
+import java.util.*;
+
 
 import com.pholser.junit.quickcheck.Pair;
+import edu.berkeley.cs.jqf.fuzz.reach.Target;
 import edu.berkeley.cs.jqf.instrument.tracing.events.*;
-
+import com.github.gumtreediff.gen.jdt.JdtTreeMapping;
 /**
  * Utility class to collect branch and function coverage
  *
@@ -47,6 +50,9 @@ public class Coverage implements TraceEventVisitor {
 
     /** The coverage counts for each edge. */
     private final Counter counter = new NonZeroCachingCounter(COVERAGE_MAP_SIZE);
+
+    private HashMap<Integer, HashSet<EventInfo>> hashToEventInfoMap = new HashMap<>();
+    private HashMap<String, HashSet<Integer>> eventInfoToHashMap = new HashMap<>();
 
     /** Creates a new coverage map. */
     public Coverage() {
@@ -82,16 +88,53 @@ public class Coverage implements TraceEventVisitor {
      * @param e the event to be processed
      */
     public void handleEvent(TraceEvent e) {
+        /*
+        if(e.getFileName().equals("<unknown>") == false) {
+            System.out.println("Coverage:handleEvent->" + e.getFileName() + " : " + e.getLineNumber());
+        }
+        */
         e.applyVisitor(this);
     }
 
     @Override
     public void visitBranchEvent(BranchEvent b) {
+        int hashed = counter.getIdx1(b.getIid(), b.getArm());
+        EventInfo ei = new EventInfo(b.getFileName(), b.getLineNumber(), hashed);
+        if(eventInfoToHashMap.containsKey(ei.getFileAndLine())) {
+            eventInfoToHashMap.get(ei.getFileAndLine()).add(hashed);
+        } else {
+            HashSet<Integer> hs = new HashSet<>(2);
+            hs.add(hashed);
+            eventInfoToHashMap.put(ei.getFileAndLine(), hs);
+        }
+        if(hashToEventInfoMap.containsKey(hashed)) {
+            hashToEventInfoMap.get(hashed).add(ei);
+        } else {
+            HashSet<EventInfo> hs = new HashSet<EventInfo>(2);
+            hs.add(ei);
+            hashToEventInfoMap.put(hashed, hs);
+        }
         counter.increment1(b.getIid(), b.getArm());
     }
 
     @Override
     public void visitCallEvent(CallEvent e) {
+        int hashed = counter.getIdx(e.getIid());
+        EventInfo ei = new EventInfo(e.getFileName(), e.getLineNumber(), hashed);
+        if(eventInfoToHashMap.containsKey(ei.getFileAndLine())) {
+            eventInfoToHashMap.get(ei.getFileAndLine()).add(hashed);
+        } else {
+            HashSet<Integer> hs = new HashSet<>(2);
+            hs.add(hashed);
+            eventInfoToHashMap.put(ei.getFileAndLine(), hs);
+        }
+        if(hashToEventInfoMap.containsKey(hashed)) {
+            hashToEventInfoMap.get(hashed).add(ei);
+        } else {
+            HashSet<EventInfo> hs = new HashSet<EventInfo>(2);
+            hs.add(ei);
+            hashToEventInfoMap.put(hashed, hs);
+        }
         counter.increment(e.getIid());
     }
 
@@ -200,6 +243,90 @@ public class Coverage implements TraceEventVisitor {
     }
 
     public Pair<Long, Long> getDistance(Coverage otherCoverage) {
-        return this.counter.getDistance(otherCoverage.counter);
+        long diff = 0;
+        long dist = 0;
+        List<Integer> nonZeroIndices = counter.getNonZeroIndices();
+        Counter otherCounter = otherCoverage.counter;
+        List<Integer> nonZeroIndices2 = otherCounter.getNonZeroIndices();
+        //System.out.println(eventInfoToHashMap.toString());
+        //System.out.println("counter: " + hashToEventInfoMap.toString());
+        //System.out.println("other: " + otherCoverage.hashToEventInfoMap.toString());
+        // format = file_name:line_number
+        HashMap<String, Integer> mapping = new HashMap<>();
+        boolean valid = false;
+        if(System.getProperty("jqf.ei.have_srcdir").equals("true")) {
+            TargetCoverage targetCoverage = TargetCoverage.getTargetCoverage();
+            List<Target> targets = targetCoverage.getCoveredTargets();
+            for(Target target: targets) {
+                Path srcFile = FileSystems.getDefault().getPath(System.getProperty("jqf.ei.SRCDIR_FOR_PATCH"), target.getFilename());
+                Path dstFile = FileSystems.getDefault().getPath(System.getProperty("jqf.ei.SRCDIR_FOR_ORG"), target.getFilename());
+                if((new File(srcFile.toString())).exists() && (new File(dstFile.toString())).exists()) {
+                    try {
+                        valid = true;
+                        JdtTreeMapping jtm = new JdtTreeMapping();
+                        mapping.putAll(jtm.mapping(srcFile, dstFile, target.getFilename()));
+                    } catch (Exception e) {
+                        valid = false;
+                        break;
+                    }
+                }
+            }
+        }
+        if (valid){
+            for (int i: nonZeroIndices) {
+                int count1 = counter.getAtIndex(i);
+                int count2 = otherCounter.getAtIndex(i);
+                HashSet<EventInfo> hs = hashToEventInfoMap.get(i);
+                if(!hs.isEmpty()) {
+                    for(EventInfo ei: hs) {
+                        if(mapping.containsKey(ei.getFileAndLine())) {
+                            int newLine = mapping.get(ei.getFileAndLine());
+                            String str1 = ei.getFileAndLine();
+                            String str2 = ei.filename + ":" + newLine;
+                            if(otherCoverage.eventInfoToHashMap.containsKey(str2)) {
+                                HashSet<Integer> hashes1 = eventInfoToHashMap.get(str1);
+                                HashSet<Integer> hashes2 = otherCoverage.eventInfoToHashMap.get(str2);
+                                //System.out.println(hashes1.toString() + " vs " + hashes2.toString());
+                                for(int hash1: hashes1) {
+                                    for(int hash2: hashes2) {
+                                        if(counter.getAtIndex(hash1) != otherCounter.getAtIndex(hash2)) {
+                                            diff++;
+                                            dist += Math.abs(counter.getAtIndex(hash1) - otherCounter.getAtIndex(hash2));
+                                        }
+                                    }
+                                }
+                            }
+                        } else if (count1 != count2){
+                            //System.out.println("iNot equal " + i + ": " + count1 + " , " + count2);
+                            diff += 1;
+                            dist += Math.abs(count1 - count2);
+                        }
+                    }
+                }
+            }
+        } else {
+            System.out.println("No source directory available: compare without gumtree");
+            for (int i: nonZeroIndices) {
+                int count1 = counter.getAtIndex(i);
+                int count2 = otherCounter.getAtIndex(i);
+                if (count1 != count2) {
+                    System.out.println("iNot equal " + i + ": " + count1 + " , " + count2);
+                    diff += 1;
+                    dist += Math.abs(count1 - count2);
+                }
+            }
+            for (int j: nonZeroIndices2) {
+                int count1 = counter.getAtIndex(j);
+                int count2 = otherCounter.getAtIndex(j);
+                if (count1 != count2 && count1 == 0) {
+                    System.out.println("jNot equal " + j + "," + count1 + " , " + count2);
+                    diff += 1;
+                    dist += Math.abs(count1 - count2);
+                }
+            }
+        }
+        System.out.println("diff: " + diff + " dist: " + dist);
+        return new Pair<>(diff, dist);
+        //return this.counter.getDistance(otherCoverage.counter);
     }
 }

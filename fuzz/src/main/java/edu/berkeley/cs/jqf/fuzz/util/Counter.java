@@ -234,25 +234,54 @@ public class Counter {
         this.counts[idx] = value;
     }
 
+    public int getIdx(int key) {
+        return idx(key);
+    }
+
+    public int getIdx1(int k1, int k2) {
+        return idx1(k1, k2);
+    }
+
     public Pair<Long, Long> getDistance(Counter otherCounter) {
-        //System.out.println("Counter:getDistance!!!!!!!!");
         long diff = 0;
         long dist = 0;
         List<Integer> nonZeroIndices = getNonZeroIndices();
         List<Integer> nonZeroIndices2 = otherCounter.getNonZeroIndices();
-        //System.out.println(System.getProperties().toString());
-        String[] cps = System.getProperty("jqf.ei.CLASSPATH_FOR_PATCH").split(":");
-        String classPath = "";
+        /*
+        TargetCoverage targetCoverage = TargetCoverage.getTargetCoverage();
+        List<Target> targets = targetCoverage.getCoveredTargets();
+        String[] orgCPs = System.getProperty("jqf.ei.CLASSPATH_FOR_ORG").split(":");
+        String[] targetCPs = System.getProperty("jqf.ei.CLASSPATH_FOR_PATCH").split(":");
+        String orgClassPath = "";
+        String targetClassPath = "";
         try {
-            for(String cp: cps) {
-                classPath += (new File(cp)).getCanonicalPath() + ":";
+            for(Target target: targets) {
+                String classTarget = target.getClassName();
+                for(String cp: orgCPs) {
+                    File directoryOrJar = new File((new File(cp)).getCanonicalPath());
+                    File org;
+                    if(directoryOrJar.isFile()) {
+                        org = new File(directoryOrJar.getParent());
+                    } else {
+                        org = new File(directoryOrJar, target.getFilename());
+                    }
+                    if (org.exists()) break;
+                    //orgClassPath += (new File(cp)).getCanonicalPath() + ":";
+                }
+                //orgClassPath = orgClassPath.substring(0, orgClassPath.length() - 1);
+                for(String cp: targetCPs) {
+                    //targetClassPath += (new File(cp)).getCanonicalPath() + ":";
+                }
+                //targetClassPath = targetClassPath.substring(0, targetClassPath.length() - 1);
             }
-            classPath = classPath.substring(0, classPath.length() - 1);
-            //System.out.println(classPath);
         } catch (Exception e) {
             e.printStackTrace();
         }
-
+        System.out.println("orgClassPath: " + orgClassPath);
+        System.out.println("targetClassPath: " + targetClassPath);
+        //JdtTreeContext srcTreeCtxt = (JdtTreeContext) new JdtTreeGenerator().generateFrom().file(srcFile);
+        //JdtTreeContext dstTreeCtxt = (JdtTreeContext) new JdtTreeGenerator().generateFrom().file(dstFile);
+        */
 
         //com.github.gumtreediff.gen.jdt.JdtTreeContext srcTreeCtxt =
         //        (com.github.gumtreediff.gen.jdt.JdtTreeContext) new com.github.gumtreediff.gen.jdt.JdtTreeGenerator().generateFrom().file(src);

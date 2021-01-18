@@ -169,6 +169,12 @@ public class ZestCLI2 implements Runnable {
     @Parameters(index="3", paramLabel = "TEST_METHOD", description = "fuzz function name")
     private String testMethodName;
 
+    @Parameters(index="4", paramLabel = "SRCDIR_FOR_ORG", description = "source directory for fuzz target")
+    private String srcdirForOrg;
+
+    @Parameters(index="5", paramLabel = "SRCDIR_FOR_PATCH", description = "source directory for fuzz target")
+    private String srcdirForPatch;
+
     public static ClassLoader loaderForOrg;
 
     private File[] readSeedFiles() {
@@ -241,14 +247,22 @@ public class ZestCLI2 implements Runnable {
         } else {
             System.setProperty("jqf.ei.SAVE_ALL_INPUTS", "false");
         }
-
+        if (this.classPathForOrg != null) {
+            System.setProperty("jqf.ei.CLASSPATH_FOR_ORG", this.classPathForOrg);
+        }
         if (this.classPathForPatch != null) {
             System.setProperty("jqf.ei.CLASSPATH_FOR_PATCH", this.classPathForPatch);
             System.setProperty("jqf.ei.run_two_versions", "true");
         } else {
             System.setProperty("jqf.ei.run_two_versions", "false");
         }
-
+        if(this.srcdirForOrg != null && this.srcdirForPatch != null) {
+            System.setProperty("jqf.ei.SRCDIR_FOR_ORG", this.srcdirForOrg);
+            System.setProperty("jqf.ei.SRCDIR_FOR_PATCH", this.srcdirForPatch);
+            System.setProperty("jqf.ei.have_srcdir", "true");
+        } else {
+            System.setProperty("jqf.ei.have_srcdir", "false");
+        }
         if (this.verbose) {
             System.setProperty("jqf.ei.verbose", "true");
         } else {

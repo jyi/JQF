@@ -136,7 +136,10 @@ public class PropagationTest {
                 "-o", fuzz_results_dir.toString(),
                 "../src/test/resources/patches/Patch180/Time4b/target/test-classes:../src/test/resources/patches/Patch180/Time4b/target/classes:../aspect/tracing.jar",
                 "../src/test/resources/patches/Patch180/Time4p/target/test-classes:../src/test/resources/patches/Patch180/Time4p/target/classes:../aspect/tracing.jar",
-                "org.joda.time.JQF_TestPartial_Basics", "testWith3"});
+                "org.joda.time.JQF_TestPartial_Basics", "testWith3",
+                "../src/test/resources/patches/Patch180/Time4b/src/main/java",
+                "../src/test/resources/patches/Patch180/Time4p/src/main/java"
+        });
     }
 
     @Test
