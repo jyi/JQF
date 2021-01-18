@@ -169,11 +169,13 @@ public class ZestCLI2 implements Runnable {
     @Parameters(index="3", paramLabel = "TEST_METHOD", description = "fuzz function name")
     private String testMethodName;
 
-    @Parameters(index="4", paramLabel = "SRCDIR_FOR_ORG", description = "source directory for fuzz target")
-    private String srcdirForOrg;
+    @Option(names = {"--srcdir-for-org"}, description = "source directory for original")
+    //@Parameters(index="4", paramLabel = "SRCDIR_FOR_ORG", description = "source directory for original")
+    private String srcdirForOrg = "";
 
-    @Parameters(index="5", paramLabel = "SRCDIR_FOR_PATCH", description = "source directory for fuzz target")
-    private String srcdirForPatch;
+    @Option(names = {"--srcdir-for-patch"}, description = "source directory for patch")
+    //@Parameters(index="5", paramLabel = "SRCDIR_FOR_PATCH", description = "source directory for patch"")
+    private String srcdirForPatch = "";
 
     public static ClassLoader loaderForOrg;
 
@@ -256,7 +258,7 @@ public class ZestCLI2 implements Runnable {
         } else {
             System.setProperty("jqf.ei.run_two_versions", "false");
         }
-        if(this.srcdirForOrg != null && this.srcdirForPatch != null) {
+        if(this.srcdirForOrg != null && this.srcdirForPatch != null && !this.srcdirForOrg.isEmpty() && !this.srcdirForPatch.isEmpty()) {
             System.setProperty("jqf.ei.SRCDIR_FOR_ORG", this.srcdirForOrg);
             System.setProperty("jqf.ei.SRCDIR_FOR_PATCH", this.srcdirForPatch);
             System.setProperty("jqf.ei.have_srcdir", "true");

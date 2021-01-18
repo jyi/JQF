@@ -108,8 +108,8 @@ public class PropagationTest {
                 "../src/test/resources/patches/Patch27/Math2b/target/test-classes:../src/test/resources/patches/Patch27/Math2b/target/classes:../aspect/tracing.jar",
                 "../src/test/resources/patches/Patch27/Math2p/target/test-classes:../src/test/resources/patches/Patch27/Math2p/target/classes:../aspect/tracing.jar",
                 "org.apache.commons.math3.distribution.JQF_HypergeometricDistributionTest", "testMath1021",
-                "../src/test/resources/patches/Patch27/Math2b/src/main/java",
-                "../src/test/resources/patches/Patch27/Math2p/src/main/java"
+                "--srcdir-for-org", "../src/test/resources/patches/Patch27/Math2b/src/main/java",
+                "--srcdir-for-patch", "../src/test/resources/patches/Patch27/Math2p/src/main/java"
         });
     }
 
@@ -140,8 +140,8 @@ public class PropagationTest {
                 "../src/test/resources/patches/Patch180/Time4b/target/test-classes:../src/test/resources/patches/Patch180/Time4b/target/classes:../aspect/tracing.jar",
                 "../src/test/resources/patches/Patch180/Time4p/target/test-classes:../src/test/resources/patches/Patch180/Time4p/target/classes:../aspect/tracing.jar",
                 "org.joda.time.JQF_TestPartial_Basics", "testWith3",
-                "../src/test/resources/patches/Patch180/Time4b/src/main/java",
-                "../src/test/resources/patches/Patch180/Time4p/src/main/java"
+                "--srcdir-for-org", "../src/test/resources/patches/Patch180/Time4b/src/main/java",
+                "--srcdir-for-patch", "../src/test/resources/patches/Patch180/Time4p/src/main/java"
         });
     }
 
@@ -187,8 +187,8 @@ public class PropagationTest {
                 "../src/test/resources/patches/Patch181/Time7b/target/test-classes:../src/test/resources/patches/Patch181/Time7b/target/classes:../aspect/tracing.jar",
                 "../src/test/resources/patches/Patch181/Time7p/target/test-classes:../src/test/resources/patches/Patch181/Time7p/target/classes:../aspect/tracing.jar",
                 "org.joda.time.format.JQF_TestDateTimeFormatter", "testParseInto_monthDay_feb29_tokyo_endOfYear",
-                "../src/test/resources/patches/Patch181/Time7b/src/main/java",
-                "../src/test/resources/patches/Patch181/Time7p/src/main/java"
+                "--srcdir-for-org", "../src/test/resources/patches/Patch181/Time7b/src/main/java",
+                "--srcdir-for-patch", "../src/test/resources/patches/Patch181/Time7p/src/main/java"
     });
     }
 
@@ -222,8 +222,8 @@ public class PropagationTest {
                 "../src/test/resources/patches/Patch197/Math25b/target/test-classes:../src/test/resources/patches/Patch197/Math25b/target/classes:../aspect/tracing.jar",
                 "../src/test/resources/patches/Patch197/Math25p/target/test-classes:../src/test/resources/patches/Patch197/Math25p/target/classes:../aspect/tracing.jar",
                 "org.apache.commons.math3.optimization.fitting.JQF_HarmonicFitterTest", "testMath844",
-                "../src/test/resources/patches/Patch197/Math25b/src/main/java",
-                "../src/test/resources/patches/Patch197/Math25p/src/main/java"
+                "--srcdir-for-org", "../src/test/resources/patches/Patch197/Math25b/src/main/java",
+                "--srcdir-for-patch", "../src/test/resources/patches/Patch197/Math25p/src/main/java"
         });
     }
 
@@ -262,8 +262,8 @@ public class PropagationTest {
                 "../src/test/resources/patches/Patch32/Math28b/target/test-classes:../src/test/resources/patches/Patch32/Math28b/target/classes",
                 "../src/test/resources/patches/Patch32/Math28p/target/test-classes:../src/test/resources/patches/Patch32/Math28p/target/classes",
                 "org.apache.commons.math3.optimization.linear.JQF_SimplexSolverTest", "testMath828Cycle",
-                "../src/test/resources/patches/Patch32/Math28b/src/main/java",
-                "../src/test/resources/patches/Patch32/Math28p/src/main/java"
+                "--srcdir-for-org", "../src/test/resources/patches/Patch32/Math28b/src/main/java",
+                "--srcdir-for-patch", "../src/test/resources/patches/Patch32/Math28p/src/main/java"
         });
     }
 
@@ -294,8 +294,8 @@ public class PropagationTest {
                 "../src/test/resources/patches/Patch34/Math32b/target/test-classes:../src/test/resources/patches/Patch34/Math32b/target/classes:../aspect/tracing.jar",
                 "../src/test/resources/patches/Patch34/Math32p/target/test-classes:../src/test/resources/patches/Patch34/Math32p/target/classes:../aspect/tracing.jar",
                 "org.apache.commons.math3.geometry.euclidean.threed.JQF_PolyhedronsSetTest", "testIssue780",
-                "../src/test/resources/patches/Patch34/Math32b/src/main/java",
-                "../src/test/resources/patches/Patch34/Math32p/src/main/java"
+                "--srcdir-for-org", "../src/test/resources/patches/Patch34/Math32b/src/main/java",
+                "--srcdir-for-patch", "../src/test/resources/patches/Patch34/Math32p/src/main/java"
         });
     }
 
@@ -331,8 +331,8 @@ public class PropagationTest {
                 "../src/test/resources/patches/Patch172/Math80b/target/test-classes:../src/test/resources/patches/Patch172/Math80b/target/classes",
                 "../src/test/resources/patches/Patch172/Math80p/target/test-classes:../src/test/resources/patches/Patch172/Math80p/target/classes",
                 "org.apache.commons.math.linear.JQF_EigenDecompositionImplTest", "testMathpbx02",
-                "../src/test/resources/patches/Patch172/Math80b/src/main/java",
-                "../src/test/resources/patches/Patch172/Math80p/src/main/java"
+                "--srcdir-for-org", "../src/test/resources/patches/Patch172/Math80b/src/main/java",
+                "--srcdir-for-patch", "../src/test/resources/patches/Patch172/Math80p/src/main/java"
         });
     }
 
@@ -375,8 +375,8 @@ public class PropagationTest {
             "../src/test/resources/patches/Patch156/Math7b/target/test-classes:../src/test/resources/patches/Patch156/Math7b/target/classes",
             "../src/test/resources/patches/Patch156/Math7p/target/test-classes:../src/test/resources/patches/Patch156/Math7p/target/classes",
             "org.apache.commons.math3.ode.nonstiff.JQF_DormandPrince853IntegratorTest", "testEventsScheduling",
-            "../src/test/resources/patches/Patch156/Math7b/src/main/java",
-            "../src/test/resources/patches/Patch156/Math7p/src/main/java"
+            "--srcdir-for-org", "../src/test/resources/patches/Patch156/Math7b/src/main/java",
+            "--srcdir-for-patch", "../src/test/resources/patches/Patch156/Math7p/src/main/java"
     });
 }
     @Test
@@ -417,8 +417,8 @@ public class PropagationTest {
                 "../src/test/resources/patches/timebug16/Time16b/build/tests:../src/test/resources/patches/timebug16/Time16b/build/classes",
                 "../src/test/resources/patches/timebug16/Time16p/build/tests:../src/test/resources/patches/timebug16/Time16p/build/classes",
                 "org.joda.time.format.JQF_TestDateTimeFormatter", "testParseInto_monthOnly_baseStartYear",
-                "../src/test/resources/patches/timebug16/Time16b/src/main/java",
-                "../src/test/resources/patches/timebug16/Time16p/src/main/java"
+                "--srcdir-for-org", "../src/test/resources/patches/timebug16/Time16b/src/main/java",
+                "--srcdir-for-patch", "../src/test/resources/patches/timebug16/Time16p/src/main/java"
         });
     }
 
@@ -455,8 +455,8 @@ public class PropagationTest {
                 "../src/test/resources/patches/Mathbug58/Math58b/target/test-classes:../src/test/resources/patches/Mathbug58/Math58b/target/classes:../aspect/tracing.jar",
                 "../src/test/resources/patches/Mathbug58/Math58p/target/test-classes:../src/test/resources/patches/Mathbug58/Math58p/target/classes:../aspect/tracing.jar",
                 "org.apache.commons.math.optimization.fitting.JQF_GaussianFitterTest", "testMath519",
-                "../src/test/resources/patches/Mathbug58/Math58b/src/main/java",
-                "../src/test/resources/patches/Mathbug58/Math58p/src/main/java"
+                "--srcdir-for-org", "../src/test/resources/patches/Mathbug58/Math58b/src/main/java",
+                "--srcdir-for-patch", "../src/test/resources/patches/Mathbug58/Math58p/src/main/java"
         });
     }
 
@@ -487,8 +487,8 @@ public class PropagationTest {
                 "../src/test/resources/patches/Patch30/Math95b/target/test-classes:../src/test/resources/patches/Patch30/Math95b/target/classes:../aspect/tracing.jar",
                 "../src/test/resources/patches/Patch30/Math95p/target/test-classes:../src/test/resources/patches/Patch30/Math95p/target/classes:../aspect/tracing.jar",
                 "org.apache.commons.math.distribution.JQF_FDistributionTest", "testMath1021",
-                "../src/test/resources/patches/Patch30/Math95b/src/main/java",
-                "../src/test/resources/patches/Patch30/Math95p/src/main/java"
+                "--srcdir-for-org", "../src/test/resources/patches/Patch30/Math95b/src/main/java",
+                "--srcdir-for-patch", "../src/test/resources/patches/Patch30/Math95p/src/main/java"
         });
     }
 
@@ -519,8 +519,8 @@ public class PropagationTest {
                 "../src/test/resources/patches/335_NFL_ACS_Patch_1_1/Math3b/target/test-classes:../src/test/resources/patches/335_NFL_ACS_Patch_1_1/Math3b/target/classes:../aspect/tracing.jar",
                 "../src/test/resources/patches/335_NFL_ACS_Patch_1_1/Math3p/target/test-classes:../src/test/resources/patches/335_NFL_ACS_Patch_1_1/Math3p/target/classes:../aspect/tracing.jar",
                 "org.apache.commons.math3.util.JQF_MathArraysTest", "testLinearCombinationWithSingleElementArray",
-                "../src/test/resources/patches/335_NFL_ACS_Patch_1_1/Math3b/src/main/java",
-                "../src/test/resources/patches/335_NFL_ACS_Patch_1_1/Math3p/src/main/java"
+                "--srcdir-for-org", "../src/test/resources/patches/335_NFL_ACS_Patch_1_1/Math3b/src/main/java",
+                "--srcdir-for-patch", "../src/test/resources/patches/335_NFL_ACS_Patch_1_1/Math3p/src/main/java"
         });
     }
 
@@ -552,8 +552,8 @@ public class PropagationTest {
                 "../src/test/resources/patches/Time11/Time11b/target/test-classes:../src/test/resources/patches/Time11/Time11b/target/classes:../aspect/tracing.jar",
                 "../src/test/resources/patches/Time11/Time11p/target/test-classes:../src/test/resources/patches/Time11/Time11p/target/classes:../aspect/tracing.jar",
                 "org.joda.time.tz.JQF_TestCompiler", "testDateTimeZoneBuilder",
-                "../src/test/resources/patches/Time11/Time11b/src/main/java",
-                "../src/test/resources/patches/Time11/Time11p/src/main/java"
+                "--srcdir-for-org", "../src/test/resources/patches/Time11/Time11b/src/main/java",
+                "--srcdir-for-patch", "../src/test/resources/patches/Time11/Time11p/src/main/java"
         });
     }
 
@@ -585,8 +585,8 @@ public class PropagationTest {
                 "../src/test/resources/patches/Patch182/Time11b/target/test-classes:../src/test/resources/patches/Patch182/Time11b/target/classes:../aspect/tracing.jar",
                 "../src/test/resources/patches/Patch182/Time11p/target/test-classes:../src/test/resources/patches/Patch182/Time11p/target/classes:../aspect/tracing.jar",
                 "org.joda.time.tz.JQF_TestCompiler", "testDateTimeZoneBuilder",
-                "../src/test/resources/patches/Patch182/Time11b/src/main/java",
-                "../src/test/resources/patches/Patch182/Time11p/src/main/java"
+                "--srcdir-for-org", "../src/test/resources/patches/Patch182/Time11b/src/main/java",
+                "--srcdir-for-patch", "../src/test/resources/patches/Patch182/Time11p/src/main/java"
         });
     }
 
@@ -617,8 +617,8 @@ public class PropagationTest {
                 "../src/test/resources/patches/Lang24/Lang24b/target/tests:../src/test/resources/patches/Lang24/Lang24b/target/classes:../aspect/tracing.jar",
                 "../src/test/resources/patches/Lang24/Lang24p/target/tests:../src/test/resources/patches/Lang24/Lang24p/target/classes:../aspect/tracing.jar",
                 "org.apache.commons.lang3.math.JQF_NumberUtilsTest", "testIsNumber",
-                "../src/test/resources/patches/Lang24/Lang24b/src/main/java",
-                "../src/test/resources/patches/Lang24/Lang24p/src/main/java"
+                "--srcdir-for-org", "../src/test/resources/patches/Lang24/Lang24b/src/main/java",
+                "--srcdir-for-patch", "../src/test/resources/patches/Lang24/Lang24p/src/main/java"
         });
     }
 }

@@ -310,7 +310,7 @@ public class Coverage implements TraceEventVisitor {
                 int count1 = counter.getAtIndex(i);
                 int count2 = otherCounter.getAtIndex(i);
                 if (count1 != count2) {
-                    System.out.println("iNot equal " + i + ": " + count1 + " , " + count2);
+                    //System.out.println("iNot equal " + i + ": " + count1 + " , " + count2);
                     diff += 1;
                     dist += Math.abs(count1 - count2);
                 }
@@ -319,7 +319,7 @@ public class Coverage implements TraceEventVisitor {
                 int count1 = counter.getAtIndex(j);
                 int count2 = otherCounter.getAtIndex(j);
                 if (count1 != count2 && count1 == 0) {
-                    System.out.println("jNot equal " + j + "," + count1 + " , " + count2);
+                    //System.out.println("jNot equal " + j + "," + count1 + " , " + count2);
                     diff += 1;
                     dist += Math.abs(count1 - count2);
                 }
