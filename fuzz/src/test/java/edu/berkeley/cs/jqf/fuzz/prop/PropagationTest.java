@@ -576,4 +576,62 @@ public class PropagationTest {
                 "../src/test/resources/patches/Lang24/Lang24p/target/tests:../src/test/resources/patches/Lang24/Lang24p/target/classes:../aspect/tracing.jar",
                 "org.apache.commons.lang3.math.JQF_NumberUtilsTest", "testIsNumber"});
     }
+
+    @Test
+    public void runZestCLI2_patch192() {
+        Path fuzz_results_dir = FileSystems.getDefault().getPath("..", "src", "test", "resources", "fuzz-results");
+        Path log_dir = FileSystems.getDefault().getPath("..", "src", "test", "resources", "log");
+
+        if (fuzz_results_dir.toFile().exists()) {
+            executeCommand("rm -rf " + fuzz_results_dir);
+        }
+        if (log_dir.toFile().exists()) {
+            executeCommand("rm -rf " + log_dir);
+        }
+
+        ZestCLI2.main(new String[] {
+                "--target", "org/apache/commons/lang3/ArrayUtils.java:3290,org/apache/commons/lang3/ArrayUtils.java:3570",
+                "--logdir", "../src/test/resources/log",
+                "--seed", "885441",
+                "--max-corpus-size", "100",
+                "--widening-plateau-threshold", "50",
+                "--verbose",
+                "--max-mutations", "200",
+                "--duration", "12h",
+                "--exploreDuration", "3h",
+                //"--delta", "1e-6",
+                "-o", fuzz_results_dir.toString(),
+                "../src/test/resources/patches/Patch192/Lang35b/target/tests:../src/test/resources/patches/Patch192/Lang35b/target/classes:../aspect/tracing.jar",
+                "../src/test/resources/patches/Patch192/Lang35p/target/tests:../src/test/resources/patches/Patch192/Lang35p/target/classes:../aspect/tracing.jar",
+                "org.apache.commons.lang3.JQF_ArrayUtilsAddTest", "testLANG571"});
+    }
+
+    @Test
+    public void runZestCLI2_patch54() {
+        Path fuzz_results_dir = FileSystems.getDefault().getPath("..", "src", "test", "resources", "fuzz-results");
+        Path log_dir = FileSystems.getDefault().getPath("..", "src", "test", "resources", "log");
+
+        if (fuzz_results_dir.toFile().exists()) {
+            executeCommand("rm -rf " + fuzz_results_dir);
+        }
+        if (log_dir.toFile().exists()) {
+            executeCommand("rm -rf " + log_dir);
+        }
+
+        ZestCLI2.main(new String[] {
+                "--target", "org/apache/commons/math/analysis/solvers/BrentSolver.java:138",
+                "--logdir", "../src/test/resources/log",
+                "--seed", "885441",
+                "--max-corpus-size", "10",
+                "--widening-plateau-threshold", "10",
+                "--verbose",
+                "--max-mutations", "200",
+                "--duration", "2m",
+                "--exploreDuration", "5s",
+                //"--delta", "1e-6",
+                "-o", fuzz_results_dir.toString(),
+                "../src/test/resources/patches/Patch54/Math73p/target/test-classes:../src/test/resources/patches/Patch54/Math73p/target/classes:../aspect/tracing.jar",
+                "../src/test/resources/patches/Patch54/Math73p/target/test-classes:../src/test/resources/patches/Patch54/Math73p/target/classes:../aspect/tracing.jar",
+                "org.apache.commons.math.analysis.solvers.JQF_BrentSolverTest", "testBadEndpoints"});
+    }
 }
