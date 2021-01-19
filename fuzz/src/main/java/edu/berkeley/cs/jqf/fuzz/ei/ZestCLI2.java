@@ -98,6 +98,10 @@ public class ZestCLI2 implements Runnable {
             description = "verbose")
     boolean verbose = false;
 
+    @Option(names = {"--enable-dist-to-target"},
+            description = "Use distance to the target")
+    boolean enableDistToTarget = false;
+
     @Option(names = { "--max-corpus-size" },
             description = "Max Corpus size")
     int maxCorpusSize = -1; // negative to denote that the option is not used
@@ -253,6 +257,12 @@ public class ZestCLI2 implements Runnable {
             System.setProperty("jqf.ei.verbose", "true");
         } else {
             System.setProperty("jqf.ei.verbose", "false");
+        }
+
+        if (this.enableDistToTarget) {
+            System.setProperty("jqf.ei.dist_to_target", "true");
+        } else {
+            System.setProperty("jqf.ei.dist_to_target", "false");
         }
 
         if (this.outputDirectory != null) {
