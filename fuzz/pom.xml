@@ -201,7 +201,13 @@
             <scope>system</scope>
             <systemPath>${project.basedir}/../../WALA/com.ibm.wala.core/build/libs/com.ibm.wala.jar</systemPath>
         </dependency>
-
+        <dependency>
+            <groupId>com.github.gumtreediff</groupId>
+            <artifactId>com.github.gumtreediff</artifactId>
+            <version>3.0.0</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/../../gumtree/gen.jdt/build/libs/com.github.gumtreediff.jar</systemPath>
+        </dependency>
     </dependencies>
 
 
