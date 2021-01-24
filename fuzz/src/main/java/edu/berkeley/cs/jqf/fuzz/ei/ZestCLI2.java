@@ -121,6 +121,10 @@ public class ZestCLI2 implements Runnable {
             description = "Delta")
     double delta = 0;
 
+    @Option(names = {"--opad"},
+            description = "opad mode")
+    boolean opad = false;
+
     @Option(names = { "--widening-plateau-threshold" },
             description = "Widening plateau threshold")
     int wideningPlateauThreshold = -1; // negative to denote that the option is not used
@@ -229,6 +233,9 @@ public class ZestCLI2 implements Runnable {
             System.setProperty("jqf.ei.logDir", logDir);
 
         System.setProperty("jqf.ei.threadName", threadName);
+
+        if (opad) System.setProperty("jqf.ei.opad", "true");
+        else System.setProperty("jqf.ei.opad", "false");
 
         if (this.wideningPlateauThreshold >= 0) {
             System.setProperty("jqf.ei.WIDENING_PLATEAU_THRESHOLD",
