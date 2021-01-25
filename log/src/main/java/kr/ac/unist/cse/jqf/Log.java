@@ -43,7 +43,12 @@ public class Log {
             assert outputForOrg != null;
             assert outputForPatch != null;
 
-            if (outputForOrg.contains("IGNORE_OUTPUT")) return false;
+            if (outputForOrg.contains("IGNORE_OUTPUT"))
+                return false;
+
+            boolean opad = Boolean.parseBoolean(System.getProperty("jqf.ei.opad"));
+            if (opad && outputForPatch.contains("IGNORE_OUTPUT"))
+                return false;
 
             try {
                 // TODO: currently, we only handle single number case.
