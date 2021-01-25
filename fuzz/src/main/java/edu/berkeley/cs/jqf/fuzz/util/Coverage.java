@@ -51,7 +51,7 @@ public class Coverage implements TraceEventVisitor {
     /** The coverage counts for each edge. */
     private final Counter counter = new NonZeroCachingCounter(COVERAGE_MAP_SIZE);
 
-    private HashMap<Integer, HashSet<EventInfo>> hashToEventInfoMap = new HashMap<>();
+    private HashMap<Integer, EventInfo> hashToEventInfoMap = new HashMap<>();
     private HashMap<String, HashSet<Integer>> eventInfoToHashMap = new HashMap<>();
 
     /** Creates a new coverage map. */
@@ -107,13 +107,7 @@ public class Coverage implements TraceEventVisitor {
             hs.add(hashed);
             eventInfoToHashMap.put(ei.getFileAndLine(), hs);
         }
-        if(hashToEventInfoMap.containsKey(hashed)) {
-            hashToEventInfoMap.get(hashed).add(ei);
-        } else {
-            HashSet<EventInfo> hs = new HashSet<EventInfo>(2);
-            hs.add(ei);
-            hashToEventInfoMap.put(hashed, hs);
-        }
+        hashToEventInfoMap.put(hashed, ei);
         counter.increment1(b.getIid(), b.getArm());
     }
 
@@ -128,13 +122,7 @@ public class Coverage implements TraceEventVisitor {
             hs.add(hashed);
             eventInfoToHashMap.put(ei.getFileAndLine(), hs);
         }
-        if(hashToEventInfoMap.containsKey(hashed)) {
-            hashToEventInfoMap.get(hashed).add(ei);
-        } else {
-            HashSet<EventInfo> hs = new HashSet<EventInfo>(2);
-            hs.add(ei);
-            hashToEventInfoMap.put(hashed, hs);
-        }
+        hashToEventInfoMap.put(hashed, ei);
         counter.increment(e.getIid());
     }
 
@@ -262,9 +250,11 @@ public class Coverage implements TraceEventVisitor {
                 Path dstFile = FileSystems.getDefault().getPath(System.getProperty("jqf.ei.SRCDIR_FOR_ORG"), target.getFilename());
                 if((new File(srcFile.toString())).exists() && (new File(dstFile.toString())).exists()) {
                     try {
-                        valid = true;
                         JdtTreeMapping jtm = new JdtTreeMapping();
-                        mapping.putAll(jtm.mapping(srcFile, dstFile, target.getFilename()));
+                        HashMap<String, Integer> mapped = jtm.mapping(srcFile, dstFile, target.getFilename());
+                        if(mapped == null) continue;
+                        mapping.putAll(mapped);
+                        valid = true;
                     } catch (Exception e) {
                         valid = false;
                         break;
@@ -276,32 +266,28 @@ public class Coverage implements TraceEventVisitor {
             for (int i: nonZeroIndices) {
                 int count1 = counter.getAtIndex(i);
                 int count2 = otherCounter.getAtIndex(i);
-                HashSet<EventInfo> hs = hashToEventInfoMap.get(i);
-                if(!hs.isEmpty()) {
-                    for(EventInfo ei: hs) {
-                        if(mapping.containsKey(ei.getFileAndLine())) {
-                            int newLine = mapping.get(ei.getFileAndLine());
-                            String str1 = ei.getFileAndLine();
-                            String str2 = ei.filename + ":" + newLine;
-                            if(otherCoverage.eventInfoToHashMap.containsKey(str2)) {
-                                HashSet<Integer> hashes1 = eventInfoToHashMap.get(str1);
-                                HashSet<Integer> hashes2 = otherCoverage.eventInfoToHashMap.get(str2);
-                                //System.out.println(hashes1.toString() + " vs " + hashes2.toString());
-                                for(int hash1: hashes1) {
-                                    for(int hash2: hashes2) {
-                                        if(counter.getAtIndex(hash1) != otherCounter.getAtIndex(hash2)) {
-                                            diff++;
-                                            dist += Math.abs(counter.getAtIndex(hash1) - otherCounter.getAtIndex(hash2));
-                                        }
-                                    }
+                EventInfo ei = hashToEventInfoMap.get(i);
+                if(mapping.containsKey(ei.getFileAndLine())) {
+                    int newLine = mapping.get(ei.getFileAndLine());
+                    String str1 = ei.getFileAndLine();
+                    String str2 = ei.filename + ":" + newLine;
+                    if(otherCoverage.eventInfoToHashMap.containsKey(str2)) {
+                        HashSet<Integer> hashes1 = eventInfoToHashMap.get(str1);
+                        HashSet<Integer> hashes2 = otherCoverage.eventInfoToHashMap.get(str2);
+                        //System.out.println(hashes1.toString() + " vs " + hashes2.toString());
+                        for(int hash1: hashes1) {
+                            for(int hash2: hashes2) {
+                                if(counter.getAtIndex(hash1) != otherCounter.getAtIndex(hash2)) {
+                                    diff++;
+                                    dist += Math.abs(counter.getAtIndex(hash1) - otherCounter.getAtIndex(hash2));
                                 }
                             }
-                        } else if (count1 != count2){
-                            //System.out.println("iNot equal " + i + ": " + count1 + " , " + count2);
-                            diff += 1;
-                            dist += Math.abs(count1 - count2);
                         }
                     }
+                } else if (count1 != count2){
+                    //System.out.println("iNot equal " + i + ": " + count1 + " , " + count2);
+                    diff += 1;
+                    dist += Math.abs(count1 - count2);
                 }
             }
         } else {

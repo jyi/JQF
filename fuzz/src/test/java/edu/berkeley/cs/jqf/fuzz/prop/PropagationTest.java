@@ -7,10 +7,7 @@ import edu.berkeley.cs.jqf.fuzz.repro.ReproDriver2;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -141,7 +138,8 @@ public class PropagationTest {
                 "../src/test/resources/patches/Patch180/Time4p/target/test-classes:../src/test/resources/patches/Patch180/Time4p/target/classes:../aspect/tracing.jar",
                 "org.joda.time.JQF_TestPartial_Basics", "testWith3",
                 "--srcdir-for-org", "../src/test/resources/patches/Patch180/Time4b/src/main/java",
-                "--srcdir-for-patch", "../src/test/resources/patches/Patch180/Time4p/src/main/java"
+                "--srcdir-for-patch", "../src/test/resources/patches/Patch180/Time4p/src/main/java",
+                "--enable-dist-to-target"
         });
     }
 

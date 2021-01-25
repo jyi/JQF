@@ -12,6 +12,8 @@ public class Log {
     public static File logFile;
     public static boolean verbose = true;
 
+    public static File measureTimeFile;
+
     public static class LogResult {
         private static String outputForOrg = null;
         private static String outputForPatch = null;
@@ -400,6 +402,17 @@ public class Log {
     public static void ignoreOut(String msg) {
         ignoreCount++;
         logOut("IGNORE_OUTPUT: " + msg);
+    }
+
+    public static void logMeasuredTime(String id, long time) {
+        if(measureTimeFile == null) {
+            String logDir = System.getProperty("jqf.ei.logDir");
+            if (logDir == null) {
+                return;
+            }
+            measureTimeFile = new File(Paths.get(logDir, "measuredTime.csv").toString());
+        }
+        appendLineToFile(measureTimeFile, id + "," + time);
     }
 
     protected static void logIn(String msg) {
