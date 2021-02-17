@@ -31,15 +31,19 @@ public class Log {
                 realOut = out;
 
             if (Boolean.getBoolean("jqf.ei.run_patch")) {
-                outputForPatch = realOut;
+                outputForPatch = outputForPatch == null? realOut : outputForPatch + realOut;
             } else {
-                outputForOrg = realOut;
+                outputForOrg = outputForOrg == null? realOut : outputForOrg + realOut;
             }
         }
 
         public static boolean isDiffOutputFound() {
             assert outputForOrg != null;
             assert outputForPatch != null;
+
+            // System.out.println("isDiffOutputFound is called");
+            // System.out.println("outputForOrg: " + outputForOrg);
+            // System.out.println("outputForPatch: " + outputForPatch);
 
             if (outputForOrg.contains("IGNORE_OUTPUT")) return false;
 
@@ -94,7 +98,7 @@ public class Log {
         if (logDir == null) {
             return;
         }
-        
+
         Path outFile;
         String inputID = System.getProperty("jqf.ei.inputID");
         if (inputID == null) {
