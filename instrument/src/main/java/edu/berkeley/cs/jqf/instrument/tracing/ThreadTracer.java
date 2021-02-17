@@ -81,6 +81,8 @@ public class ThreadTracer {
 
     protected final boolean verbose = true;
 
+    private final boolean enableDistToTarget;
+
     /**
      * Creates a new tracer that will process instructions executed by an application
      * thread.
@@ -110,6 +112,7 @@ public class ThreadTracer {
         } else {
             targets = null;
         }
+        enableDistToTarget = Boolean.getBoolean("jqf.ei.dist_to_target");
     }
 
     /**
@@ -164,7 +167,8 @@ public class ThreadTracer {
             }
         }
 
-        if (Boolean.getBoolean("jqf.ei.run_patch") && !isTargetHit && isConditionalBranch(ins)) {
+        if (enableDistToTarget && Boolean.getBoolean("jqf.ei.run_patch") &&
+                !isTargetHit && isConditionalBranch(ins)) {
             String fileName = getFileNameQuick(ins);
             if (fileName != null && this.targets != null) {
                 for (Target target : this.targets) {

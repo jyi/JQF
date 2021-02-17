@@ -7,10 +7,7 @@ import edu.berkeley.cs.jqf.fuzz.repro.ReproDriver2;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -107,7 +104,10 @@ public class PropagationTest {
                 "-o", "../src/test/resources/fuzz-results",
                 "../src/test/resources/patches/Patch27/Math2b/target/test-classes:../src/test/resources/patches/Patch27/Math2b/target/classes:../aspect/tracing.jar",
                 "../src/test/resources/patches/Patch27/Math2p/target/test-classes:../src/test/resources/patches/Patch27/Math2p/target/classes:../aspect/tracing.jar",
-                "org.apache.commons.math3.distribution.JQF_HypergeometricDistributionTest", "testMath1021"});
+                "org.apache.commons.math3.distribution.JQF_HypergeometricDistributionTest", "testMath1021",
+                "--srcdir-for-org", "../src/test/resources/patches/Patch27/Math2b/src/main/java",
+                "--srcdir-for-patch", "../src/test/resources/patches/Patch27/Math2p/src/main/java"
+        });
     }
 
     @Test
@@ -136,7 +136,11 @@ public class PropagationTest {
                 "-o", fuzz_results_dir.toString(),
                 "../src/test/resources/patches/Patch180/Time4b/target/test-classes:../src/test/resources/patches/Patch180/Time4b/target/classes:../aspect/tracing.jar",
                 "../src/test/resources/patches/Patch180/Time4p/target/test-classes:../src/test/resources/patches/Patch180/Time4p/target/classes:../aspect/tracing.jar",
-                "org.joda.time.JQF_TestPartial_Basics", "testWith3"});
+                "org.joda.time.JQF_TestPartial_Basics", "testWith3",
+                "--srcdir-for-org", "../src/test/resources/patches/Patch180/Time4b/src/main/java",
+                "--srcdir-for-patch", "../src/test/resources/patches/Patch180/Time4p/src/main/java",
+                "--enable-dist-to-target"
+        });
     }
 
     @Test
@@ -180,7 +184,10 @@ public class PropagationTest {
                 "-o", fuzz_results_dir.toString(),
                 "../src/test/resources/patches/Patch181/Time7b/target/test-classes:../src/test/resources/patches/Patch181/Time7b/target/classes:../aspect/tracing.jar",
                 "../src/test/resources/patches/Patch181/Time7p/target/test-classes:../src/test/resources/patches/Patch181/Time7p/target/classes:../aspect/tracing.jar",
-                "org.joda.time.format.JQF_TestDateTimeFormatter", "testParseInto_monthDay_feb29_tokyo_endOfYear"});
+                "org.joda.time.format.JQF_TestDateTimeFormatter", "testParseInto_monthDay_feb29_tokyo_endOfYear",
+                "--srcdir-for-org", "../src/test/resources/patches/Patch181/Time7b/src/main/java",
+                "--srcdir-for-patch", "../src/test/resources/patches/Patch181/Time7p/src/main/java"
+    });
     }
 
     // CORRECT PATCH
@@ -212,7 +219,10 @@ public class PropagationTest {
                 "-o", "../src/test/resources/fuzz-results",
                 "../src/test/resources/patches/Patch197/Math25b/target/test-classes:../src/test/resources/patches/Patch197/Math25b/target/classes:../aspect/tracing.jar",
                 "../src/test/resources/patches/Patch197/Math25p/target/test-classes:../src/test/resources/patches/Patch197/Math25p/target/classes:../aspect/tracing.jar",
-                "org.apache.commons.math3.optimization.fitting.JQF_HarmonicFitterTest", "testMath844"});
+                "org.apache.commons.math3.optimization.fitting.JQF_HarmonicFitterTest", "testMath844",
+                "--srcdir-for-org", "../src/test/resources/patches/Patch197/Math25b/src/main/java",
+                "--srcdir-for-patch", "../src/test/resources/patches/Patch197/Math25p/src/main/java"
+        });
     }
 
     @Test
@@ -249,7 +259,10 @@ public class PropagationTest {
                 "-o", "../src/test/resources/fuzz-results-patch",
                 "../src/test/resources/patches/Patch32/Math28b/target/test-classes:../src/test/resources/patches/Patch32/Math28b/target/classes",
                 "../src/test/resources/patches/Patch32/Math28p/target/test-classes:../src/test/resources/patches/Patch32/Math28p/target/classes",
-                "org.apache.commons.math3.optimization.linear.JQF_SimplexSolverTest", "testMath828Cycle"});
+                "org.apache.commons.math3.optimization.linear.JQF_SimplexSolverTest", "testMath828Cycle",
+                "--srcdir-for-org", "../src/test/resources/patches/Patch32/Math28b/src/main/java",
+                "--srcdir-for-patch", "../src/test/resources/patches/Patch32/Math28p/src/main/java"
+        });
     }
 
     @Test
@@ -278,7 +291,10 @@ public class PropagationTest {
                 "-o", fuzz_results_dir.toString(),
                 "../src/test/resources/patches/Patch34/Math32b/target/test-classes:../src/test/resources/patches/Patch34/Math32b/target/classes:../aspect/tracing.jar",
                 "../src/test/resources/patches/Patch34/Math32p/target/test-classes:../src/test/resources/patches/Patch34/Math32p/target/classes:../aspect/tracing.jar",
-                "org.apache.commons.math3.geometry.euclidean.threed.JQF_PolyhedronsSetTest", "testIssue780"});
+                "org.apache.commons.math3.geometry.euclidean.threed.JQF_PolyhedronsSetTest", "testIssue780",
+                "--srcdir-for-org", "../src/test/resources/patches/Patch34/Math32b/src/main/java",
+                "--srcdir-for-patch", "../src/test/resources/patches/Patch34/Math32p/src/main/java"
+        });
     }
 
     @Test
@@ -312,7 +328,10 @@ public class PropagationTest {
                 "-o", "../src/test/resources/fuzz-results-patch",
                 "../src/test/resources/patches/Patch172/Math80b/target/test-classes:../src/test/resources/patches/Patch172/Math80b/target/classes",
                 "../src/test/resources/patches/Patch172/Math80p/target/test-classes:../src/test/resources/patches/Patch172/Math80p/target/classes",
-                "org.apache.commons.math.linear.JQF_EigenDecompositionImplTest", "testMathpbx02"});
+                "org.apache.commons.math.linear.JQF_EigenDecompositionImplTest", "testMathpbx02",
+                "--srcdir-for-org", "../src/test/resources/patches/Patch172/Math80b/src/main/java",
+                "--srcdir-for-patch", "../src/test/resources/patches/Patch172/Math80p/src/main/java"
+        });
     }
 
     @Test
@@ -353,7 +372,10 @@ public class PropagationTest {
             "-o", "../src/test/resources/fuzz-results-patch",
             "../src/test/resources/patches/Patch156/Math7b/target/test-classes:../src/test/resources/patches/Patch156/Math7b/target/classes",
             "../src/test/resources/patches/Patch156/Math7p/target/test-classes:../src/test/resources/patches/Patch156/Math7p/target/classes",
-            "org.apache.commons.math3.ode.nonstiff.JQF_DormandPrince853IntegratorTest", "testEventsScheduling"});
+            "org.apache.commons.math3.ode.nonstiff.JQF_DormandPrince853IntegratorTest", "testEventsScheduling",
+            "--srcdir-for-org", "../src/test/resources/patches/Patch156/Math7b/src/main/java",
+            "--srcdir-for-patch", "../src/test/resources/patches/Patch156/Math7p/src/main/java"
+    });
 }
     @Test
     public void runZestCLI2_Time16() throws IOException {
@@ -392,7 +414,10 @@ public class PropagationTest {
                 "-o", "../src/test/resources/fuzz-results-patch",
                 "../src/test/resources/patches/timebug16/Time16b/build/tests:../src/test/resources/patches/timebug16/Time16b/build/classes",
                 "../src/test/resources/patches/timebug16/Time16p/build/tests:../src/test/resources/patches/timebug16/Time16p/build/classes",
-                "org.joda.time.format.JQF_TestDateTimeFormatter", "testParseInto_monthOnly_baseStartYear"});
+                "org.joda.time.format.JQF_TestDateTimeFormatter", "testParseInto_monthOnly_baseStartYear",
+                "--srcdir-for-org", "../src/test/resources/patches/timebug16/Time16b/src/main/java",
+                "--srcdir-for-patch", "../src/test/resources/patches/timebug16/Time16p/src/main/java"
+        });
     }
 
     @Test
@@ -427,7 +452,10 @@ public class PropagationTest {
                 "-o", "../src/test/resources/fuzz-results",
                 "../src/test/resources/patches/Mathbug58/Math58b/target/test-classes:../src/test/resources/patches/Mathbug58/Math58b/target/classes:../aspect/tracing.jar",
                 "../src/test/resources/patches/Mathbug58/Math58p/target/test-classes:../src/test/resources/patches/Mathbug58/Math58p/target/classes:../aspect/tracing.jar",
-                "org.apache.commons.math.optimization.fitting.JQF_GaussianFitterTest", "testMath519"});
+                "org.apache.commons.math.optimization.fitting.JQF_GaussianFitterTest", "testMath519",
+                "--srcdir-for-org", "../src/test/resources/patches/Mathbug58/Math58b/src/main/java",
+                "--srcdir-for-patch", "../src/test/resources/patches/Mathbug58/Math58p/src/main/java"
+        });
     }
 
     @Test
@@ -456,7 +484,10 @@ public class PropagationTest {
                 "-o", "../src/test/resources/fuzz-results",
                 "../src/test/resources/patches/Patch30/Math95b/target/test-classes:../src/test/resources/patches/Patch30/Math95b/target/classes:../aspect/tracing.jar",
                 "../src/test/resources/patches/Patch30/Math95p/target/test-classes:../src/test/resources/patches/Patch30/Math95p/target/classes:../aspect/tracing.jar",
-                "org.apache.commons.math.distribution.JQF_FDistributionTest", "testMath1021"});
+                "org.apache.commons.math.distribution.JQF_FDistributionTest", "testMath1021",
+                "--srcdir-for-org", "../src/test/resources/patches/Patch30/Math95b/src/main/java",
+                "--srcdir-for-patch", "../src/test/resources/patches/Patch30/Math95p/src/main/java"
+        });
     }
 
     @Test
@@ -485,7 +516,10 @@ public class PropagationTest {
                 "-o", fuzz_results_dir.toString(),
                 "../src/test/resources/patches/335_NFL_ACS_Patch_1_1/Math3b/target/test-classes:../src/test/resources/patches/335_NFL_ACS_Patch_1_1/Math3b/target/classes:../aspect/tracing.jar",
                 "../src/test/resources/patches/335_NFL_ACS_Patch_1_1/Math3p/target/test-classes:../src/test/resources/patches/335_NFL_ACS_Patch_1_1/Math3p/target/classes:../aspect/tracing.jar",
-                "org.apache.commons.math3.util.JQF_MathArraysTest", "testLinearCombinationWithSingleElementArray"});
+                "org.apache.commons.math3.util.JQF_MathArraysTest", "testLinearCombinationWithSingleElementArray",
+                "--srcdir-for-org", "../src/test/resources/patches/335_NFL_ACS_Patch_1_1/Math3b/src/main/java",
+                "--srcdir-for-patch", "../src/test/resources/patches/335_NFL_ACS_Patch_1_1/Math3p/src/main/java"
+        });
     }
 
     @Test
@@ -515,7 +549,10 @@ public class PropagationTest {
                 "-o", fuzz_results_dir.toString(),
                 "../src/test/resources/patches/Time11/Time11b/target/test-classes:../src/test/resources/patches/Time11/Time11b/target/classes:../aspect/tracing.jar",
                 "../src/test/resources/patches/Time11/Time11p/target/test-classes:../src/test/resources/patches/Time11/Time11p/target/classes:../aspect/tracing.jar",
-                "org.joda.time.tz.JQF_TestCompiler", "testDateTimeZoneBuilder"});
+                "org.joda.time.tz.JQF_TestCompiler", "testDateTimeZoneBuilder",
+                "--srcdir-for-org", "../src/test/resources/patches/Time11/Time11b/src/main/java",
+                "--srcdir-for-patch", "../src/test/resources/patches/Time11/Time11p/src/main/java"
+        });
     }
 
     @Test
@@ -545,7 +582,10 @@ public class PropagationTest {
                 "-o", fuzz_results_dir.toString(),
                 "../src/test/resources/patches/Patch182/Time11b/target/test-classes:../src/test/resources/patches/Patch182/Time11b/target/classes:../aspect/tracing.jar",
                 "../src/test/resources/patches/Patch182/Time11p/target/test-classes:../src/test/resources/patches/Patch182/Time11p/target/classes:../aspect/tracing.jar",
-                "org.joda.time.tz.JQF_TestCompiler", "testDateTimeZoneBuilder"});
+                "org.joda.time.tz.JQF_TestCompiler", "testDateTimeZoneBuilder",
+                "--srcdir-for-org", "../src/test/resources/patches/Patch182/Time11b/src/main/java",
+                "--srcdir-for-patch", "../src/test/resources/patches/Patch182/Time11p/src/main/java"
+        });
     }
 
     @Test
@@ -574,6 +614,97 @@ public class PropagationTest {
                 "-o", fuzz_results_dir.toString(),
                 "../src/test/resources/patches/Lang24/Lang24b/target/tests:../src/test/resources/patches/Lang24/Lang24b/target/classes:../aspect/tracing.jar",
                 "../src/test/resources/patches/Lang24/Lang24p/target/tests:../src/test/resources/patches/Lang24/Lang24p/target/classes:../aspect/tracing.jar",
-                "org.apache.commons.lang3.math.JQF_NumberUtilsTest", "testIsNumber"});
+                "org.apache.commons.lang3.math.JQF_NumberUtilsTest", "testIsNumber",
+                "--srcdir-for-org", "../src/test/resources/patches/Lang24/Lang24b/src/main/java",
+                "--srcdir-for-patch", "../src/test/resources/patches/Lang24/Lang24p/src/main/java"
+        });
+    }
+
+    @Test
+    public void runZestCLI2_patch192() {
+        Path fuzz_results_dir = FileSystems.getDefault().getPath("..", "src", "test", "resources", "fuzz-results");
+        Path log_dir = FileSystems.getDefault().getPath("..", "src", "test", "resources", "log");
+
+        if (fuzz_results_dir.toFile().exists()) {
+            executeCommand("rm -rf " + fuzz_results_dir);
+        }
+        if (log_dir.toFile().exists()) {
+            executeCommand("rm -rf " + log_dir);
+        }
+
+        ZestCLI2.main(new String[] {
+                "--target", "org/apache/commons/lang3/ArrayUtils.java:3290,org/apache/commons/lang3/ArrayUtils.java:3570",
+                "--logdir", "../src/test/resources/log",
+                "--seed", "885441",
+                "--max-corpus-size", "100",
+                "--widening-plateau-threshold", "50",
+                "--verbose",
+                "--max-mutations", "200",
+                "--duration", "12h",
+                "--exploreDuration", "3h",
+                //"--delta", "1e-6",
+                "-o", fuzz_results_dir.toString(),
+                "../src/test/resources/patches/Patch192/Lang35b/target/tests:../src/test/resources/patches/Patch192/Lang35b/target/classes:../aspect/tracing.jar",
+                "../src/test/resources/patches/Patch192/Lang35p/target/tests:../src/test/resources/patches/Patch192/Lang35p/target/classes:../aspect/tracing.jar",
+                "org.apache.commons.lang3.JQF_ArrayUtilsAddTest", "testLANG571"});
+    }
+
+    @Test
+    public void runZestCLI2_patch54() {
+        Path fuzz_results_dir = FileSystems.getDefault().getPath("..", "src", "test", "resources", "fuzz-results");
+        Path log_dir = FileSystems.getDefault().getPath("..", "src", "test", "resources", "log");
+
+        if (fuzz_results_dir.toFile().exists()) {
+            executeCommand("rm -rf " + fuzz_results_dir);
+        }
+        if (log_dir.toFile().exists()) {
+            executeCommand("rm -rf " + log_dir);
+        }
+
+        ZestCLI2.main(new String[] {
+                "--target", "org/apache/commons/math/analysis/solvers/BrentSolver.java:138",
+                "--logdir", "../src/test/resources/log",
+                "--seed", "885441",
+                "--max-corpus-size", "10",
+                "--widening-plateau-threshold", "10",
+                "--verbose",
+                "--max-mutations", "200",
+                "--duration", "2m",
+                "--exploreDuration", "5s",
+                //"--delta", "1e-6",
+                "-o", fuzz_results_dir.toString(),
+                "../src/test/resources/patches/Patch54/Math73p/target/test-classes:../src/test/resources/patches/Patch54/Math73p/target/classes:../aspect/tracing.jar",
+                "../src/test/resources/patches/Patch54/Math73p/target/test-classes:../src/test/resources/patches/Patch54/Math73p/target/classes:../aspect/tracing.jar",
+                "org.apache.commons.math.analysis.solvers.JQF_BrentSolverTest", "testBadEndpoints"});
+    }
+
+    @Test
+    public void runZestCLI2_Mathbug41() {
+        Path fuzz_results_dir = FileSystems.getDefault().getPath("..", "src", "test", "resources", "fuzz-results");
+        Path log_dir = FileSystems.getDefault().getPath("..", "src", "test", "resources", "log");
+
+        if (fuzz_results_dir.toFile().exists()) {
+            executeCommand("rm -rf " + fuzz_results_dir);
+        }
+        if (log_dir.toFile().exists()) {
+            executeCommand("rm -rf " + log_dir);
+        }
+
+        ZestCLI2.main(new String[] {
+                "--target", "org/apache/commons/math/stat/descriptive/moment/Variance.java:520",
+                "--logdir", "../src/test/resources/log",
+                "--seed", "885441",
+                "--max-corpus-size", "100",
+                "--widening-plateau-threshold", "50",
+                "--verbose",
+                "--max-mutations", "200",
+                "--duration", "12h",
+                "--exploreDuration", "3h",
+                //"--delta", "1e-6",
+                "-o", fuzz_results_dir.toString(),
+                "../src/test/resources/patches/Math41/Math41b/target/test-classes:../src/test/resources/patches/Math41/Math41b/target/classes:../aspect/tracing.jar",
+                "../src/test/resources/patches/Math41/Math41p/target/test-classes:../src/test/resources/patches/Math41/Math41p/target/classes:../aspect/tracing.jar",
+                "org.apache.commons.math.stat.descriptive.moment.JQF_VarianceTest", "testEvaluateArraySegmentWeighted"
+        });
     }
 }

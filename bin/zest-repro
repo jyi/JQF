@@ -1,5 +1,7 @@
 #!/bin/bash
 
-CP=$CLASSPATH:$JQF_DIR/fuzz/target/classes:$JQF_DIR/fuzz/target/dependency/*:$JQF_DIR/instrument/target/dependency/*
+# CP=$CLASSPATH:$JQF_DIR/fuzz/target/classes:$JQF_DIR/fuzz/target/dependency/*:$JQF_DIR/instrument/target/dependency/*
+CP=$CLASSPATH:$JQF_DIR/fuzz/target/dependency/*:$JQF_DIR/instrument/target/dependency/*:$JUNIT_QUICKCHECK_DIR/core/target/classes:$WALA_DIR/com.ibm.wala.core/build/libs/com.ibm.wala.jar
 
-java -cp $CP edu.berkeley.cs.jqf.fuzz.repro.ReproDriver $@
+# We should use Java 8
+/usr/lib/jvm/java-1.8.0-openjdk-amd64/bin/java -cp $CP edu.berkeley.cs.jqf.fuzz.repro.ReproDriver $@

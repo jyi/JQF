@@ -98,6 +98,10 @@ public class ZestCLI2 implements Runnable {
             description = "verbose")
     boolean verbose = false;
 
+    @Option(names = {"--enable-dist-to-target"},
+            description = "Use distance to the target")
+    boolean enableDistToTarget = false;
+
     @Option(names = { "--max-corpus-size" },
             description = "Max Corpus size")
     int maxCorpusSize = -1; // negative to denote that the option is not used
@@ -116,6 +120,10 @@ public class ZestCLI2 implements Runnable {
     @Option(names = { "--delta" },
             description = "Delta")
     double delta = 0;
+
+    @Option(names = {"--opad"},
+            description = "opad mode")
+    boolean opad = false;
 
     @Option(names = { "--widening-plateau-threshold" },
             description = "Widening plateau threshold")
@@ -169,6 +177,14 @@ public class ZestCLI2 implements Runnable {
     @Parameters(index="3", paramLabel = "TEST_METHOD", description = "fuzz function name")
     private String testMethodName;
 
+    @Option(names = {"--srcdir-for-org"}, description = "source directory for original")
+    //@Parameters(index="4", paramLabel = "SRCDIR_FOR_ORG", description = "source directory for original")
+    private String srcdirForOrg = "";
+
+    @Option(names = {"--srcdir-for-patch"}, description = "source directory for patch")
+    //@Parameters(index="5", paramLabel = "SRCDIR_FOR_PATCH", description = "source directory for patch"")
+    private String srcdirForPatch = "";
+
     public static ClassLoader loaderForOrg;
 
     private File[] readSeedFiles() {
@@ -218,6 +234,9 @@ public class ZestCLI2 implements Runnable {
 
         System.setProperty("jqf.ei.threadName", threadName);
 
+        if (opad) System.setProperty("jqf.ei.opad", "true");
+        else System.setProperty("jqf.ei.opad", "false");
+
         if (this.wideningPlateauThreshold >= 0) {
             System.setProperty("jqf.ei.WIDENING_PLATEAU_THRESHOLD",
                     String.valueOf(this.wideningPlateauThreshold));
@@ -241,18 +260,32 @@ public class ZestCLI2 implements Runnable {
         } else {
             System.setProperty("jqf.ei.SAVE_ALL_INPUTS", "false");
         }
-
+        if (this.classPathForOrg != null) {
+            System.setProperty("jqf.ei.CLASSPATH_FOR_ORG", this.classPathForOrg);
+        }
         if (this.classPathForPatch != null) {
             System.setProperty("jqf.ei.CLASSPATH_FOR_PATCH", this.classPathForPatch);
             System.setProperty("jqf.ei.run_two_versions", "true");
         } else {
             System.setProperty("jqf.ei.run_two_versions", "false");
         }
-
+        if(this.srcdirForOrg != null && this.srcdirForPatch != null && !this.srcdirForOrg.isEmpty() && !this.srcdirForPatch.isEmpty()) {
+            System.setProperty("jqf.ei.SRCDIR_FOR_ORG", this.srcdirForOrg);
+            System.setProperty("jqf.ei.SRCDIR_FOR_PATCH", this.srcdirForPatch);
+            System.setProperty("jqf.ei.have_srcdir", "true");
+        } else {
+            System.setProperty("jqf.ei.have_srcdir", "false");
+        }
         if (this.verbose) {
             System.setProperty("jqf.ei.verbose", "true");
         } else {
             System.setProperty("jqf.ei.verbose", "false");
+        }
+
+        if (this.enableDistToTarget) {
+            System.setProperty("jqf.ei.dist_to_target", "true");
+        } else {
+            System.setProperty("jqf.ei.dist_to_target", "false");
         }
 
         if (this.outputDirectory != null) {

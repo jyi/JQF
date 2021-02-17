@@ -898,6 +898,7 @@ public class PoracleGuidance extends ZestGuidance {
         }
 
         String inputID = System.getProperty("jqf.ei.inputID");
+        Log.logMeasuredTime(inputID, elapsedMilliseconds);
         String diffOutPath = outputDirectory.getPath() + File.separator + "diff_out";
         if(!Files.exists(Paths.get(diffOutPath))) {
             try {
