@@ -889,7 +889,7 @@ public class PoracleGuidance extends ZestGuidance {
         Date now = new Date();
         long elapsedMilliseconds = now.getTime() - startTime.getTime();
 
-        if (timeOutOccurred) return false;
+        // if (timeOutOccurred) return false;
 
         if (EXIT_ON_PLATEAU && isPlateauReached) {
             infoLog("stop because plateau is reached");

@@ -707,4 +707,34 @@ public class PropagationTest {
                 "org.apache.commons.math.stat.descriptive.moment.JQF_VarianceTest", "testEvaluateArraySegmentWeighted"
         });
     }
+
+    @Test
+    public void runZestCLI2_Mathbug7() {
+        Path fuzz_results_dir = FileSystems.getDefault().getPath("..", "src", "test", "resources", "fuzz-results");
+        Path log_dir = FileSystems.getDefault().getPath("..", "src", "test", "resources", "log");
+
+        if (fuzz_results_dir.toFile().exists()) {
+            executeCommand("rm -rf " + fuzz_results_dir);
+        }
+        if (log_dir.toFile().exists()) {
+            executeCommand("rm -rf " + log_dir);
+        }
+
+        ZestCLI2.main(new String[] {
+                "--target", "org/apache/commons/math3/ode/AbstractIntegrator.java:375",
+                "--logdir", "../src/test/resources/log",
+                "--seed", "885441",
+                "--max-corpus-size", "100",
+                "--widening-plateau-threshold", "50",
+                "--verbose",
+                "--max-mutations", "200",
+                "--duration", "12h",
+                "--exploreDuration", "3h",
+                //"--delta", "1e-6",
+                "-o", fuzz_results_dir.toString(),
+                "../src/test/resources/patches/Math7/Math7b/target/test-classes:../src/test/resources/patches/Math7/Math7b/target/classes:../aspect/tracing.jar",
+                "../src/test/resources/patches/Math7/Math7p/target/test-classes:../src/test/resources/patches/Math7/Math7p/target/classes:../aspect/tracing.jar",
+                "org.apache.commons.math3.ode.nonstiff.JQF_DormandPrince853IntegratorTest", "testEventsScheduling"
+        });
+    }
 }
