@@ -223,6 +223,42 @@ public class InRangeFactory {
                 public float seedFloat() {
                     return 0;
                 }
+		
+		@Override
+		public long seedLong() {
+			return 0L;
+		}
+
+		@Override
+		public short seedShort() {
+			return (short)0;
+		}
+
+		@Override
+		public char seedChar() {
+			return (char)0;
+		}
+
+		@Override
+		public double ratioPF() {
+			return 0D;
+		}
+
+		@Override
+		public boolean useRatio() {
+			return false;
+		}
+
+		@Override
+		public double deltaCoeff() {
+			return 1D;
+		}
+
+		@Override
+		public int deltaExpo() {
+			return 1;
+		}
+
             };
         } else if (gen instanceof LongGenerator) {
             long diff = wideningCount * (long) Math.pow(2, wideningCount - 1) * (long) ((range.maxLong() - range.minLong()) * widenProportion / 2);
@@ -366,6 +402,41 @@ public class InRangeFactory {
                 @Override
                 public float seedFloat() {
                     return 0;
+                }
+
+		@Override
+                public long seedLong() {
+                        return 0L;
+                }
+
+                @Override
+                public short seedShort() {
+                        return (short)0;
+                }
+
+                @Override
+                public char seedChar() {
+                        return (char)0;
+                }
+
+                @Override
+                public double ratioPF() {
+                        return 0D;
+                }
+
+                @Override
+                public boolean useRatio() {
+                        return false;
+                }
+
+                @Override
+                public double deltaCoeff() {
+                        return 1D;
+                }
+
+                @Override
+                public int deltaExpo() {
+                        return 1;
                 }
             };
         } else if (gen instanceof ShortGenerator) {
@@ -513,6 +584,41 @@ public class InRangeFactory {
                 public float seedFloat() {
                     return 0;
                 }
+
+		@Override
+                public long seedLong() {
+                        return 0L;
+                }
+
+                @Override
+                public short seedShort() {
+                        return (short)0;
+                }
+
+                @Override
+                public char seedChar() {
+                        return (char)0;
+                }
+
+                @Override
+                public double ratioPF() {
+                        return 0D;
+                }
+
+                @Override
+                public boolean useRatio() {
+                        return false;
+                }
+
+                @Override
+                public double deltaCoeff() {
+                        return 1D;
+                }
+
+                @Override
+                public int deltaExpo() {
+                        return 1;
+                }
             };
         } else if (gen instanceof ByteGenerator) {
             byte diff = (byte) (wideningCount * (byte) Math.pow(2, wideningCount - 1) * (byte) ((range.maxByte() - range.minByte()) * widenProportion / 2));
@@ -659,6 +765,41 @@ public class InRangeFactory {
                 public float seedFloat() {
                     return 0;
                 }
+
+		@Override
+                public long seedLong() {
+                        return 0L;
+                }
+
+                @Override
+                public short seedShort() {
+                        return (short)0;
+                }
+
+                @Override
+                public char seedChar() {
+                        return (char)0;
+                }
+
+                @Override
+                public double ratioPF() {
+                        return 0D;
+                }
+
+                @Override
+                public boolean useRatio() {
+                        return false;
+                }
+
+                @Override
+                public double deltaCoeff() {
+                        return 1D;
+                }
+
+                @Override
+                public int deltaExpo() {
+                        return 1;
+                }
             };
         } else if (gen instanceof CharacterGenerator) {
             char diff = (char) (wideningCount * (char) Math.pow(2, wideningCount - 1) * (char) ((range.maxChar() - range.minChar()) * widenProportion / 2));
@@ -800,6 +941,41 @@ public class InRangeFactory {
                 @Override
                 public float seedFloat() {
                     return 0;
+                }
+
+		@Override
+                public long seedLong() {
+                        return 0L;
+                }
+
+                @Override
+                public short seedShort() {
+                        return (short)0;
+                }
+
+                @Override
+                public char seedChar() {
+                        return (char)0;
+                }
+
+                @Override
+                public double ratioPF() {
+                        return 0D;
+                }
+
+                @Override
+                public boolean useRatio() {
+                        return false;
+                }
+
+                @Override
+                public double deltaCoeff() {
+                        return 1D;
+                }
+
+                @Override
+                public int deltaExpo() {
+                        return 1;
                 }
             };
         } else if (gen instanceof FloatGenerator) {
@@ -947,6 +1123,41 @@ public class InRangeFactory {
                 public float seedFloat() {
                     return 0;
                 }
+
+		@Override
+                public long seedLong() {
+                        return 0L;
+                }
+
+                @Override
+                public short seedShort() {
+                        return (short)0;
+                }
+
+                @Override
+                public char seedChar() {
+                        return (char)0;
+                }
+
+                @Override
+                public double ratioPF() {
+                        return 0D;
+                }
+
+                @Override
+                public boolean useRatio() {
+                        return false;
+                }
+
+                @Override
+                public double deltaCoeff() {
+                        return 1D;
+                }
+
+                @Override
+                public int deltaExpo() {
+                        return 1;
+                }
             };
         } else if (gen instanceof DoubleGenerator) {
             double diff = (wideningCount * (double) Math.pow(2, wideningCount - 1) * (double) ((range.maxDouble() - range.minDouble()) * widenProportion / 2));
@@ -1092,6 +1303,41 @@ public class InRangeFactory {
                 @Override
                 public float seedFloat() {
                     return 0;
+                }
+
+		@Override
+                public long seedLong() {
+                        return 0L;
+                }
+
+                @Override
+                public short seedShort() {
+                        return (short)0;
+                }
+
+                @Override
+                public char seedChar() {
+                        return (char)0;
+                }
+
+                @Override
+                public double ratioPF() {
+                        return 0D;
+                }
+
+                @Override
+                public boolean useRatio() {
+                        return false;
+                }
+
+                @Override
+                public double deltaCoeff() {
+                        return 1D;
+                }
+
+                @Override
+                public int deltaExpo() {
+                        return 1;
                 }
             };
         } else {
