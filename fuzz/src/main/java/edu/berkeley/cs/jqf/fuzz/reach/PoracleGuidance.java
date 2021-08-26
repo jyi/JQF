@@ -932,7 +932,7 @@ public class PoracleGuidance extends ZestGuidance {
             if (requiredRun>0) return true;
             else return false;
         }
-        if (requiredRun>0 && this.numTrials>requiredRun){
+        if (requiredRun>0 && this.numTrials>=requiredRun){
             infoLog("Finish for required count is reached: %d", requiredRun);
             return false;
         }

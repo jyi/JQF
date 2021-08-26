@@ -605,7 +605,7 @@ public class ZestGuidance implements Guidance {
             return false;
         }
         // If run required run, exit
-        if (requiredRun>0 && numTrials > requiredRun){
+        if (requiredRun>0 && numTrials >= requiredRun){
             return false;
         }
         return elapsedMilliseconds < maxDurationMillis;
