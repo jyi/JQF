@@ -185,7 +185,7 @@ public class ZestCLI2 implements Runnable {
     //@Parameters(index="5", paramLabel = "SRCDIR_FOR_PATCH", description = "source directory for patch"")
     private String srcdirForPatch = "";
 
-    @Option(names={"--required-count"},description = "total count you want to run")
+    @Option(names={"--execute-count"},description = "total count you want to run")
     private long requiredCount=0;
 
     public static ClassLoader loaderForOrg;

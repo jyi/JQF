@@ -133,7 +133,7 @@ public class ZestCLI implements Runnable {
     @Parameters(index="2", paramLabel = "TEST_METHOD", description = "fuzz function name")
     private String testMethodName;
 
-    @Option(names={"--required-count"},description = "total count you want to run")
+    @Option(names={"--execute-count"},description = "total count you want to run")
     private long requiredCount=0;
 
     private File[] readSeedFiles() {
