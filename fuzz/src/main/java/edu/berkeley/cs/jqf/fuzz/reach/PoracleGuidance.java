@@ -1006,25 +1006,7 @@ public class PoracleGuidance extends ZestGuidance {
             // Fuzz it to get a new input
             infoLog("Mutating input: %s", currentParentInput.desc);
             
-            if (currentParentInput instanceof LinearInput){
-                LinearInput lInput=(LinearInput)currentParentInput;
-                console.printf("parent: ");
-                for (int i=0;i<lInput.size();i++){
-                    console.printf("%d ", lInput.getValues().get(i));
-                }
-                console.printf("\n");
-            }
-
             currentInput = currentParentInput.fuzz(random);
-            if (currentInput instanceof LinearInput){
-                LinearInput lInput=(LinearInput)currentInput;
-                console.printf("child: ");
-                for (int i=0;i<lInput.size();i++){
-                    console.printf("%d ", lInput.getValues().get(i));
-                }
-                console.printf("\n");
-            }
-
             numChildrenGeneratedForCurrentParentInput++;
 
             // Write it to disk for debugging
