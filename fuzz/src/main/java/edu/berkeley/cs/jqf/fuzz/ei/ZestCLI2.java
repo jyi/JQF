@@ -185,6 +185,9 @@ public class ZestCLI2 implements Runnable {
     //@Parameters(index="5", paramLabel = "SRCDIR_FOR_PATCH", description = "source directory for patch"")
     private String srcdirForPatch = "";
 
+    @Option(names={"--required-count"},description = "total count you want to run")
+    private long requiredCount=0;
+
     public static ClassLoader loaderForOrg;
 
     private File[] readSeedFiles() {
@@ -327,6 +330,8 @@ public class ZestCLI2 implements Runnable {
                         new ZestGuidance(title, duration, this.outputDirectory);
             }
             guidance.setBlind(blindFuzzing);
+            if (requiredCount>0)
+                guidance.requiredRun=requiredCount;
 
             // make sure that target classes are instrumented
             for (Target target: targets) {

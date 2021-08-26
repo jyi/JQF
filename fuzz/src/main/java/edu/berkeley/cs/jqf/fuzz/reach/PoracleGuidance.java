@@ -926,6 +926,12 @@ public class PoracleGuidance extends ZestGuidance {
 
             infoLog("Diff out is found after %d ms!", elapsedMilliseconds);
             System.out.println(String.format("Diff out is found after %d ms!", elapsedMilliseconds));
+            
+            if (requiredRun>0) return true;
+            else return false;
+        }
+        if (requiredRun>0 && this.numTrials>requiredRun){
+            infoLog("Finish for required count is reached: %d", requiredRun);
             return false;
         }
         return elapsedMilliseconds < maxDurationMillis;

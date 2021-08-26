@@ -61,7 +61,7 @@ import static java.lang.Math.log;
  * A guidance that performs coverage-guided fuzzing using two coverage maps,
  * one for all inputs and one for valid inputs only.
  *
- * @author Rohan Padhye
+ * @author [Rohan Padhye,Youngjae Kim]
  */
 public class ZestGuidance implements Guidance {
 
@@ -202,6 +202,9 @@ public class ZestGuidance implements Guidance {
     protected long branchCount;
     protected String curSaveFileName;
     protected boolean timeOutOccurred = false;
+
+    /** Number of required run. If 0, use original exit condition. */
+    public long requiredRun=0;
 
     /**
      * Creates a new guidance instance.
@@ -412,6 +415,7 @@ public class ZestGuidance implements Guidance {
             console.printf("Execution speed:      %,d/sec now | %,d/sec overall\n", intervalExecsPerSec, execsPerSec);
             console.printf("Total coverage:       %,d branches (%.2f%% of map)\n", nonZeroCount, nonZeroFraction);
             console.printf("Valid coverage:       %,d branches (%.2f%% of map)\n", nonZeroValidCount, nonZeroValidFraction);
+            console.printf("Required run count:   %,d\n", this.requiredRun);
         }
 
         String plotData = String.format("%d, %d, %d, %d, %d, %d, %.2f%%, %d, %d, %d, %.2f, %d, %d, %.2f%%",
@@ -598,6 +602,10 @@ public class ZestGuidance implements Guidance {
             return false;
         }
         if (USE_CORPUS_SIZE && this.curCorpusSize > this.maxCorpusSize) {
+            return false;
+        }
+        // If run required run, exit
+        if (requiredRun>0 && numTrials > requiredRun){
             return false;
         }
         return elapsedMilliseconds < maxDurationMillis;

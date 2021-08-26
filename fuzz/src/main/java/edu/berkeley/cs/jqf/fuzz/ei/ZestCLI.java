@@ -133,6 +133,8 @@ public class ZestCLI implements Runnable {
     @Parameters(index="2", paramLabel = "TEST_METHOD", description = "fuzz function name")
     private String testMethodName;
 
+    @Option(names={"--required-count"},description = "total count you want to run")
+    private long requiredCount=0;
 
     private File[] readSeedFiles() {
         if (this.inputDirectory == null) {
@@ -223,6 +225,8 @@ public class ZestCLI implements Runnable {
                     new ZestGuidance(title, duration, this.outputDirectory, seedFiles) :
                     new ZestGuidance(title, duration, this.outputDirectory);
             guidance.setBlind(blindFuzzing);
+            if (this.requiredCount>0)
+                guidance.requiredRun=this.requiredCount;
             // Run the Junit test
             Result res = GuidedFuzzing.run(testClassName, testMethodName, loader, guidance, System.out);
             if (Boolean.getBoolean("jqf.logCoverage")) {

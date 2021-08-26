@@ -12,5 +12,5 @@ cd ${ROOT_DIR}
 make
 
 # Build JQF
-mvn package
+mvn package -DskipTests
 
