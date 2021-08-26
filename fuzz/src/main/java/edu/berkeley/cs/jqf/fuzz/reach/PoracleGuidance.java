@@ -307,7 +307,8 @@ public class PoracleGuidance extends ZestGuidance {
             LinearInput newInput = new ComparableInput(this);
 
             // Stack a bunch of mutations
-            int numMutations = sampleGeometric(random, MEAN_MUTATION_COUNT);
+            // int numMutations = sampleGeometric(random, MEAN_MUTATION_COUNT);
+            int numMutations=1;
             newInput.desc += ",havoc:"+numMutations;
 
             boolean setToZero = random.nextDouble() < 0.1; // one out of 10 times
@@ -316,7 +317,8 @@ public class PoracleGuidance extends ZestGuidance {
 
                 // Select a random offset and size
                 int offset = random.nextInt(newInput.getValues().size());
-                int mutationSize = sampleGeometric(random, MEAN_MUTATION_SIZE);
+                // int mutationSize = sampleGeometric(random, MEAN_MUTATION_SIZE);
+                int mutationSize=1;
 
                 // desc += String.format(":%d@%d", mutationSize, idx);
 
@@ -994,15 +996,35 @@ public class PoracleGuidance extends ZestGuidance {
                 // Select the next saved input to fuzz
                 currentParentInputIdx = random.nextInt(savedInputs.size());
                 infoLog("currentParentInputIdx: %d / %d", currentParentInputIdx, savedInputs.size());
+                console.printf("currentParentInputIdx: %d / %d", currentParentInputIdx, savedInputs.size());
                 targetNumChildren = getTargetChildrenForParent(savedInputs.size(), currentParentInputIdx);
                 infoLog("targetNumChildren: %d", targetNumChildren);
                 numChildrenGeneratedForCurrentParentInput = 0;
             }
-            Input parent = savedInputs.get(currentParentInputIdx);
-            parentID = String.format("id_%09d", parent.id);
+            // Input parent = savedInputs.get(currentParentInputIdx);
+            parentID = String.format("id_%09d", currentParentInput.id);
             // Fuzz it to get a new input
-            infoLog("Mutating input: %s", parent.desc);
-            currentInput = parent.fuzz(random);
+            infoLog("Mutating input: %s", currentParentInput.desc);
+            
+            if (currentParentInput instanceof LinearInput){
+                LinearInput lInput=(LinearInput)currentParentInput;
+                console.printf("parent: ");
+                for (int i=0;i<lInput.size();i++){
+                    console.printf("%d ", lInput.getValues().get(i));
+                }
+                console.printf("\n");
+            }
+
+            currentInput = currentParentInput.fuzz(random);
+            if (currentInput instanceof LinearInput){
+                LinearInput lInput=(LinearInput)currentInput;
+                console.printf("child: ");
+                for (int i=0;i<lInput.size();i++){
+                    console.printf("%d ", lInput.getValues().get(i));
+                }
+                console.printf("\n");
+            }
+
             numChildrenGeneratedForCurrentParentInput++;
 
             // Write it to disk for debugging
