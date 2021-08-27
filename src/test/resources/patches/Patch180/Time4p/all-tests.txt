@@ -1,1 +1,0 @@
-testWith3(org.joda.time.TestPartial_Basics)

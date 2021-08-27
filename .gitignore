@@ -28,3 +28,4 @@ src/test/resources/log/*
 **/all-tests.txt
 **/failing_tests
 out/
+src/test/resources/*
