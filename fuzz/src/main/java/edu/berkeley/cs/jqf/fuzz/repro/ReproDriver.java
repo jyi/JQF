@@ -47,13 +47,16 @@ public class ReproDriver implements Runnable {
 
     @Parameters(index = "0") String testClassName;
     @Parameters(index = "1") String testMethodName;
-    @Parameters(index = "2..*") File[] testInputFiles;
+    @Parameters(index = "2") File[] testInputFiles;
+    @Parameters(index = "3") String classPath;
+//    @Parameters(index = "4") String logDir;
 
     @Option(names = "--logdir", description = "log directory")
     public String logDir = null;
+//
+//    @Option(names = "--cpTarget", description = "classpath")
+//    public String classPath = null;
 
-    @Option(names = "--cp", description = "classpath")
-    public String classPath = null;
 
     @Option(names = "--run-buggy-version", description =  "do you run a buggy version?")
     public boolean runBuggyVersion = false;
