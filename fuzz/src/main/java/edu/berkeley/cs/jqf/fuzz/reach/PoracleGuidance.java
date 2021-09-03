@@ -307,8 +307,7 @@ public class PoracleGuidance extends ZestGuidance {
             LinearInput newInput = new ComparableInput(this);
 
             // Stack a bunch of mutations
-            // int numMutations = sampleGeometric(random, MEAN_MUTATION_COUNT);
-            int numMutations=1;
+            int numMutations = sampleGeometric(random, MEAN_MUTATION_COUNT);
             newInput.desc += ",havoc:"+numMutations;
 
             boolean setToZero = random.nextDouble() < 0.1; // one out of 10 times
@@ -317,8 +316,7 @@ public class PoracleGuidance extends ZestGuidance {
 
                 // Select a random offset and size
                 int offset = random.nextInt(newInput.getValues().size());
-                // int mutationSize = sampleGeometric(random, MEAN_MUTATION_SIZE);
-                int mutationSize=1;
+                int mutationSize = sampleGeometric(random, MEAN_MUTATION_SIZE);
 
                 // desc += String.format(":%d@%d", mutationSize, idx);
 
@@ -334,7 +332,7 @@ public class PoracleGuidance extends ZestGuidance {
                     newInput.getValues().set(i, mutatedValue);
                 }
             }
-
+            
             return newInput;
         }
     }
