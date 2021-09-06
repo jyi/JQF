@@ -136,6 +136,9 @@ public class ZestCLI implements Runnable {
     @Option(names={"--execute-count"},description = "total count you want to run")
     private long requiredCount=0;
 
+    @Option(names={"--ignore-log-cond"},description="ignore condition in Log.logOutIf")
+    private boolean ignoreCondition=false;
+
     private File[] readSeedFiles() {
         if (this.inputDirectory == null) {
             return new File[0];
@@ -212,6 +215,7 @@ public class ZestCLI implements Runnable {
             System.setProperty("jqf.ei.LIBFUZZER_COMPAT_OUTPUT", "true");
         }
 
+        System.setProperty("kr.ac.unist.cse.jqf.IGNORE_COND",Boolean.toString(this.ignoreCondition));
 
         try {
             ClassLoader loader = new InstrumentingClassLoader(

@@ -416,6 +416,7 @@ public class ZestGuidance implements Guidance {
             console.printf("Total coverage:       %,d branches (%.2f%% of map)\n", nonZeroCount, nonZeroFraction);
             console.printf("Valid coverage:       %,d branches (%.2f%% of map)\n", nonZeroValidCount, nonZeroValidFraction);
             console.printf("Required run count:   %,d\n", this.requiredRun);
+            console.printf("Ignore cond:          %b\n",Boolean.valueOf(System.getProperty("kr.ac.unist.cse.jqf.IGNORE_COND")));
         }
 
         String plotData = String.format("%d, %d, %d, %d, %d, %d, %.2f%%, %d, %d, %d, %.2f, %d, %d, %.2f%%",

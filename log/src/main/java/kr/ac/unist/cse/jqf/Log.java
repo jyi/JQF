@@ -378,7 +378,7 @@ public class Log {
     public static <T> void logOutIf(boolean cond, Actual actual, T[] expected) {
         if (logOutIfCalled) logOut(";");
         if (Log.runBuggyVersion) {
-            if (cond) {
+            if (Boolean.valueOf(System.getProperty("kr.ac.unist.cse.jqf.IGNORE_COND")) || cond) {
                 try {
                     logOut(actual.values());
                     actualCount++;

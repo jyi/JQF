@@ -188,6 +188,9 @@ public class ZestCLI2 implements Runnable {
     @Option(names={"--execute-count"},description = "total count you want to run")
     private long requiredCount=0;
 
+    @Option(names={"--ignore-log-cond"},description="ignore condition in Log.logOutIf")
+    private boolean ignoreCondition=false;
+
     public static ClassLoader loaderForOrg;
 
     private File[] readSeedFiles() {
@@ -305,6 +308,8 @@ public class ZestCLI2 implements Runnable {
 
         System.setProperty("jqf.ei.widenProportion", String.valueOf(this.widenProportion));
         System.setProperty("jqf.ei.delta", String.valueOf(delta));
+
+        System.setProperty("kr.ac.unist.cse.jqf.IGNORE_COND",Boolean.toString(this.ignoreCondition));
 
         try {
             InstrumentingClassLoader loaderForOrg = new InstrumentingClassLoader(
