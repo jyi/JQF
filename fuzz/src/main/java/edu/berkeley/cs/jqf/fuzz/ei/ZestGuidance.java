@@ -607,6 +607,7 @@ public class ZestGuidance implements Guidance {
         }
         // If run required run, exit
         if (requiredRun>0 && numTrials >= requiredRun){
+            System.out.println("It's done");
             return false;
         }
         return elapsedMilliseconds < maxDurationMillis;

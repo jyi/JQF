@@ -336,6 +336,7 @@ public class ZestCLI2 implements Runnable {
             }
             guidance.setBlind(blindFuzzing);
             if (requiredCount>0)
+                System.out.println("Required Count: " + Long.toString(requiredCount));
                 guidance.requiredRun=requiredCount;
 
             // make sure that target classes are instrumented
