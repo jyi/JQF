@@ -54,6 +54,9 @@ public class Coverage implements TraceEventVisitor {
     private HashMap<Integer, EventInfo> hashToEventInfoMap = new HashMap<>();
     private HashMap<String, HashSet<Integer>> eventInfoToHashMap = new HashMap<>();
 
+    private HashMap<String,Integer> branchSpectrum=new HashMap<>();
+    private ArrayList<String> pathSpectrum=new ArrayList<>();
+
     /** Creates a new coverage map. */
     public Coverage() {
 
@@ -109,6 +112,17 @@ public class Coverage implements TraceEventVisitor {
         }
         hashToEventInfoMap.put(hashed, ei);
         counter.increment1(b.getIid(), b.getArm());
+
+        String id=b.getIid()+":"+b.getArm();
+        int value;
+        if(branchSpectrum.containsKey(id)){
+            value=branchSpectrum.get(id).intValue();
+            value+=1;
+        }
+        else value=1;
+        branchSpectrum.put(id,value);
+
+        pathSpectrum.add(id);
     }
 
     @Override
@@ -124,6 +138,17 @@ public class Coverage implements TraceEventVisitor {
         }
         hashToEventInfoMap.put(hashed, ei);
         counter.increment(e.getIid());
+
+        String id=""+e.getIid();
+        int value;
+        if(branchSpectrum.containsKey(id)){
+            value=branchSpectrum.get(id).intValue();
+            value+=1;
+        }
+        else value=1;
+        branchSpectrum.put(id,value);
+
+        pathSpectrum.add(id);
     }
 
     /**
@@ -156,11 +181,22 @@ public class Coverage implements TraceEventVisitor {
 
     }
 
+    /** Return copy of branch spectrum, because we will clear before next run */
+    public Map<String,Integer> getBranchSpectrum(){
+        return new HashMap<String,Integer>(branchSpectrum);
+    }
+    /** Return copy of path spectrum, because we will clear before next run */
+    public List<String> getPathSpectrum(){
+        return new ArrayList<String>(pathSpectrum);
+    }
+
     /**
      * Clears the coverage map.
      */
     public void clear() {
         this.counter.clear();
+        branchSpectrum.clear();
+        pathSpectrum.clear();
     }
 
     private static int[] HOB_CACHE = new int[1024];

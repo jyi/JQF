@@ -1100,6 +1100,12 @@ public class PoracleGuidance extends ZestGuidance {
             inputNotIgnored = true;
         }
 
+        // Get spectrums
+        Map<String,Integer> branchSpectrum=runCoverageOfOrg.getBranchSpectrum();
+        List<String> pathSpectrum=runCoverageOfOrg.getPathSpectrum();
+        Log.logBranchSpectrum(branchSpectrum);
+        Log.logPathSpectrum(pathSpectrum);
+
         boolean newCoverageFound = false;
         String why = "";
         // Coverage before

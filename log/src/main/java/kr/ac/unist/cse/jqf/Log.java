@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.file.*;
 import java.util.Arrays;
+import java.util.Map;
+import java.util.List;
 
 public class Log {
 
@@ -548,4 +550,125 @@ public class Log {
             logIn(o);
         }
     }
+
+    public static void logBranchSpectrum(Map<String,Integer> spectrum){
+        String logDir = System.getProperty("jqf.ei.logDir");
+        if (logDir == null) {
+            System.out.println("branch: " + logDir);
+            return;
+        }
+
+        if (Boolean.getBoolean("jqf.ei.run_two_versions")) {
+            if (Log.runBuggyVersion) {
+                logDir += File.separator + "ORG";
+            } else {
+                logDir += File.separator + "PATCH";
+            }
+        }
+
+        Path inFile;
+        String inputID = System.getProperty("jqf.ei.inputID");
+        if (inputID == null) {
+            if (!Files.exists(FileSystems.getDefault().getPath(logDir))) {
+                try {
+                    Files.createDirectories(FileSystems.getDefault().getPath(logDir));
+                } catch (IOException e) {
+                    System.err.println("Failed to create a dir: " + logDir);
+                    e.printStackTrace();
+                }
+            }
+            inFile = Paths.get(logDir, "BRANCH.log");
+        } else {
+            try {
+                Files.createDirectories(Paths.get(logDir, inputID));
+            } catch (IOException e) {
+                System.err.println("Failed to create directory " + Paths.get(logDir, inputID));
+                e.printStackTrace();
+            }
+            inFile = Paths.get(logDir, inputID, "BRANCH.log");
+        }
+
+        if (!Files.exists(inFile)) {
+            try {
+                Files.createFile(inFile);
+            } catch (IOException e) {
+                System.err.println("Failed to create a file: " + inFile);
+                e.printStackTrace();
+            }
+        }
+
+        String msg="";
+        for (Map.Entry<String,Integer> entry:spectrum.entrySet())
+            msg+=entry.getKey()+":"+entry.getValue()+",";
+
+        try {
+            Files.write(inFile, msg.getBytes(),
+                    StandardOpenOption.APPEND);
+        } catch (IOException e) {
+            System.err.println("Failed to write branch to " + inFile);
+            e.printStackTrace();
+        }
+
+    }
+
+    public static void logPathSpectrum(List<String> spectrum){
+        String logDir = System.getProperty("jqf.ei.logDir");
+        if (logDir == null) {
+            System.out.println("path: " + logDir);
+            return;
+        }
+
+        if (Boolean.getBoolean("jqf.ei.run_two_versions")) {
+            if (Log.runBuggyVersion) {
+                logDir += File.separator + "ORG";
+            } else {
+                logDir += File.separator + "PATCH";
+            }
+        }
+
+        Path inFile;
+        String inputID = System.getProperty("jqf.ei.inputID");
+        if (inputID == null) {
+            if (!Files.exists(FileSystems.getDefault().getPath(logDir))) {
+                try {
+                    Files.createDirectories(FileSystems.getDefault().getPath(logDir));
+                } catch (IOException e) {
+                    System.err.println("Failed to create a dir: " + logDir);
+                    e.printStackTrace();
+                }
+            }
+            inFile = Paths.get(logDir, "PATH.log");
+        } else {
+            try {
+                Files.createDirectories(Paths.get(logDir, inputID));
+            } catch (IOException e) {
+                System.err.println("Failed to create directory " + Paths.get(logDir, inputID));
+                e.printStackTrace();
+            }
+            inFile = Paths.get(logDir, inputID, "PATH.log");
+        }
+
+        if (!Files.exists(inFile)) {
+            try {
+                Files.createFile(inFile);
+            } catch (IOException e) {
+                System.err.println("Failed to create a file: " + inFile);
+                e.printStackTrace();
+            }
+        }
+
+        String msg="";
+        for (String id:spectrum)
+            msg+=id+",";
+
+        try {
+            Files.write(inFile, msg.getBytes(),
+                    StandardOpenOption.APPEND);
+        } catch (IOException e) {
+            System.err.println("Failed to write path to " + inFile);
+            e.printStackTrace();
+        }
+
+    }
+
 }
