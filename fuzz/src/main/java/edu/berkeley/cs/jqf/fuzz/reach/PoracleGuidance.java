@@ -914,6 +914,12 @@ public class PoracleGuidance extends ZestGuidance {
             }
         }
 
+        if (requiredRun>0 && this.numTrials>=requiredRun){
+            System.out.println("It's Done");
+            infoLog("Finish for required count is reached: %d", requiredRun);
+            return false;
+        }
+
         if (this.isDiffOutFound) {
             // save the current input into diff_out dir
             try {
@@ -936,10 +942,7 @@ public class PoracleGuidance extends ZestGuidance {
             if (requiredRun>0) return true;
             else return false;
         }
-        if (requiredRun>0 && this.numTrials>=requiredRun){
-            infoLog("Finish for required count is reached: %d", requiredRun);
-            return false;
-        }
+
         return elapsedMilliseconds < maxDurationMillis;
     }
 

@@ -94,6 +94,7 @@ public class FuzzStatement extends Statement {
     private static int wideningCount;
     private static boolean useRepro = false;
     private static boolean verbose = true;
+    private static boolean first = true;
 
     public FuzzStatement(FrameworkMethod method, TestClass testClass,
                          GeneratorRepository generatorRepository) {
@@ -294,12 +295,19 @@ public class FuzzStatement extends Statement {
                         StreamBackedRandom randomFile = new StreamBackedRandom(guidance.getInput(), Long.BYTES);
                         SourceOfRandomness random = new FastSourceOfRandomness(randomFile);
                         GenerationStatus genStatus = new NonTrackingGenerationStatus(random);
+
                         args = generators.stream()
                                 .map(g -> g.generate(random, genStatus))
                                 .toArray();
+                        if (first) {
+
+                        }
 
                         Log.resetLogDirForInput();
                         Log.logIn(args);
+                        for (Object o : args) {
+                            System.out.println("Arg: " + String.valueOf(o));
+                        }
                         DumpUtil.reset();
 
                         // Let guidance observe the generated input args
