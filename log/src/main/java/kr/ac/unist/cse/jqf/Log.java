@@ -551,7 +551,7 @@ public class Log {
         }
     }
 
-    public static void logBranchSpectrum(Map<String,Integer> spectrum){
+    public static void logBranchSpectrum(Map<String,Integer> spectrum,boolean isPatch){
         String logDir = System.getProperty("jqf.ei.logDir");
         if (logDir == null) {
             System.out.println("branch: " + logDir);
@@ -559,7 +559,7 @@ public class Log {
         }
 
         if (Boolean.getBoolean("jqf.ei.run_two_versions")) {
-            if (Log.runBuggyVersion) {
+            if (!isPatch) {
                 logDir += File.separator + "ORG";
             } else {
                 logDir += File.separator + "PATCH";
@@ -611,7 +611,7 @@ public class Log {
 
     }
 
-    public static void logPathSpectrum(List<String> spectrum){
+    public static void logPathSpectrum(List<String> spectrum,boolean isPatch){
         String logDir = System.getProperty("jqf.ei.logDir");
         if (logDir == null) {
             System.out.println("path: " + logDir);
@@ -619,7 +619,7 @@ public class Log {
         }
 
         if (Boolean.getBoolean("jqf.ei.run_two_versions")) {
-            if (Log.runBuggyVersion) {
+            if (!isPatch) {
                 logDir += File.separator + "ORG";
             } else {
                 logDir += File.separator + "PATCH";

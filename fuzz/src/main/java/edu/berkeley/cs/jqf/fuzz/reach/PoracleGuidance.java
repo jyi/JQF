@@ -738,6 +738,12 @@ public class PoracleGuidance extends ZestGuidance {
         int nonZeroBefore = totalCoverageOfPatch.getNonZeroCount();
         int validNonZeroBefore = validCoverageOfPatch.getNonZeroCount();
 
+        // Get spectrums
+        Map<String,Integer> branchSpectrum=runCoverageOfPatch.getBranchSpectrum();
+        List<String> pathSpectrum=runCoverageOfPatch.getPathSpectrum();
+        Log.logBranchSpectrum(branchSpectrum,true);
+        Log.logPathSpectrum(pathSpectrum,true);
+
         // Compute a list of keys for which this input can assume responsiblity.
         // Newly covered branches are always included.
         // Existing branches *may* be included, depending on the heuristics used.
@@ -1100,8 +1106,8 @@ public class PoracleGuidance extends ZestGuidance {
         // Get spectrums
         Map<String,Integer> branchSpectrum=runCoverageOfOrg.getBranchSpectrum();
         List<String> pathSpectrum=runCoverageOfOrg.getPathSpectrum();
-        Log.logBranchSpectrum(branchSpectrum);
-        Log.logPathSpectrum(pathSpectrum);
+        Log.logBranchSpectrum(branchSpectrum,false);
+        Log.logPathSpectrum(pathSpectrum,false);
 
         boolean newCoverageFound = false;
         String why = "";
