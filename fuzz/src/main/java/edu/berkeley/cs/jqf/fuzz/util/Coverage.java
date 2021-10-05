@@ -151,6 +151,60 @@ public class Coverage implements TraceEventVisitor {
         pathSpectrum.add(id);
     }
 
+    @Override
+    public void visitReturnEvent(ReturnEvent e) {
+//        System.out.println("visitReturnEvent");
+        int hashed = counter.getIdx(e.getIid());
+        EventInfo ei = new EventInfo(e.getFileName(), e.getLineNumber(), hashed);
+        if(eventInfoToHashMap.containsKey(ei.getFileAndLine())) {
+            eventInfoToHashMap.get(ei.getFileAndLine()).add(hashed);
+        } else {
+            HashSet<Integer> hs = new HashSet<>(2);
+            hs.add(hashed);
+            eventInfoToHashMap.put(ei.getFileAndLine(), hs);
+        }
+        hashToEventInfoMap.put(hashed, ei);
+        counter.increment(e.getIid());
+
+        String id=""+e.getIid();
+        int value;
+        if(branchSpectrum.containsKey(id)){
+            value=branchSpectrum.get(id).intValue();
+            value+=1;
+        }
+        else value=1;
+        branchSpectrum.put(id,value);
+
+        pathSpectrum.add(id);
+    }
+
+    @Override
+    public void visitThrowEvent(ThrowEvent e) {
+//        System.out.println("visitReturnEvent");
+        int hashed = counter.getIdx(e.getIid());
+        EventInfo ei = new EventInfo(e.getFileName(), e.getLineNumber(), hashed);
+        if(eventInfoToHashMap.containsKey(ei.getFileAndLine())) {
+            eventInfoToHashMap.get(ei.getFileAndLine()).add(hashed);
+        } else {
+            HashSet<Integer> hs = new HashSet<>(2);
+            hs.add(hashed);
+            eventInfoToHashMap.put(ei.getFileAndLine(), hs);
+        }
+        hashToEventInfoMap.put(hashed, ei);
+        counter.increment(e.getIid());
+
+        String id=""+e.getIid();
+        int value;
+        if(branchSpectrum.containsKey(id)){
+            value=branchSpectrum.get(id).intValue();
+            value+=1;
+        }
+        else value=1;
+        branchSpectrum.put(id,value);
+
+        pathSpectrum.add(id);
+    }
+
     /**
      * Returns the number of edges covered.
      *

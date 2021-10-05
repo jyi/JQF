@@ -45,6 +45,8 @@ public interface TraceEventVisitor {
 
     default void visitReturnEvent(ReturnEvent e) {}
 
+    default void visitThrowEvent(ThrowEvent e) {}
+
     default void visitTargetEvent(TargetHitEvent e) {}
 
     default void visitDistanceUpdateEvent(DistanceUpdateEvent e) {}
