@@ -45,7 +45,7 @@ public class Log {
             assert outputForOrg != null;
             assert outputForPatch != null;
 
-            System.out.println("isDiffOutputFound is called");
+//            System.out.println("isDiffOutputFound is called");
             System.out.println("outputForOrg: " + outputForOrg);
             System.out.println("outputForPatch: " + outputForPatch);
 
@@ -169,6 +169,7 @@ public class Log {
                 e.printStackTrace();
             }
             outFile = Paths.get(logDir, inputID, "OUT.log");
+            System.out.println("Output: " + outFile.toString());
         }
         try {
             Files.deleteIfExists(outFile);
@@ -663,7 +664,7 @@ public class Log {
 
         try {
             Files.write(inFile, msg.getBytes(),
-                    StandardOpenOption.APPEND);
+                    StandardOpenOption.WRITE);
         } catch (IOException e) {
             System.err.println("Failed to write path to " + inFile);
             e.printStackTrace();

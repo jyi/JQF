@@ -63,6 +63,7 @@ public class ReproDriver implements Runnable {
 
     @Override
     public void run() {
+        System.out.println("Repro");
         try {
             if (logDir != null)
                 System.setProperty("jqf.ei.logDir", logDir);

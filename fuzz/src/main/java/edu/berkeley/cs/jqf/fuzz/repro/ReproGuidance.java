@@ -30,11 +30,7 @@ package edu.berkeley.cs.jqf.fuzz.repro;
 
 import java.io.*;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Consumer;
 
 import edu.berkeley.cs.jqf.fuzz.guidance.Guidance;
@@ -44,6 +40,7 @@ import edu.berkeley.cs.jqf.fuzz.util.Coverage;
 import edu.berkeley.cs.jqf.instrument.tracing.events.BranchEvent;
 import edu.berkeley.cs.jqf.instrument.tracing.events.CallEvent;
 import edu.berkeley.cs.jqf.instrument.tracing.events.TraceEvent;
+import kr.ac.unist.cse.jqf.Log;
 import org.jacoco.core.analysis.Analyzer;
 import org.jacoco.core.analysis.CoverageBuilder;
 import org.jacoco.core.tools.ExecFileLoader;
@@ -69,6 +66,10 @@ public class ReproGuidance implements Guidance {
 
     private Set<String> branchesCoveredInCurrentRun;
     private Set<String> allBranchesCovered;
+
+    /** Coverage statistics for a single run. */
+    protected Coverage runCoverage = new Coverage();
+
     private boolean ignoreInvalidCoverage;
     private boolean printArgs;
 
@@ -127,6 +128,7 @@ public class ReproGuidance implements Guidance {
      */
     @Override
     public InputStream getInput() {
+//        runCoverage.clear();
         try {
             File inputFile = inputFiles[nextFileIdx];
             this.inputStream = new BufferedInputStream(new FileInputStream(inputFile));
@@ -213,6 +215,12 @@ public class ReproGuidance implements Guidance {
         } else {
             System.out.printf("%s ::= %s\n", inputFile.getName(), result);
         }
+
+        // Get spectrums
+        Map<String,Integer> branchSpectrum=coverage.getBranchSpectrum();
+        List<String> pathSpectrum=coverage.getPathSpectrum();
+        Log.logBranchSpectrum(branchSpectrum,false);
+        Log.logPathSpectrum(pathSpectrum,false);
 
         // Possibly accumulate coverage
         if (allBranchesCovered != null && (ignoreInvalidCoverage == false || result == Result.SUCCESS)) {

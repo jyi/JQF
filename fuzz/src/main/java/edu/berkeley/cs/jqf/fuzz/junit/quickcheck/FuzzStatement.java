@@ -226,6 +226,7 @@ public class FuzzStatement extends Statement {
                         failures.add(e);
                     }
                 }
+                System.out.println("Result: " + result.toString());
 
                 // Inform guidance about the outcome of this trial
                 guidance.handleResult(result, error);
@@ -306,7 +307,7 @@ public class FuzzStatement extends Statement {
                         Log.resetLogDirForInput();
                         Log.logIn(args);
                         for (Object o : args) {
-                            System.out.println("Arg: " + String.valueOf(o));
+//                            System.out.println("Arg: " + String.valueOf(o));
                         }
                         DumpUtil.reset();
 

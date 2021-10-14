@@ -296,7 +296,7 @@ public class ZestGuidance implements Guidance {
         this.savedCorpusDirectory.mkdirs();
         this.savedFailuresDirectory = new File(outputDirectory, "failures");
         this.savedFailuresDirectory.mkdirs();
-        if (Boolean.getBoolean("jqf.ei.SAVE_ALL_INPUTS")) {
+        if (true) { //Boolean.getBoolean("jqf.ei.SAVE_ALL_INPUTS")
             this.savedAllDirectory = new File(outputDirectory, "all");
             this.savedAllDirectory.mkdirs();
         }
@@ -607,6 +607,7 @@ public class ZestGuidance implements Guidance {
         }
         // If run required run, exit
         if (requiredRun>0 && numTrials >= requiredRun){
+            System.out.println("Trial and Required: " + Long.toString(numTrials) + " " + Long.toString(requiredRun));
             System.out.println("It's done");
             return false;
         }
@@ -634,6 +635,12 @@ public class ZestGuidance implements Guidance {
             // Coverage before
             int nonZeroBefore = totalCoverage.getNonZeroCount();
             int validNonZeroBefore = validCoverage.getNonZeroCount();
+
+            // Get spectrums
+            Map<String,Integer> branchSpectrum=runCoverage.getBranchSpectrum();
+            List<String> pathSpectrum=runCoverage.getPathSpectrum();
+            Log.logBranchSpectrum(branchSpectrum,false);
+            Log.logPathSpectrum(pathSpectrum,false);
 
             // Compute a list of keys for which this input can assume responsiblity.
             // Newly covered branches are always included.
@@ -688,7 +695,7 @@ public class ZestGuidance implements Guidance {
             }
 
             if (toSave) {
-
+                System.out.println("toSave");
                 // Trim input (remove unused keys)
                 currentInput.gc();
 
@@ -760,9 +767,10 @@ public class ZestGuidance implements Guidance {
         }
 
         // Save input unconditionally if such a setting is enabled
-        if (savedAllDirectory != null) {
+        if (savedAllDirectory != null) { //savedAllDirectory != null
             this.curSaveFileName = String.format("id_%09d", numTrials);
             File saveFile = new File(savedAllDirectory, curSaveFileName);
+            System.out.println("SaveFile: " + savedAllDirectory + curSaveFileName);
             GuidanceException.wrap(() -> writeCurrentInputToFile(saveFile));
         }
     }

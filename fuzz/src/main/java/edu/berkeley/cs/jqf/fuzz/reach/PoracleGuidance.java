@@ -940,7 +940,7 @@ public class PoracleGuidance extends ZestGuidance {
             System.out.println(String.format("Diff out is found after %d ms!", elapsedMilliseconds));
             
             if (requiredRun>0) return true;
-            else return false;
+//            else return false;
         }
 
         return elapsedMilliseconds < maxDurationMillis;
