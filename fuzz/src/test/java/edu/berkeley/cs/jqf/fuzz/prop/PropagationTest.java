@@ -17,13 +17,18 @@ import java.util.Comparator;
 public class PropagationTest {
 
     @Test
+//    public void runRepro() {
+//        ReproDriver.main(new String[] {
+//                "../src/test/resources/patches/Patch27/Math2b/target/test-classes:../src/test/resources/patches/Patch27/Math2b/target/classes",
+//                "org.apache.commons.math3.distribution.JQF_HypergeometricDistributionTest", "testMath1021",
+//                "../src/test/resources/fuzz-results-patch/all/id_000000015"});
+//    }
     public void runRepro() {
-        ReproDriver2.main(new String[] {
+        ReproDriver.main(new String[] {
                 "../src/test/resources/patches/Patch27/Math2b/target/test-classes:../src/test/resources/patches/Patch27/Math2b/target/classes",
                 "org.apache.commons.math3.distribution.JQF_HypergeometricDistributionTest", "testMath1021",
-                "../src/test/resources/fuzz-results-patch/all/id_000000030"});
+                "../src/test/resources/fuzz-results-patch/all/id_000000015"});
     }
-
     @Test
     public void runZestCLI() throws IOException {
         Path fuzz_results_patch_dir = FileSystems.getDefault().getPath("..", "src", "test", "resources", "fuzz-results-patch");

@@ -30,7 +30,7 @@
 package edu.berkeley.cs.jqf.fuzz.repro;
 
 import java.io.File;
-
+import java.util.Arrays;
 import edu.berkeley.cs.jqf.fuzz.junit.GuidedFuzzing;
 import kr.ac.unist.cse.jqf.Log;
 import edu.berkeley.cs.jqf.instrument.InstrumentingClassLoader;
@@ -105,6 +105,26 @@ public class ReproDriver implements Runnable {
             System.exit(2);
         }
     }
+
+//    public static void main(String[] args) {
+//        int exitCode = 0;
+//        System.out.println("print_args__");
+//        System.out.println(args[4]);
+//        String[] text1 = args[4].split("_/p");
+//        for (int i = 0; i < text1.length; i++) {
+//            if(i>0) {
+//                args[4] = "/p" + text1[i];
+//            }
+//            else {
+//                args[4] = text1[i];
+//            }
+//            System.out.println("print_args2__");
+//            System.out.println(Arrays.toString(args));
+//            exitCode = new CommandLine(new ReproDriver()).execute(args);
+//        }
+//        //int exitCode = new CommandLine(new ReproDriver()).execute(args);
+//        System.exit(exitCode);
+//    }
 
     public static void main(String[] args) {
         int exitCode = new CommandLine(new ReproDriver()).execute(args);

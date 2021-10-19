@@ -43,6 +43,18 @@ public class InRangeFactory {
                     System.err.println(e.toString());
                 }
             }
+            if (gen2.getClass().getField("seedDouble") != null) {
+                System.out.println("SeedDouble");
+                try {
+                    double seedDouble = fields[2].getDouble(genClz);
+                    fields[2].setDouble(genClz, seedDouble);
+                    System.out.println(gen2.getClass().getField("seedDouble").getDouble(gen2.getClass()));
+                } catch (NoSuchFieldException e) {
+                    // ignore
+                } catch (IllegalAccessException e) {
+                    System.err.println(e.toString());
+                }
+            }
             if (gen2.getClass().getField("minChar") != null || gen2.getClass().getField("maxChar") != null) {
 
                 char minChar = fields[0].getChar(genClz);
@@ -206,58 +218,58 @@ public class InRangeFactory {
 
                 @Override
                 public byte seedByte() {
-                    return 0;
+                    return range.seedByte();
                 }
 
                 @Override
                 public int seedInt() {
-                    return 0;
+                    return range.seedInt();
                 }
 
                 @Override
                 public double seedDouble() {
-                    return 0;
+                    return range.seedDouble();
                 }
 
                 @Override
                 public float seedFloat() {
-                    return 0;
+                    return range.seedFloat();
                 }
 		
-		@Override
-		public long seedLong() {
-			return 0L;
-		}
+                @Override
+                public long seedLong() {
+                    return range.seedLong();
+                }
 
-		@Override
-		public short seedShort() {
-			return (short)0;
-		}
+                @Override
+                public short seedShort() {
+                    return range.seedShort();
+                }
 
-		@Override
-		public char seedChar() {
-			return (char)0;
-		}
+                @Override
+                public char seedChar() {
+                    return range.seedChar();
+                }
 
-		@Override
-		public double ratioPF() {
-			return 0D;
-		}
+                @Override
+                public double ratioPF() {
+                    return 0D;
+                }
 
-		@Override
-		public boolean useRatio() {
-			return false;
-		}
+                @Override
+                public boolean useRatio() {
+                    return false;
+                }
 
-		@Override
-		public double deltaCoeff() {
-			return 1D;
-		}
+                @Override
+                public double deltaCoeff() {
+                    return 1D;
+                }
 
-		@Override
-		public int deltaExpo() {
-			return 1;
-		}
+                @Override
+                public int deltaExpo() {
+                    return 1;
+                }
 
             };
         } else if (gen instanceof LongGenerator) {
@@ -386,37 +398,37 @@ public class InRangeFactory {
 
                 @Override
                 public byte seedByte() {
-                    return 0;
+                    return range.seedByte();
                 }
 
                 @Override
                 public int seedInt() {
-                    return 0;
+                    return range.seedInt();
                 }
 
                 @Override
                 public double seedDouble() {
-                    return 0;
+                    return range.seedDouble();
                 }
 
                 @Override
                 public float seedFloat() {
-                    return 0;
+                    return range.seedFloat();
                 }
 
-		@Override
+                @Override
                 public long seedLong() {
-                        return 0L;
+                    return range.seedLong();
                 }
 
                 @Override
                 public short seedShort() {
-                        return (short)0;
+                    return range.seedShort();
                 }
 
                 @Override
                 public char seedChar() {
-                        return (char)0;
+                    return range.seedChar();
                 }
 
                 @Override
@@ -567,37 +579,37 @@ public class InRangeFactory {
 
                 @Override
                 public byte seedByte() {
-                    return 0;
+                    return range.seedByte();
                 }
 
                 @Override
                 public int seedInt() {
-                    return 0;
+                    return range.seedInt();
                 }
 
                 @Override
                 public double seedDouble() {
-                    return 0;
+                    return range.seedDouble();
                 }
 
                 @Override
                 public float seedFloat() {
-                    return 0;
+                    return range.seedFloat();
                 }
 
-		@Override
+                @Override
                 public long seedLong() {
-                        return 0L;
+                    return range.seedLong();
                 }
 
                 @Override
                 public short seedShort() {
-                        return (short)0;
+                    return range.seedShort();
                 }
 
                 @Override
                 public char seedChar() {
-                        return (char)0;
+                    return range.seedChar();
                 }
 
                 @Override
@@ -748,37 +760,37 @@ public class InRangeFactory {
 
                 @Override
                 public byte seedByte() {
-                    return 0;
+                    return range.seedByte();
                 }
 
                 @Override
                 public int seedInt() {
-                    return 0;
+                    return range.seedInt();
                 }
 
                 @Override
                 public double seedDouble() {
-                    return 0;
+                    return range.seedDouble();
                 }
 
                 @Override
                 public float seedFloat() {
-                    return 0;
+                    return range.seedFloat();
                 }
 
-		@Override
+                @Override
                 public long seedLong() {
-                        return 0L;
+                    return range.seedLong();
                 }
 
                 @Override
                 public short seedShort() {
-                        return (short)0;
+                    return range.seedShort();
                 }
 
                 @Override
                 public char seedChar() {
-                        return (char)0;
+                    return range.seedChar();
                 }
 
                 @Override
@@ -925,37 +937,37 @@ public class InRangeFactory {
 
                 @Override
                 public byte seedByte() {
-                    return 0;
+                    return range.seedByte();
                 }
 
                 @Override
                 public int seedInt() {
-                    return 0;
+                    return range.seedInt();
                 }
 
                 @Override
                 public double seedDouble() {
-                    return 0;
+                    return range.seedDouble();
                 }
 
                 @Override
                 public float seedFloat() {
-                    return 0;
+                    return range.seedFloat();
                 }
 
-		@Override
+                @Override
                 public long seedLong() {
-                        return 0L;
+                    return range.seedLong();
                 }
 
                 @Override
                 public short seedShort() {
-                        return (short)0;
+                    return range.seedShort();
                 }
 
                 @Override
                 public char seedChar() {
-                        return (char)0;
+                    return range.seedChar();
                 }
 
                 @Override
@@ -1106,37 +1118,37 @@ public class InRangeFactory {
 
                 @Override
                 public byte seedByte() {
-                    return 0;
+                    return range.seedByte();
                 }
 
                 @Override
                 public int seedInt() {
-                    return 0;
+                    return range.seedInt();
                 }
 
                 @Override
                 public double seedDouble() {
-                    return 0;
+                    return range.seedDouble();
                 }
 
                 @Override
                 public float seedFloat() {
-                    return 0;
+                    return range.seedFloat();
                 }
 
-		@Override
+                @Override
                 public long seedLong() {
-                        return 0L;
+                    return range.seedLong();
                 }
 
                 @Override
                 public short seedShort() {
-                        return (short)0;
+                    return range.seedShort();
                 }
 
                 @Override
                 public char seedChar() {
-                        return (char)0;
+                    return range.seedChar();
                 }
 
                 @Override
@@ -1287,37 +1299,37 @@ public class InRangeFactory {
 
                 @Override
                 public byte seedByte() {
-                    return 0;
+                    return range.seedByte();
                 }
 
                 @Override
                 public int seedInt() {
-                    return 0;
+                    return range.seedInt();
                 }
 
                 @Override
                 public double seedDouble() {
-                    return 0;
+                    return range.seedDouble();
                 }
 
                 @Override
                 public float seedFloat() {
-                    return 0;
+                    return range.seedFloat();
                 }
 
-		@Override
+                @Override
                 public long seedLong() {
-                        return 0L;
+                    return range.seedLong();
                 }
 
                 @Override
                 public short seedShort() {
-                        return (short)0;
+                    return range.seedShort();
                 }
 
                 @Override
                 public char seedChar() {
-                        return (char)0;
+                    return range.seedChar();
                 }
 
                 @Override

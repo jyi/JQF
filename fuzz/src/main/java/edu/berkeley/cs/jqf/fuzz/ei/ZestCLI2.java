@@ -168,13 +168,15 @@ public class ZestCLI2 implements Runnable {
     @Parameters(index = "0", paramLabel = "CLASSPATH_FOR_ORG", description = "classpath for fuzz target and all dependencies")
     private String classPathForOrg;
 
-    @Parameters(index = "1", paramLabel = "CLASSPATH_FOR_PATCH", description = "classpath for fuzz target and all dependencies")
-    private String classPathForPatch;
+//    @Parameters(index = "1", paramLabel = "CLASSPATH_FOR_PATCH", description = "classpath for fuzz target and all dependencies")
+//    private String classPathForPatch;
+    @Option(names = {"--cp-for-patch"}, description = "classpath for patched program")
+    private String classPathForPatch = null;
 
-    @Parameters(index="2", paramLabel = "TEST_CLASS", description = "full class name where the fuzz function is located")
+    @Parameters(index="1", paramLabel = "TEST_CLASS", description = "full class name where the fuzz function is located")
     private String testClassName;
 
-    @Parameters(index="3", paramLabel = "TEST_METHOD", description = "fuzz function name")
+    @Parameters(index="2", paramLabel = "TEST_METHOD", description = "fuzz function name")
     private String testMethodName;
 
     @Option(names = {"--srcdir-for-org"}, description = "source directory for original")
@@ -190,6 +192,9 @@ public class ZestCLI2 implements Runnable {
 
     @Option(names={"--ignore-log-cond"},description="ignore condition in Log.logOutIf")
     private boolean ignoreCondition=false;
+
+    @Option(names={"--use-seed"},description="use seed value in parameter")
+    private boolean useSeed=false;
 
     public static ClassLoader loaderForOrg;
 
@@ -310,6 +315,7 @@ public class ZestCLI2 implements Runnable {
         System.setProperty("jqf.ei.delta", String.valueOf(delta));
 
         System.setProperty("kr.ac.unist.cse.jqf.IGNORE_COND",Boolean.toString(this.ignoreCondition));
+        System.setProperty("kr.ac.unist.cse.jqf.USE_SEED",Boolean.toString(this.useSeed));
 
         try {
             InstrumentingClassLoader loaderForOrg = new InstrumentingClassLoader(

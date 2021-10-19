@@ -121,11 +121,12 @@ public class FuzzStatement extends Statement {
      */
     @Override
     public void evaluate() throws Throwable {
-        if (this.loaderForPatch != null) {
+        if (this.loaderForPatch != null && Boolean.getBoolean("jqf.ei.run_two_versions")) {
+            System.out.println("RunTwoVersion: " + Boolean.toString(Boolean.getBoolean("jqf.ei.run_two_versions")));
             evaluateTwoVersions();
             return;
         }
-
+        System.out.println("RunTwoVersion: " + Boolean.toString(Boolean.getBoolean("jqf.ei.run_two_versions")));
         // Construct generators for each parameter
         List<Generator<?>> generators = Arrays.stream(method.getMethod().getParameters())
                 .map(this::createParameterTypeContext)
@@ -164,6 +165,7 @@ public class FuzzStatement extends Statement {
                 // Initialize guided fuzzing using a file-backed random number source
                 try {
                     Object[] args;
+                    ArrayList<Object> argsList = new ArrayList<>();
                     try {
 
                         // Generate input values
@@ -174,8 +176,48 @@ public class FuzzStatement extends Statement {
                                 .map(g -> g.generate(random, genStatus))
                                 .toArray();
 
-                        Log.logIn(args);
 
+                        if (first && Boolean.getBoolean("kr.ac.unist.cse.jqf.USE_SEED")) {
+                            System.out.println("useSeed: " + Boolean.toString(Boolean.getBoolean("kr.ac.unist.cse.jqf.USE_SEED")));
+                            for (int i = 0; i < method.getMethod().getParameterCount(); i++) {
+                                Generator<?> gen = generators.get(i);
+                                if (!(gen instanceof CompositeGenerator)) {
+                                    throw new RuntimeException("Unsupported generator type: " + gen.getClass());
+                                }
+                                CompositeGenerator comGen = (CompositeGenerator) gen;
+                                for (int j = 0; j < comGen.numberOfComposedGenerators(); j++) {
+                                    Generator<?> gen2 = ((CompositeGenerator) comGen).composed(j);
+                                    Annotation[] anns = method.getMethod().getParameterAnnotations()[i];
+                                    for (Annotation ann: anns) {
+                                        if (ann instanceof InRange) {
+                                            if (gen2 instanceof DoubleGenerator) {
+                                                argsList.add(((InRange) ann).seedDouble());
+                                            }
+                                            else if (gen2 instanceof IntegerGenerator) {
+                                                argsList.add(((InRange) ann).seedInt());
+                                            }
+//                                        updateRange(guidance, gen2, (InRange) ann);
+                                        }
+                                    }
+                                }
+                            }
+//                            for (Object arg : argsList) {
+//                                System.out.println("ArgList: " + Double.toString((Double)arg));
+//
+//                            }
+//                            args = argsList.toArray(new Object[argsList.size()]);
+//                            for (Object arg : args) {
+//                                System.out.println("ArgArray: " + Double.toString((Double)arg));
+//                            }
+                            first = false;
+                        }
+
+
+
+                        Log.logIn(args);
+//                        for (Object arg : args) {
+//                            System.out.println("ArgArray: " + Double.toString((Double)arg));
+//                        }
                         // Let guidance observe the generated input args
                         guidance.observeGeneratedArgs(args);
                     } catch (IllegalStateException e) {
