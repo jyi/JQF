@@ -106,28 +106,38 @@ public class ReproDriver implements Runnable {
         }
     }
 
-//    public static void main(String[] args) {
-//        int exitCode = 0;
+    public static void main(String[] args) {
+        int exitCode = 0;
 //        System.out.println("print_args__");
 //        System.out.println(args[4]);
-//        String[] text1 = args[4].split("_/p");
-//        for (int i = 0; i < text1.length; i++) {
-//            if(i>0) {
-//                args[4] = "/p" + text1[i];
-//            }
-//            else {
-//                args[4] = text1[i];
-//            }
-//            System.out.println("print_args2__");
-//            System.out.println(Arrays.toString(args));
-//            exitCode = new CommandLine(new ReproDriver()).execute(args);
-//        }
-//        //int exitCode = new CommandLine(new ReproDriver()).execute(args);
-//        System.exit(exitCode);
-//    }
+        String origLogDir = args[1];
+        if(args[4].contains("_/p")) {
+            String[] text1 = args[4].split("_/p");
+            for (int i = 0; i < text1.length; i++) {
+                if (i > 0) {
+                    args[4] = "/p" + text1[i];
+                } else {
+                    args[4] = text1[i];
+                }
+                String idNumber = text1[i].split("id")[1];
+//                System.out.println("id: " + idNumber);
+//                System.out.println("LogDir: " + args[1]);
+                args[1] = origLogDir + "/id" + idNumber;
+                System.out.println("NewLogDir: " + args[1]);
+                System.out.println("print_args2__");
+                System.out.println(Arrays.toString(args));
 
-    public static void main(String[] args) {
-        int exitCode = new CommandLine(new ReproDriver()).execute(args);
+                exitCode = new CommandLine(new ReproDriver()).execute(args);
+            }
+        }
+        else {
+            exitCode = new CommandLine(new ReproDriver()).execute(args);
+        }
         System.exit(exitCode);
     }
+
+//    public static void main(String[] args) {
+//        int exitCode = new CommandLine(new ReproDriver()).execute(args);
+//        System.exit(exitCode);
+//    }
 }

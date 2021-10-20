@@ -284,8 +284,10 @@ public class Log {
         }
 
         try {
+//            Files.write(outFile, msg.getBytes(),
+//                    StandardOpenOption.APPEND);
             Files.write(outFile, msg.getBytes(),
-                    StandardOpenOption.APPEND);
+                    StandardOpenOption.CREATE);
         } catch (IOException e) {
             System.err.println("Failed to write output due to IOException");
         }
@@ -433,6 +435,7 @@ public class Log {
             System.out.println("in: " + msg);
             return;
         }
+//        System.out.println("in: " + msg);
 
         if (Boolean.getBoolean("jqf.ei.run_two_versions")) {
             if (Log.runBuggyVersion) {
@@ -474,8 +477,10 @@ public class Log {
         }
 
         try {
+            // Files.write(inFile, msg.getBytes(),
+            //                    StandardOpenOption.APPEND);
             Files.write(inFile, msg.getBytes(),
-                    StandardOpenOption.APPEND);
+                    StandardOpenOption.WRITE);
         } catch (IOException e) {
             System.err.println("Failed to write output to " + inFile);
             e.printStackTrace();
@@ -603,8 +608,10 @@ public class Log {
             msg+=entry.getKey()+":"+entry.getValue()+",";
 
         try {
+            //Files.write(inFile, msg.getBytes(),
+            //                    StandardOpenOption.APPEND);
             Files.write(inFile, msg.getBytes(),
-                    StandardOpenOption.APPEND);
+                    StandardOpenOption.WRITE);
         } catch (IOException e) {
             System.err.println("Failed to write branch to " + inFile);
             e.printStackTrace();
