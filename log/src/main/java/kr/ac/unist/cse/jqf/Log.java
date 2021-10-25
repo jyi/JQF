@@ -435,7 +435,7 @@ public class Log {
             System.out.println("in: " + msg);
             return;
         }
-//        System.out.println("in: " + msg);
+        System.out.println("in: " + msg);
 
         if (Boolean.getBoolean("jqf.ei.run_two_versions")) {
             if (Log.runBuggyVersion) {

@@ -119,10 +119,10 @@ public class ReproDriver implements Runnable {
                 } else {
                     args[4] = text1[i];
                 }
-                String idNumber = text1[i].split("id")[1];
+                String idNumber = text1[i].split("id_")[1];
 //                System.out.println("id: " + idNumber);
 //                System.out.println("LogDir: " + args[1]);
-                args[1] = origLogDir + "/id" + idNumber;
+                args[1] = origLogDir + "/id_" + idNumber;
                 System.out.println("NewLogDir: " + args[1]);
                 System.out.println("print_args2__");
                 System.out.println(Arrays.toString(args));

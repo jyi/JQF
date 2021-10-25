@@ -194,6 +194,7 @@ public class FuzzStatement extends Statement {
                                                 argsList.add(((InRange) ann).seedDouble());
                                             }
                                             else if (gen2 instanceof IntegerGenerator) {
+//                                                System.out.println("SeedInt");
                                                 argsList.add(((InRange) ann).seedInt());
                                             }
 //                                        updateRange(guidance, gen2, (InRange) ann);
@@ -205,7 +206,7 @@ public class FuzzStatement extends Statement {
 //                                System.out.println("ArgList: " + Double.toString((Double)arg));
 //
 //                            }
-//                            args = argsList.toArray(new Object[argsList.size()]);
+                            args = argsList.toArray(new Object[argsList.size()]);
 //                            for (Object arg : args) {
 //                                System.out.println("ArgArray: " + Double.toString((Double)arg));
 //                            }
