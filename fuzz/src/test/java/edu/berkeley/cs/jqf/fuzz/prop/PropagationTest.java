@@ -28,7 +28,25 @@ public class PropagationTest {
                 "../src/test/resources/patches/Patch27/Math2b/target/test-classes:../src/test/resources/patches/Patch27/Math2b/target/classes",
                 "org.apache.commons.math3.distribution.JQF_HypergeometricDistributionTest", "testMath1021",
                 "../src/test/resources/fuzz-results-patch/all/id_000000015"});
+
+//        "zest-repro --batch --target org/apache/commons/math3/optimization/univariate/BrentOptimizer.java:202 --logdir /probank-experiments/math24-repro/test1/1/Correct org.apache.commons.math3.optimization.univariate.JQF_BrentOptimizerTest testMath855 /probank-experiments/math24-ids /probank-experiments/.poracle2/Math24f/target/test-classes:/probank-experiments/.poracle2/Math2\\\n" +
+//                "4f/target/classes"
     }
+
+    @Test
+    public void runRepro2() {
+        ReproDriver.main(new String[] {
+                "--batch", "--target", "org/apache/commons/math3/optimization/univariate/BrentOptimizer.java:202", "--logdir", "~/Remote/euibin_poracle/probank-experiments/math24-repro/test1/1/Correct",
+                "org.apache.commons.math3.optimization.univariate.JQF_BrentOptimizerTest",
+                "testMath855",
+                "~/Remote/euibin_poracle/probank-experiments/math24-ids",
+                "~/Remote/euibin_poracle/probank-experiments/.poracle2/Math24f/target/test-classes:~/Remote/euibin_poracle/probank-experiments/.poracle2/Math24f/target/classes",
+        });
+
+
+    }
+
+
     @Test
     public void runZestCLI() throws IOException {
         Path fuzz_results_patch_dir = FileSystems.getDefault().getPath("..", "src", "test", "resources", "fuzz-results-patch");

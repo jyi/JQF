@@ -34,6 +34,9 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import com.pholser.junit.quickcheck.Pair;
 import com.sun.istack.Nullable;
@@ -79,6 +82,7 @@ public class PoracleGuidance extends ZestGuidance {
     private BigList<BigList<Double>> stateDiffCoverage = new BigList<>();
     private File notIgnoreDirectory;
     private boolean diffOutFound;
+    private int diffCount = 0;
     protected boolean USE_WIDENING_PLATEAU_THRESHOLD =
             System.getProperty("jqf.ei.WIDENING_PLATEAU_THRESHOLD") != null?
                     true : false;
@@ -513,6 +517,45 @@ public class PoracleGuidance extends ZestGuidance {
         else return false;
     }
 
+    //TODO: treat coverage as list
+    public boolean shouldSaveInput(ResultOfOrg resultOfOrg, ArrayList<ResultOfPatch> resultOfPatch) {
+        System.out.println("ShouldSaveInput with list");
+        boolean newCoverageFound = false;
+        Distance dist = null;
+        for (ResultOfPatch rp : resultOfPatch) {
+            if (rp != null) {
+                newCoverageFound = rp.isNewCoverageFound();
+                dist = rp.getDistance();
+            } else {
+                newCoverageFound = resultOfOrg.isNewCoverageFound();
+                dist = resultOfOrg.getDistance();
+            }
+
+            if (newCoverageFound) {
+                if (savedInputs.isEmpty()) return true;
+
+                Input best = this.savedInputs.get(savedInputs.size() - 1);
+                int result = (new InputComparator()).compare(dist, best.getDistance());
+                if (result > 0) {
+                    if (resultOfPatch != null) {
+                        String why = rp.getWhy() + "+dist";
+                        rp.setWhy(why);
+                    } else {
+                        String why = resultOfOrg.getWhy() + "+dist";
+                        resultOfOrg.setWhy(why);
+                    }
+                    return true;
+                }
+            }
+        }
+
+
+        long elapsedTime = new Date().getTime() - startTime.getTime();
+        double temp = this.temparature(elapsedTime) / 2d;
+        if (Math.random() < temp) return true;
+        else return false;
+    }
+
     public void saveInputs(String reason, boolean valid) {
         Set<Object> responsibilities = computeResponsibilities(valid);
         GuidanceException.wrap(() -> saveCurrentInput(responsibilities, reason));
@@ -889,13 +932,19 @@ public class PoracleGuidance extends ZestGuidance {
         this.isDiffOutFound = isDiffOutFound;
     }
 
+    public void incDiffOutputFound() {
+        this.diffCount += 1;
+//        System.out.println("DiffOutCount: " + Integer.toString(this.diffCount));
+    }
+
+
     @Override
     public boolean hasInput() {
         diffOutFound = false;
         Date now = new Date();
         long elapsedMilliseconds = now.getTime() - startTime.getTime();
 
-        // if (timeOutOccurred) return false;
+         if (timeOutOccurred) return false;
 
         if (EXIT_ON_PLATEAU && isPlateauReached) {
             infoLog("stop because plateau is reached");
@@ -914,7 +963,8 @@ public class PoracleGuidance extends ZestGuidance {
             }
         }
 
-        if (requiredRun>0 && this.numTrials>=requiredRun){
+        // this.diffCount
+        if (requiredRun>0 && this.diffCount>=requiredRun){
             System.out.println("It's Done");
             infoLog("Finish for required count is reached: %d", requiredRun);
             return false;
@@ -939,7 +989,7 @@ public class PoracleGuidance extends ZestGuidance {
             infoLog("Diff out is found after %d ms!", elapsedMilliseconds);
             System.out.println(String.format("Diff out is found after %d ms!", elapsedMilliseconds));
             
-            if (requiredRun>0) return true;
+//            if (requiredRun>0) return true;
 //            else return false;
         }
 
@@ -1156,7 +1206,8 @@ public class PoracleGuidance extends ZestGuidance {
 
         // Save input unconditionally if such a setting is enabled
         if (savedAllDirectory != null) {
-            this.curSaveFileName = String.format("id_%09d", numTrials);
+            this.curSaveFileName = String.format("id_%09d", numTrials+1);
+            System.out.println("SaveAll: " + curSaveFileName);
             File saveFile = new File(savedAllDirectory, this.curSaveFileName);
             GuidanceException.wrap(() -> writeCurrentInputToFile(saveFile));
         }
@@ -1164,6 +1215,7 @@ public class PoracleGuidance extends ZestGuidance {
         File inputFile = null;
         if (inputNotIgnored) {
             this.curSaveFileName = String.format("id_%09d", numTrials);
+            System.out.println("Save: " + curSaveFileName);
             inputFile = new File(notIgnoreDirectory, this.curSaveFileName);
             final File saved = inputFile;
             GuidanceException.wrap(() -> writeCurrentInputToFile(saved));

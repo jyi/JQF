@@ -31,6 +31,7 @@ package edu.berkeley.cs.jqf.fuzz.junit;
 import java.util.List;
 
 import edu.berkeley.cs.jqf.fuzz.Fuzz;
+import edu.berkeley.cs.jqf.fuzz.JQF;
 import org.junit.runners.BlockJUnit4ClassRunner;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
@@ -64,7 +65,6 @@ public class TrialRunner extends BlockJUnit4ClassRunner {
     public void run() throws Throwable {
         this.methodBlock(method).evaluate();
     }
-
 
 
 }

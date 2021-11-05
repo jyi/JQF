@@ -196,6 +196,9 @@ public class ZestCLI2 implements Runnable {
     @Option(names={"--use-seed"},description="use seed value in parameter")
     private boolean useSeed=false;
 
+    @Option(names={"--multi-fuzzing"},description="multi version differential fuzzing")
+    private boolean multiFuzz=false;
+
     public static ClassLoader loaderForOrg;
 
     private File[] readSeedFiles() {
@@ -276,6 +279,7 @@ public class ZestCLI2 implements Runnable {
         }
         if (this.classPathForPatch != null) {
             System.setProperty("jqf.ei.CLASSPATH_FOR_PATCH", this.classPathForPatch);
+            System.setProperty("jqf.ei.CURRENT_PATH_FOR_PATCH", this.classPathForPatch);
             System.setProperty("jqf.ei.run_two_versions", "true");
         } else {
             System.setProperty("jqf.ei.run_two_versions", "false");
@@ -316,6 +320,9 @@ public class ZestCLI2 implements Runnable {
 
         System.setProperty("kr.ac.unist.cse.jqf.IGNORE_COND",Boolean.toString(this.ignoreCondition));
         System.setProperty("kr.ac.unist.cse.jqf.USE_SEED",Boolean.toString(this.useSeed));
+        System.setProperty("kr.ac.unist.cse.jqf.MULTI_FUZZ",Boolean.toString(this.multiFuzz));
+
+//        System.out.println("MULTIFUZZ: " + Boolean.toString(Boolean.getBoolean(System.getProperty("kr.ac.unist.cse.jqf.MULTI_FUZZ"))));
 
         try {
             InstrumentingClassLoader loaderForOrg = new InstrumentingClassLoader(

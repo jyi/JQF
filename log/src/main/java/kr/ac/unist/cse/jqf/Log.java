@@ -1,10 +1,8 @@
 package kr.ac.unist.cse.jqf;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.*;
 import java.nio.file.*;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.List;
@@ -16,9 +14,13 @@ public class Log {
 
     public static File measureTimeFile;
 
+    public String currOutPath = new String();
+
     public static class LogResult {
         private static String outputForOrg = null;
         private static String outputForPatch = null;
+        public static String currOutPath = new String();
+        public static String origOutPath = new String();
 
         public static void clear() {
             if (Boolean.getBoolean("jqf.ei.run_patch")) {
@@ -38,6 +40,25 @@ public class Log {
                 outputForPatch = outputForPatch == null? realOut : outputForPatch + realOut;
             } else {
                 outputForOrg = outputForOrg == null? realOut : outputForOrg + realOut;
+            }
+        }
+
+        public void Cmd() throws IOException {
+            List cmdList = new ArrayList();
+            cmdList.add("pwd");
+
+            Process process = null;
+            String str = null;
+
+            try {
+                process = new ProcessBuilder(cmdList).start();
+                BufferedReader stdOut = new BufferedReader(new InputStreamReader(process.getInputStream()));
+
+                while((str = stdOut.readLine()) != null) {
+                    System.out.println(str);
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
             }
         }
 
@@ -63,7 +84,11 @@ public class Log {
                 double delta = Double.parseDouble(System.getProperty("jqf.ei.delta"));
                 if (Math.abs(Double.parseDouble(outputForOrg) - Double.parseDouble(outputForPatch)) > delta) {
                     return true;
-                } else
+                }
+                else if (!outputForOrg.equals(outputForPatch)) {
+                    return true;
+                }
+                else
                     return false;
             } catch (NumberFormatException e) { }
             // fall back to equals
@@ -169,7 +194,7 @@ public class Log {
                 e.printStackTrace();
             }
             outFile = Paths.get(logDir, inputID, "OUT.log");
-            System.out.println("Output: " + outFile.toString());
+//            System.out.println("Output: " + outFile.toString());
         }
         try {
             Files.deleteIfExists(outFile);
@@ -255,15 +280,26 @@ public class Log {
         if (Boolean.getBoolean("jqf.ei.run_two_versions")) {
             if (Log.runBuggyVersion) {
                 logDir += File.separator + "ORG";
-            } else {
+            } else if (System.getProperty("kr.ac.unist.cse.jqf.MULTI_FUZZ").equals("true")) {
+                String patchIndex = System.getProperty("jqf.ei.CURRENT_PATH_FOR_PATCH");
+//                System.out.println("Current Patch: " + patchIndex);
+                logDir += File.separator + "PATCH" + File.separator + patchIndex.split("patched/")[1].split("/target")[0];
+//                System.out.println("New LogDir: " + logDir);
+            }
+            else {
                 logDir += File.separator + "PATCH";
             }
         }
 
         Path outFile;
         String inputID = System.getProperty("jqf.ei.inputID");
+
         if (inputID == null) {
             outFile = Paths.get(logDir, "OUT.log");
+            LogResult.currOutPath = outFile.toString();
+            if (!Boolean.getBoolean("jqf.ei.run_patch")) {
+                LogResult.origOutPath = outFile.toString();
+            }
         } else {
             try {
                 Files.createDirectories(Paths.get(logDir, inputID));
@@ -272,6 +308,10 @@ public class Log {
                 e.printStackTrace();
             }
             outFile = Paths.get(logDir, inputID, "OUT.log");
+            LogResult.currOutPath = outFile.toString();
+            if (!Boolean.getBoolean("jqf.ei.run_patch")) {
+                LogResult.origOutPath = outFile.toString();
+            }
         }
 
         if (!Files.exists(outFile)) {
@@ -440,7 +480,14 @@ public class Log {
         if (Boolean.getBoolean("jqf.ei.run_two_versions")) {
             if (Log.runBuggyVersion) {
                 logDir += File.separator + "ORG";
-            } else {
+            }
+            else if (System.getProperty("kr.ac.unist.cse.jqf.MULTI_FUZZ").equals("true")) {
+                String patchIndex = System.getProperty("jqf.ei.CURRENT_PATH_FOR_PATCH");
+//                System.out.println("Current Patch: " + patchIndex);
+                logDir += File.separator + "PATCH" + File.separator + patchIndex.split("patched/")[1].split("/target")[0];
+//                System.out.println("New In LogDir: " + logDir);
+            }
+            else {
                 logDir += File.separator + "PATCH";
             }
         }
@@ -567,7 +614,14 @@ public class Log {
         if (Boolean.getBoolean("jqf.ei.run_two_versions")) {
             if (!isPatch) {
                 logDir += File.separator + "ORG";
-            } else {
+            }
+            else if (System.getProperty("kr.ac.unist.cse.jqf.MULTI_FUZZ").equals("true")) {
+                String patchIndex = System.getProperty("jqf.ei.CURRENT_PATH_FOR_PATCH");
+//                System.out.println("Current Patch: " + patchIndex);
+                logDir += File.separator + "PATCH" + File.separator + patchIndex.split("patched/")[1].split("/target")[0];
+//                System.out.println("New Branch LogDir: " + logDir);
+            }
+            else {
                 logDir += File.separator + "PATCH";
             }
         }
@@ -629,7 +683,14 @@ public class Log {
         if (Boolean.getBoolean("jqf.ei.run_two_versions")) {
             if (!isPatch) {
                 logDir += File.separator + "ORG";
-            } else {
+            }
+            else if (System.getProperty("kr.ac.unist.cse.jqf.MULTI_FUZZ").equals("true")) {
+                String patchIndex = System.getProperty("jqf.ei.CURRENT_PATH_FOR_PATCH");
+//                System.out.println("Current Patch: " + patchIndex);
+                logDir += File.separator + "PATCH" + File.separator + patchIndex.split("patched/")[1].split("/target")[0];
+//                System.out.println("New Path LogDir: " + logDir);
+            }
+            else {
                 logDir += File.separator + "PATCH";
             }
         }

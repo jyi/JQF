@@ -58,6 +58,7 @@ import edu.berkeley.cs.jqf.fuzz.repro.ReproGuidance;
 import edu.berkeley.cs.jqf.fuzz.guidance.Result;
 import edu.berkeley.cs.jqf.fuzz.guidance.StreamBackedRandom;
 import edu.berkeley.cs.jqf.fuzz.Fuzz;
+import edu.berkeley.cs.jqf.fuzz.PatchInfo;
 import edu.berkeley.cs.jqf.fuzz.junit.GuidedFuzzing;
 import edu.berkeley.cs.jqf.fuzz.junit.TrialRunner;
 import edu.berkeley.cs.jqf.instrument.InstrumentingClassLoader;
@@ -84,6 +85,8 @@ import static edu.berkeley.cs.jqf.fuzz.guidance.Result.*;
  */
 public class FuzzStatement extends Statement {
     private ClassLoader loaderForPatch;
+    private ArrayList<ClassLoader> loaderForPatchList = new ArrayList<>();
+    private ArrayList<PatchInfo> patchInfos = new ArrayList<>();
     private FrameworkMethod method;
     private final TestClass testClass;
     private final Map<String, Type> typeVariables;
@@ -95,6 +98,7 @@ public class FuzzStatement extends Statement {
     private static boolean useRepro = false;
     private static boolean verbose = true;
     private static boolean first = true;
+    private static boolean firstPatch = true;
 
     public FuzzStatement(FrameworkMethod method, TestClass testClass,
                          GeneratorRepository generatorRepository) {
@@ -108,11 +112,28 @@ public class FuzzStatement extends Statement {
         this.expectedExceptions = Arrays.asList(method.getMethod().getExceptionTypes());
     }
 
+
     public FuzzStatement(FrameworkMethod method, TestClass testClass,
                          GeneratorRepository generatorRepository, ClassLoader loaderForPatch) {
         this(method, testClass, generatorRepository);
         this.loaderForPatch = loaderForPatch;
     }
+
+    public FuzzStatement(FrameworkMethod method, TestClass testClass,
+                         GeneratorRepository generatorRepository, ArrayList<ClassLoader> loaderForPatch, boolean onlyLoader) {
+        this(method, testClass, generatorRepository);
+        this.loaderForPatchList = loaderForPatch;
+        this.loaderForPatch = loaderForPatch.get(0);
+    }
+
+    public FuzzStatement(FrameworkMethod method, TestClass testClass,
+                         GeneratorRepository generatorRepository, ArrayList<PatchInfo> patchInfos) {
+        this(method, testClass, generatorRepository);
+        this.loaderForPatch = patchInfos.get(0).patchLoader;
+        this.patchInfos = patchInfos;
+    }
+
+
 
     /**
      * Run the test.
@@ -206,7 +227,9 @@ public class FuzzStatement extends Statement {
 //                                System.out.println("ArgList: " + Double.toString((Double)arg));
 //
 //                            }
-                            args = argsList.toArray(new Object[argsList.size()]);
+                            if (argsList.size() > 0) {
+                                args = argsList.toArray(new Object[argsList.size()]);
+                            }
 //                            for (Object arg : args) {
 //                                System.out.println("ArgArray: " + Double.toString((Double)arg));
 //                            }
@@ -315,6 +338,7 @@ public class FuzzStatement extends Statement {
         }
     }
 
+
     private void evaluateOrg(PoracleGuidance guidance, List<Generator<?>> generators) throws Throwable {
         // Keep fuzzing until no more input or I/O error with guidance
         try {
@@ -333,6 +357,7 @@ public class FuzzStatement extends Statement {
 
                 // Initialize guided fuzzing using a file-backed random number source
                 Object[] args = null;
+                ArrayList<Object> argsList = new ArrayList<>();
                 try {
                     try {
                         // Generate input values
@@ -343,11 +368,49 @@ public class FuzzStatement extends Statement {
                         args = generators.stream()
                                 .map(g -> g.generate(random, genStatus))
                                 .toArray();
-                        if (first) {
-
-                        }
 
                         Log.resetLogDirForInput();
+
+                        System.out.println("First: " + Boolean.toString(first));
+                        if (first && Boolean.getBoolean("kr.ac.unist.cse.jqf.USE_SEED")) {
+                            System.out.println("useSeed: " + Boolean.toString(Boolean.getBoolean("kr.ac.unist.cse.jqf.USE_SEED")));
+                            for (int i = 0; i < method.getMethod().getParameterCount(); i++) {
+                                Generator<?> gen = generators.get(i);
+                                if (!(gen instanceof CompositeGenerator)) {
+                                    throw new RuntimeException("Unsupported generator type: " + gen.getClass());
+                                }
+                                CompositeGenerator comGen = (CompositeGenerator) gen;
+                                for (int j = 0; j < comGen.numberOfComposedGenerators(); j++) {
+                                    Generator<?> gen2 = ((CompositeGenerator) comGen).composed(j);
+                                    Annotation[] anns = method.getMethod().getParameterAnnotations()[i];
+                                    for (Annotation ann: anns) {
+                                        if (ann instanceof InRange) {
+                                            if (gen2 instanceof DoubleGenerator) {
+                                                argsList.add(((InRange) ann).seedDouble());
+                                            }
+                                            else if (gen2 instanceof IntegerGenerator) {
+//                                                System.out.println("SeedInt");
+                                                argsList.add(((InRange) ann).seedInt());
+                                            }
+//                                        updateRange(guidance, gen2, (InRange) ann);
+                                        }
+                                    }
+                                }
+                            }
+//                            for (Object arg : argsList) {
+//                                System.out.println("ArgList: " + Double.toString((Double)arg));
+//
+//                            }
+                            if (argsList.size() > 0) {
+                                args = argsList.toArray(new Object[argsList.size()]);
+                            }
+
+//                            for (Object arg : args) {
+//                                System.out.println("ArgArray: " + Double.toString((Double)arg));
+//                            }
+                            first = false;
+                        }
+
                         Log.logIn(args);
                         for (Object o : args) {
 //                            System.out.println("Arg: " + String.valueOf(o));
@@ -409,6 +472,7 @@ public class FuzzStatement extends Statement {
 
                 PoracleGuidance.ResultOfOrg resultOfOrg = guidance.handleResultOfOrg(result, error);
                 PoracleGuidance.ResultOfPatch resultOfPatch = null;
+                ArrayList<PoracleGuidance.ResultOfPatch> resultOfPatchesList = new ArrayList<>();
                 if (resultOfOrg.isInputNotIgnored()) {
                     guidance.infoLog("Found an non-ignoring input");
                     guidance.fixRange();
@@ -416,51 +480,116 @@ public class FuzzStatement extends Statement {
                     assert guidance.getCurSaveFileName() != null;
 
                     // we call the patched version
-                    runPatch(guidance, resultOfOrg);
-                    guidance.setDiffOutputFound(isDiffOutputFound());
+                    if (System.getProperty("kr.ac.unist.cse.jqf.MULTI_FUZZ").equals("true")) {
+                        for (PatchInfo pi : patchInfos) {
+                            System.setProperty("jqf.ei.CURRENT_PATH_FOR_PATCH", pi.patchPath);
+//                            System.out.println("PatchInfo: " + pi.patchPath);
+                            runPatch(guidance, resultOfOrg, pi.getPatchLoader(), argsList.size());
+                            if (!guidance.isDiffOutFound()) {
+                                guidance.setDiffOutputFound(isDiffOutputFound());
+                            }
+                            if (isDiffOutputFound()) {
+                                pi.increaseDiffFound();
+                                guidance.incDiffOutputFound();
+                            }
+                            boolean targetHit = false;
+                            if (DumpUtil.isTheTargetHit() && !isDiffOutputFound()) {
+                                targetHit = true;
+                                // we call the original version again
+                                // we should retrieve the class loader for the buggy version
+                                DumpUtil.runOrgVerAgain = true;
+                                ReproGuidance reproGuidance2 = new ReproGuidance(resultOfOrg.getInputFile(), null,
+                                        guidance.getOutputDirectory());
+                                guidance.resetRunCoverageOfOrg();
+                                run(testClass.getName(), method.getName(), ZestCLI2.loaderForOrg, reproGuidance2);
+                                DumpUtil.runOrgVerAgain = false;
+                                DumpUtil.setTargetHit(false);
+                                DumpUtil.exitMethods.clear();
+                                DumpUtil.enterMethods.clear();
+                            }
 
-                    boolean targetHit = false;
-                    if (DumpUtil.isTheTargetHit() && !isDiffOutputFound()) {
-                        targetHit = true;
-                        // we call the original version again
-                        // we should retrieve the class loader for the buggy version
-                        DumpUtil.runOrgVerAgain = true;
-                        ReproGuidance reproGuidance2 = new ReproGuidance(resultOfOrg.getInputFile(), null,
-                                guidance.getOutputDirectory());
-                        guidance.resetRunCoverageOfOrg();
-                        run(testClass.getName(), method.getName(), ZestCLI2.loaderForOrg, reproGuidance2);
-                        DumpUtil.runOrgVerAgain = false;
-                        DumpUtil.setTargetHit(false);
-                        DumpUtil.exitMethods.clear();
-                        DumpUtil.enterMethods.clear();
+                            resultOfPatchesList.add(guidance.handleResultOfPatch(result, targetHit));
+                        }
+                    }
+                    else {
+                        runPatch(guidance, resultOfOrg);
+                        guidance.setDiffOutputFound(isDiffOutputFound());
+
+                        boolean targetHit = false;
+                        if (DumpUtil.isTheTargetHit() && !isDiffOutputFound()) {
+                            targetHit = true;
+                            // we call the original version again
+                            // we should retrieve the class loader for the buggy version
+                            DumpUtil.runOrgVerAgain = true;
+                            ReproGuidance reproGuidance2 = new ReproGuidance(resultOfOrg.getInputFile(), null,
+                                    guidance.getOutputDirectory());
+                            guidance.resetRunCoverageOfOrg();
+                            run(testClass.getName(), method.getName(), ZestCLI2.loaderForOrg, reproGuidance2);
+                            DumpUtil.runOrgVerAgain = false;
+                            DumpUtil.setTargetHit(false);
+                            DumpUtil.exitMethods.clear();
+                            DumpUtil.enterMethods.clear();
+                        }
+
+                        resultOfPatch = guidance.handleResultOfPatch(result, targetHit);
                     }
 
-                    resultOfPatch = guidance.handleResultOfPatch(result, targetHit);
                 } else {
                     guidance.infoLog("Ignore input");
                 }
 
-                if (guidance.shouldSaveInput(resultOfOrg, resultOfPatch)) {
-                    guidance.resetProgressCount();
+                boolean shouldSave = false;
+                if (Boolean.getBoolean(System.getProperty("kr.ac.unist.cse.jqf.MULTI_FUZZ"))) {
+                    shouldSave = guidance.shouldSaveInput(resultOfOrg, resultOfPatchesList);
+                    if (shouldSave) {
+                        guidance.resetProgressCount();
 
-                    String why = "";
-                    PoracleGuidance.Distance dist = null;
-                    boolean valid = false;
-                    if (resultOfPatch != null) {
-                        why = resultOfPatch.getWhy() + "+dist";
-                        dist = resultOfPatch.getDistance();
-                        valid = resultOfPatch.isValid();
+                        String why = "";
+                        PoracleGuidance.Distance dist = null;
+                        boolean valid = false;
+                        if (resultOfPatchesList.get(resultOfPatchesList.size()-1) != null) {
+                            why = resultOfPatchesList.get(resultOfPatchesList.size()-1).getWhy() + "+dist";
+                            dist = resultOfPatchesList.get(resultOfPatchesList.size()-1).getDistance();
+                            valid = resultOfPatchesList.get(resultOfPatchesList.size()-1).isValid();
+                        } else {
+                            why = resultOfOrg.getWhy() + "+dist";
+                            dist = resultOfOrg.getDistance();
+                            valid = resultOfOrg.isValid();
+                        }
+                        infoLog("new distances: " + guidance.distsToString(dist));
+                        guidance.saveInputs(why, valid, dist);
                     } else {
-                        why = resultOfOrg.getWhy() + "+dist";
-                        dist = resultOfOrg.getDistance();
-                        valid = resultOfOrg.isValid();
+                        guidance.noProgress();
+                        infoLog("skip duplicate coverage");
                     }
-                    infoLog("new distances: " + guidance.distsToString(dist));
-                    guidance.saveInputs(why, valid, dist);
-                } else {
-                    guidance.noProgress();
-                    infoLog("skip duplicate coverage");
+
                 }
+                else {
+                    shouldSave = guidance.shouldSaveInput(resultOfOrg, resultOfPatch);
+                    if (shouldSave) {
+                        guidance.resetProgressCount();
+
+                        String why = "";
+                        PoracleGuidance.Distance dist = null;
+                        boolean valid = false;
+                        if (resultOfPatch != null) {
+                            why = resultOfPatch.getWhy() + "+dist";
+                            dist = resultOfPatch.getDistance();
+                            valid = resultOfPatch.isValid();
+                        } else {
+                            why = resultOfOrg.getWhy() + "+dist";
+                            dist = resultOfOrg.getDistance();
+                            valid = resultOfOrg.isValid();
+                        }
+                        infoLog("new distances: " + guidance.distsToString(dist));
+                        guidance.saveInputs(why, valid, dist);
+                    } else {
+                        guidance.noProgress();
+                        infoLog("skip duplicate coverage");
+                    }
+
+                }
+
 
                 guidance.checkProgress();
             }
@@ -495,11 +624,40 @@ public class FuzzStatement extends Statement {
                 ((InstrumentingClassLoader) loaderForPatch).instrumentClass(target.getClassName());
             }
         }
+        ThreadTracer.evaluatingPatch = true;
         run(testClass.getName(), method.getName(), this.loaderForPatch, reproGuidance);
         System.setProperty("jqf.ei.run_patch", "false");
 
         guidance.isWideningPlateauReached = false;
         Log.turnOnRunBuggyVersion();
+    }
+
+    private void runPatch(PoracleGuidance guidance, PoracleGuidance.ResultOfOrg resultOfOrg, ClassLoader loaderPatch, int argLen) throws ClassNotFoundException {
+        ReproGuidance reproGuidance;
+        if (argLen > 0) {
+            reproGuidance = new ReproGuidance(resultOfOrg.getInputFile(), null,
+                    guidance.getOutputDirectory(), true);
+        }
+        else {
+            reproGuidance = new ReproGuidance(resultOfOrg.getInputFile(), null,
+                    guidance.getOutputDirectory());
+        }
+
+        System.setProperty("jqf.ei.run_patch", "true");
+        if (patchInfos.size() != 0) {
+            if (loaderPatch instanceof InstrumentingClassLoader) {
+                // make sure that target classes are instrumented
+                Target[] targets = Target.getTargetArray(System.getProperty("jqf.ei.targets"));
+                for (Target target: targets) {
+                    ((InstrumentingClassLoader) loaderPatch).instrumentClass(target.getClassName());
+                }
+            }
+            run(testClass.getName(), method.getName(), loaderPatch, reproGuidance);
+            System.setProperty("jqf.ei.run_patch", "false");
+
+            guidance.isWideningPlateauReached = false;
+            Log.turnOnRunBuggyVersion();
+        }
     }
 
     private void run(String className, String methodName, ClassLoader loader, ReproGuidance reproGuidance) throws ClassNotFoundException {
@@ -532,6 +690,7 @@ public class FuzzStatement extends Statement {
                 // Initialize guided fuzzing using a file-backed random number source
                 try {
                     Object[] args;
+                    ArrayList<Object> argsList = new ArrayList<>();
                     try {
 
                         // Generate input values
@@ -541,6 +700,45 @@ public class FuzzStatement extends Statement {
                         args = generators.stream()
                                 .map(g -> g.generate(random, genStatus))
                                 .toArray();
+
+                        System.out.println("FirstPatch: " + Boolean.toString(firstPatch));
+                        if (firstPatch && Boolean.getBoolean("kr.ac.unist.cse.jqf.USE_SEED")) {
+                            System.out.println("useSeed: " + Boolean.toString(Boolean.getBoolean("kr.ac.unist.cse.jqf.USE_SEED")));
+                            for (int i = 0; i < method.getMethod().getParameterCount(); i++) {
+                                Generator<?> gen = generators.get(i);
+                                if (!(gen instanceof CompositeGenerator)) {
+                                    throw new RuntimeException("Unsupported generator type: " + gen.getClass());
+                                }
+                                CompositeGenerator comGen = (CompositeGenerator) gen;
+                                for (int j = 0; j < comGen.numberOfComposedGenerators(); j++) {
+                                    Generator<?> gen2 = ((CompositeGenerator) comGen).composed(j);
+                                    Annotation[] anns = method.getMethod().getParameterAnnotations()[i];
+                                    for (Annotation ann: anns) {
+                                        if (ann instanceof InRange) {
+                                            if (gen2 instanceof DoubleGenerator) {
+                                                argsList.add(((InRange) ann).seedDouble());
+                                            }
+                                            else if (gen2 instanceof IntegerGenerator) {
+//                                                System.out.println("SeedInt");
+                                                argsList.add(((InRange) ann).seedInt());
+                                            }
+//                                        updateRange(guidance, gen2, (InRange) ann);
+                                        }
+                                    }
+                                }
+                            }
+//                            for (Object arg : argsList) {
+//                                System.out.println("ArgList: " + Double.toString((Double)arg));
+//
+//                            }
+                            if (argsList.size() > 0) {
+                                args = argsList.toArray(new Object[argsList.size()]);
+                            }
+//                            for (Object arg : args) {
+//                                System.out.println("ArgArray: " + Double.toString((Double)arg));
+//                            }
+                            firstPatch = false;
+                        }
 
                         Log.logIn(args);
                         DumpUtil.reset();

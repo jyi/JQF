@@ -1,5 +1,8 @@
 package kr.ac.unist.cse.jqf.aspect;
 
+import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.io.json.JettisonMappedXmlDriver;
+
 public aspect Tracing {
     private pointcut methodPC () :
             execution(* *(..));
@@ -16,6 +19,7 @@ public aspect Tracing {
                 if (DumpUtil.isTargetMethod(thisJoinPoint))
                     DumpUtil.insideTargetMethod(false);
             }
+            DumpUtil.dumpAtExit(o, thisJoinPoint);
         }
 
         before (): methodPC() {

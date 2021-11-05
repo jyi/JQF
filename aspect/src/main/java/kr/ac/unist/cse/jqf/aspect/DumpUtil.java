@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Set;
 
 import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.io.json.JettisonMappedXmlDriver;
 import kr.ac.unist.cse.jqf.Log;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.Signature;
@@ -57,6 +58,7 @@ public class DumpUtil {
         }
         try {
             duringDumping = true;
+//            new JettisonMappedXmlDriver()
             XStream stream = new XStream();
             String xml = null;
             if (jp.getTarget() == null)

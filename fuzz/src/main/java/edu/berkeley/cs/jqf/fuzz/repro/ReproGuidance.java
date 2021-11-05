@@ -82,6 +82,8 @@ public class ReproGuidance implements Guidance {
 
     HashMap<Integer, String> branchDescCache = new HashMap<>();
 
+    private boolean useSeed = false;
+
 
     /**
      * Constructs an instance of ReproGuidance with a list of
@@ -107,6 +109,23 @@ public class ReproGuidance implements Guidance {
         logFile = new File(outputDirectory, "fuzz.log");
     }
 
+    public ReproGuidance(File[] inputFiles, File traceDir, File outputDirectory, boolean useSeed) {
+        this.inputFiles = inputFiles;
+        this.traceDir = traceDir;
+        if (Boolean.getBoolean("jqf.repro.logUniqueBranches")) {
+            allBranchesCovered = new HashSet<>();
+            branchesCoveredInCurrentRun = new HashSet<>();
+            ignoreInvalidCoverage = Boolean.getBoolean("jqf.repro.ignoreInvalidCoverage");
+        }
+        printArgs = Boolean.getBoolean("jqf.repro.printArgs");
+
+        this.outputDirectory = outputDirectory;
+        this.useSeed = useSeed;
+        logFile = new File(outputDirectory, "fuzz.log");
+
+    }
+
+
     /**
      * Constructs an instance of ReproGuidance with a single
      * input file to replay and a directory where the trace
@@ -121,6 +140,10 @@ public class ReproGuidance implements Guidance {
         this(new File[]{inputFile}, traceDir, outputDirectory);
     }
 
+    public ReproGuidance(File inputFile, File traceDir, File outputDirectory, boolean useSeed) {
+        this(new File[]{inputFile}, traceDir, outputDirectory, useSeed);
+    }
+
     /**
      * Returns an input stream corresponding to the next input file.
      *
@@ -129,8 +152,16 @@ public class ReproGuidance implements Guidance {
     @Override
     public InputStream getInput() {
 //        runCoverage.clear();
+        System.out.println("getInput in repro");
         try {
             File inputFile = inputFiles[nextFileIdx];
+            if (inputFile.toString().contains("id_000000001") || inputFile.toString().contains("id_000000000") || this.useSeed == true) {
+                System.setProperty("kr.ac.unist.cse.jqf.USE_SEED",Boolean.toString(true));
+                System.out.println("UseSeed in Repro");
+            }
+            else {
+                System.setProperty("kr.ac.unist.cse.jqf.USE_SEED",Boolean.toString(false));
+            }
             this.inputStream = new BufferedInputStream(new FileInputStream(inputFile));
 
             if (allBranchesCovered != null) {
