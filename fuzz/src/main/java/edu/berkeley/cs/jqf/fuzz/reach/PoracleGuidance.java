@@ -941,6 +941,9 @@ public class PoracleGuidance extends ZestGuidance {
     @Override
     public boolean hasInput() {
         diffOutFound = false;
+        if (System.getProperty("kr.ac.unist.cse.jqf.GO_ON").equals(true)) {
+            return true;
+        }
         Date now = new Date();
         long elapsedMilliseconds = now.getTime() - startTime.getTime();
 

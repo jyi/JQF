@@ -193,6 +193,9 @@ public class ZestCLI2 implements Runnable {
     @Option(names={"--ignore-log-cond"},description="ignore condition in Log.logOutIf")
     private boolean ignoreCondition=false;
 
+    @Option(names={"--go-on"},description="o not pause fuzzing")
+    private boolean goOn=false;
+
     @Option(names={"--use-seed"},description="use seed value in parameter")
     private boolean useSeed=false;
 
@@ -319,6 +322,7 @@ public class ZestCLI2 implements Runnable {
         System.setProperty("jqf.ei.delta", String.valueOf(delta));
 
         System.setProperty("kr.ac.unist.cse.jqf.IGNORE_COND",Boolean.toString(this.ignoreCondition));
+        System.setProperty("kr.ac.unist.cse.jqf.GO_ON",Boolean.toString(this.goOn));
         System.setProperty("kr.ac.unist.cse.jqf.USE_SEED",Boolean.toString(this.useSeed));
         System.setProperty("kr.ac.unist.cse.jqf.MULTI_FUZZ",Boolean.toString(this.multiFuzz));
 
