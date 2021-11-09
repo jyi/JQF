@@ -126,12 +126,12 @@ public class JQF extends JUnitQuickcheck {
 
                         for (int i = 0; i < files.length; i++) {
 //                            System.out.println("patched dir: " + files[i]);
-//                            System.out.println("Replaced: " + this.classPathForPatch.replace("patched", "patched/"+Integer.toString(i)));
+//                            System.out.println("Replaced: " + this.classPathForPatch.replace("patched", "patched/"+files[i].toString().split("patched/")[1]));
                             ClassLoader newClassLoader = new InstrumentingClassLoader(
-                                    this.classPathForPatch.replace("patched", "patched/"+Integer.toString(i)).split(File.pathSeparator),
+                                    this.classPathForPatch.replace("patched", "patched/"+files[i].toString().split("patched/")[1]).split(File.pathSeparator),
                                     ZestCLI2.class.getClassLoader());
                             loaderForPatch.add(newClassLoader);
-                            PatchInfo newPatchInfo = new PatchInfo(this.classPathForPatch.replace("patched", "patched/"+Integer.toString(i)), newClassLoader, 0);
+                            PatchInfo newPatchInfo = new PatchInfo(this.classPathForPatch.replace("patched", "patched/"+files[i].toString().split("patched/")[1]), newClassLoader, 0);
                             patchInfos.add(newPatchInfo);
                         }
 
