@@ -5,7 +5,11 @@ public class IOR extends Instruction {
     super(iid, mid);
   }
 
-  public void visit(IVisitor visitor) {
+    public IOR(String fileName, int iid, int mid) {
+        super(fileName, iid, mid);
+    }
+
+    public void visit(IVisitor visitor) {
     visitor.visitIOR(this);
   }
 

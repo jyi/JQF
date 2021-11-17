@@ -10,6 +10,12 @@ public class MULTIANEWARRAY extends Instruction {
     this.dims = dims;
   }
 
+  public MULTIANEWARRAY(String fileName, int iid, int mid, String desc, int dims) {
+    super(fileName, iid, mid);
+    this.desc = desc;
+    this.dims = dims;
+  }
+
   public void visit(IVisitor visitor) {
     visitor.visitMULTIANEWARRAY(this);
   }

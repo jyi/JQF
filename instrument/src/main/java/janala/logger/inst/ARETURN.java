@@ -5,7 +5,11 @@ public class ARETURN extends Instruction {
     super(iid, mid);
   }
 
-  public void visit(IVisitor visitor) {
+    public ARETURN(String fileName, int iid, int mid) {
+        super(fileName, iid, mid);
+    }
+
+    public void visit(IVisitor visitor) {
     visitor.visitARETURN(this);
   }
 

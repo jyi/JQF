@@ -83,6 +83,7 @@ public class PoracleGuidance extends ZestGuidance {
     private File notIgnoreDirectory;
     private boolean diffOutFound;
     private int diffCount = 0;
+
     protected boolean USE_WIDENING_PLATEAU_THRESHOLD =
             System.getProperty("jqf.ei.WIDENING_PLATEAU_THRESHOLD") != null?
                     true : false;
@@ -90,6 +91,7 @@ public class PoracleGuidance extends ZestGuidance {
             System.getProperty("jqf.ei.WIDENING_PLATEAU_THRESHOLD") != null?
                     Integer.getInteger("jqf.ei.WIDENING_PLATEAU_THRESHOLD") : 10;
     public boolean isWideningPlateauReached = false;
+    public int numOfPatches = 0;
     private long inputIdx = 0;
     private String inputID = null;
     private String parentID = null;
@@ -98,10 +100,12 @@ public class PoracleGuidance extends ZestGuidance {
     /** Coverage statistics for a single run. */
     protected Coverage runCoverageOfOrg = new Coverage();
     protected Coverage runCoverageOfPatch = new Coverage();
+    protected ArrayList<Coverage> runCoverageOfPatchList = new ArrayList<>();
 
     /** Cumulative coverage statistics. */
     protected Coverage totalCoverageOfOrg = new Coverage();
     protected Coverage totalCoverageOfPatch = new Coverage();
+    protected ArrayList<Coverage> totalCoverageOfPatchList = new ArrayList<>();
 
     /** Cumulative coverage for valid inputs. */
     protected Coverage validCoverageOfOrg = new Coverage();
@@ -483,6 +487,10 @@ public class PoracleGuidance extends ZestGuidance {
         this.notIgnoreDirectory.mkdirs();
     }
 
+    public void setNumOfPatches(int num) {
+        this.numOfPatches = num;
+    }
+
     public boolean shouldSaveInput(ResultOfOrg resultOfOrg, ResultOfPatch resultOfPatch) {
         boolean newCoverageFound = false;
         Distance dist = null;
@@ -773,6 +781,8 @@ public class PoracleGuidance extends ZestGuidance {
             numValid++;
         }
 
+
+
         // Possibly save input
         boolean newCoverageFound = false;
         String why = "";
@@ -795,6 +805,15 @@ public class PoracleGuidance extends ZestGuidance {
 
         // Update total coverage
         boolean coverageBitsUpdated = totalCoverageOfPatch.updateBits(runCoverageOfPatch);
+
+        if (this.totalCoverageOfPatchList.size() < this.numOfPatches) {
+            runCoverageOfPatchList.add(runCoverageOfPatch);
+            totalCoverageOfPatchList.add(totalCoverageOfPatch);
+        }
+        else {
+            //TODO: update coverage by index
+        }
+
         if (valid) {
             validCoverageOfPatch.updateBits(runCoverageOfPatch);
         }
@@ -1116,6 +1135,7 @@ public class PoracleGuidance extends ZestGuidance {
     /** Handles a trace event generated during test execution */
     protected void handleEvent(TraceEvent e) {
         // Collect totalCoverage
+//        System.out.println("Method:" + e.getContainingMethodName() + " " + Integer.toString(e.getLineNumber()));
         getRunCoverage().handleEvent(e);
         if (Boolean.getBoolean("jqf.ei.run_patch")) {
             targetDistance.handleEvent(e);

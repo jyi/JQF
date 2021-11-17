@@ -96,6 +96,7 @@ public class Coverage implements TraceEventVisitor {
             System.out.println("Coverage:handleEvent->" + e.getFileName() + " : " + e.getLineNumber());
         }
         */
+//        System.out.println("Coverage:handleEvent->" + e.getFileName() + " : " + e.getLineNumber());
         e.applyVisitor(this);
     }
 
@@ -234,6 +235,7 @@ public class Coverage implements TraceEventVisitor {
         return newCoverage;
 
     }
+
 
     /** Return copy of branch spectrum, because we will clear before next run */
     public Map<String,Integer> getBranchSpectrum(){

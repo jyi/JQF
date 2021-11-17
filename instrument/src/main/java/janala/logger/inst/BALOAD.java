@@ -5,7 +5,11 @@ public class BALOAD extends Instruction {
     super(iid, mid);
   }
 
-  public void visit(IVisitor visitor) {
+    public BALOAD(String fileName, int iid, int mid) {
+      super(fileName, iid, mid);
+    }
+
+    public void visit(IVisitor visitor) {
     visitor.visitBALOAD(this);
   }
 

@@ -10,6 +10,12 @@ public class LDC_String extends Instruction {
     this.address = address;
   }
 
+  public LDC_String(String fileName, int iid, int mid, String c, int identityHashCode) {
+    super(fileName, iid, mid);
+    this.c = c;
+    this.address = identityHashCode;
+  }
+
   public void visit(IVisitor visitor) {
     visitor.visitLDC_String(this);
   }

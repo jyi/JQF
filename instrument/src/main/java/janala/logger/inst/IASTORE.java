@@ -5,7 +5,11 @@ public class IASTORE extends Instruction {
     super(iid, mid);
   }
 
-  public void visit(IVisitor visitor) {
+    public IASTORE(String fileName, int iid, int mid) {
+      super(fileName, iid, mid);
+    }
+
+    public void visit(IVisitor visitor) {
     visitor.visitIASTORE(this);
   }
 

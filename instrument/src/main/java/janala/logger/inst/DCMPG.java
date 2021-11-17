@@ -5,7 +5,11 @@ public class DCMPG extends Instruction {
     super(iid, mid);
   }
 
-  public void visit(IVisitor visitor) {
+    public DCMPG(String fileName, int iid, int mid) {
+        super(fileName, iid, mid);
+    }
+
+    public void visit(IVisitor visitor) {
     visitor.visitDCMPG(this);
   }
 

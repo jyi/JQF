@@ -8,7 +8,12 @@ public class CHECKCAST extends Instruction {
     this.type = type;
   }
 
-  public void visit(IVisitor visitor) {
+    public CHECKCAST(String fileName, int iid, int mid, String type) {
+      super(fileName, iid, mid);
+      this.type = type;
+    }
+
+    public void visit(IVisitor visitor) {
     visitor.visitCHECKCAST(this);
   }
 

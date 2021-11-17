@@ -3,7 +3,7 @@ package janala.logger;
 import janala.logger.inst.*;
 
 public abstract class AbstractLogger implements Logger {
-  protected abstract void log(Instruction insn); 
+  protected abstract void log(Instruction insn);
 
   public void LDC(int iid, int mid, int c) {
     log(new LDC_int(iid, mid, c));
@@ -651,6 +651,586 @@ public abstract class AbstractLogger implements Logger {
 
   public void MONITOREXIT(int iid, int mid) {
     log(new MONITOREXIT(iid, mid));
+  }
+
+  public void LDC(String fileName, int iid, int mid, int c) {
+    log(new LDC_int(fileName, iid, mid, c));
+  }
+
+  public void LDC(String fileName, int iid, int mid, long c) {
+    log(new LDC_long(fileName, iid, mid, c));
+  }
+
+  public void LDC(String fileName, int iid, int mid, float c) {
+    log(new LDC_float(fileName, iid, mid, c));
+  }
+
+  public void LDC(String fileName, int iid, int mid, double c) {
+    log(new LDC_double(fileName, iid, mid, c));
+  }
+
+  public void LDC(String fileName, int iid, int mid, String c) {
+    log(new LDC_String(fileName, iid, mid, c, System.identityHashCode(c)));
+  }
+
+  public void LDC(String fileName, int iid, int mid, Object c) {
+    log(new LDC_Object(fileName, iid, mid, System.identityHashCode(c)));
+  }
+
+  public void IINC(String fileName, int iid, int mid, int var, int increment) {
+    log(new IINC(fileName, iid, mid, var, increment));
+  }
+
+  public void MULTIANEWARRAY(String fileName, int iid, int mid, String desc, int dims) {
+    log(new MULTIANEWARRAY(fileName, iid, mid, desc, dims));
+  }
+
+  public void LOOKUPSWITCH(String fileName, int iid, int mid, int dflt, int[] keys, int[] labels) {
+    log(new LOOKUPSWITCH(fileName, iid, mid, dflt, keys, labels));
+  }
+
+  public void TABLESWITCH(String fileName, int iid, int mid, int min, int max, int dflt, int[] labels) {
+    log(new TABLESWITCH(fileName, iid, mid, min, max, dflt, labels));
+  }
+
+  public void GOTO(String fileName, int iid, int mid, int label) {
+    log(new GOTO(fileName, iid, mid, label));
+  }
+
+  public void JSR(String fileName, int iid, int mid, int label) {
+    log(new GOTO(fileName, iid, mid, label));
+  }
+
+  public void INVOKEVIRTUAL(String fileName, int iid, int mid, String owner, String name, String desc) {
+    log(new INVOKEVIRTUAL(fileName, iid, mid, owner, name, desc));
+  }
+
+  public void INVOKESPECIAL(String fileName, int iid, int mid, String owner, String name, String desc) {
+    log(new INVOKESPECIAL(fileName, iid, mid, owner, name, desc));
+  }
+
+  public void INVOKESTATIC(String fileName, int iid, int mid, String owner, String name, String desc) {
+    log(new INVOKESTATIC(fileName, iid, mid, owner, name, desc));
+  }
+
+  public void INVOKEINTERFACE(String fileName, int iid, int mid, String owner, String name, String desc) {
+    log(new INVOKEINTERFACE(fileName, iid, mid, owner, name, desc));
+  }
+
+  public void GETSTATIC(String fileName, int iid, int mid, int cIdx, int fIdx, String desc) {
+    log(new GETSTATIC(fileName, iid, mid, cIdx, fIdx, desc));
+  }
+
+  public void PUTSTATIC(String fileName, int iid, int mid, int cIdx, int fIdx, String desc) {
+    log(new PUTSTATIC(fileName, iid, mid, cIdx, fIdx, desc));
+  }
+
+  public void GETFIELD(String fileName, int iid, int mid, int cIdx, int fIdx, String desc) {
+    log(new GETFIELD(fileName, iid, mid, cIdx, fIdx, desc));
+  }
+
+  public void PUTFIELD(String fileName, int iid, int mid, int cIdx, int fIdx, String desc) {
+    log(new PUTFIELD(fileName, iid, mid, cIdx, fIdx, desc));
+  }
+
+  public void NEW(String fileName, int iid, int mid, String type, int cIdx) {
+    log(new NEW(fileName, iid, mid, type, cIdx));
+  }
+
+  public void ANEWARRAY(String fileName, int iid, int mid, String type) {
+    log(new ANEWARRAY(fileName, iid, mid, type));
+  }
+
+  public void CHECKCAST(String fileName, int iid, int mid, String type) {
+    log(new CHECKCAST(fileName, iid, mid, type));
+  }
+
+  public void INSTANCEOF(String fileName, int iid, int mid, String type) {
+    log(new INSTANCEOF(fileName, iid, mid, type));
+  }
+
+  public void BIPUSH(String fileName, int iid, int mid, int value) {
+    log(new BIPUSH(fileName, iid, mid, value));
+  }
+
+  public void SIPUSH(String fileName, int iid, int mid, int value) {
+    log(new SIPUSH(fileName, iid, mid, value));
+  }
+
+  public void NEWARRAY(String fileName, int iid, int mid) {
+    log(new NEWARRAY(fileName, iid, mid));
+  }
+
+  public void ILOAD(String fileName, int iid, int mid, int var) {
+    log(new ILOAD(fileName, iid, mid, var));
+  }
+
+  public void LLOAD(String fileName, int iid, int mid, int var) {
+    log(new LLOAD(fileName, iid, mid, var));
+  }
+
+  public void FLOAD(String fileName, int iid, int mid, int var) {
+    log(new FLOAD(fileName, iid, mid, var));
+  }
+
+  public void DLOAD(String fileName, int iid, int mid, int var) {
+    log(new DLOAD(fileName, iid, mid, var));
+  }
+
+  public void ALOAD(String fileName, int iid, int mid, int var) {
+    log(new ALOAD(fileName, iid, mid, var));
+  }
+
+  public void ISTORE(String fileName, int iid, int mid, int var) {
+    log(new ISTORE(fileName, iid, mid, var));
+  }
+
+  public void LSTORE(String fileName, int iid, int mid, int var) {
+    log(new LSTORE(fileName, iid, mid, var));
+  }
+
+  public void FSTORE(String fileName, int iid, int mid, int var) {
+    log(new FSTORE(fileName, iid, mid, var));
+  }
+
+  public void DSTORE(String fileName, int iid, int mid, int var) {
+    log(new DSTORE(fileName, iid, mid, var));
+  }
+
+  public void ASTORE(String fileName, int iid, int mid, int var) {
+    log(new ASTORE(fileName, iid, mid, var));
+  }
+
+  public void RET(String fileName, int iid, int mid, int var) {
+    log(new RET(fileName, iid, mid, var));
+  }
+
+  public void NOP(String fileName, int iid, int mid) {
+    log(new NOP(fileName, iid, mid));
+  }
+
+  public void ACONST_NULL(String fileName, int iid, int mid) {
+    log(new ACONST_NULL(fileName, iid, mid));
+  }
+
+  public void ICONST_M1(String fileName, int iid, int mid) {
+    log(new ICONST_M1(fileName, iid, mid));
+  }
+
+  public void ICONST_0(String fileName, int iid, int mid) {
+    log(new ICONST_0(fileName, iid, mid));
+  }
+
+  public void ICONST_1(String fileName, int iid, int mid) {
+    log(new ICONST_1(fileName, iid, mid));
+  }
+
+  public void ICONST_2(String fileName, int iid, int mid) {
+    log(new ICONST_2(fileName, iid, mid));
+  }
+
+  public void ICONST_3(String fileName, int iid, int mid) {
+    log(new ICONST_3(fileName, iid, mid));
+  }
+
+  public void ICONST_4(String fileName, int iid, int mid) {
+    log(new ICONST_4(fileName, iid, mid));
+  }
+
+  public void ICONST_5(String fileName, int iid, int mid) {
+    log(new ICONST_5(fileName, iid, mid));
+  }
+
+  public void LCONST_0(String fileName, int iid, int mid) {
+    log(new LCONST_0(fileName, iid, mid));
+  }
+
+  public void LCONST_1(String fileName, int iid, int mid) {
+    log(new LCONST_1(fileName, iid, mid));
+  }
+
+  public void FCONST_0(String fileName, int iid, int mid) {
+    log(new FCONST_0(fileName, iid, mid));
+  }
+
+  public void FCONST_1(String fileName, int iid, int mid) {
+    log(new FCONST_1(fileName, iid, mid));
+  }
+
+  public void FCONST_2(String fileName, int iid, int mid) {
+    log(new FCONST_2(fileName, iid, mid));
+  }
+
+  public void DCONST_0(String fileName, int iid, int mid) {
+    log(new DCONST_0(fileName, iid, mid));
+  }
+
+  public void DCONST_1(String fileName, int iid, int mid) {
+    log(new DCONST_1(fileName, iid, mid));
+  }
+
+  public void IALOAD(String fileName, int iid, int mid) {
+    log(new IALOAD(fileName, iid, mid));
+  }
+
+  public void LALOAD(String fileName, int iid, int mid) {
+    log(new LALOAD(fileName, iid, mid));
+  }
+
+  public void FALOAD(String fileName, int iid, int mid) {
+    log(new FALOAD(fileName, iid, mid));
+  }
+
+  public void DALOAD(String fileName, int iid, int mid) {
+    log(new DALOAD(fileName, iid, mid));
+  }
+
+  public void AALOAD(String fileName, int iid, int mid) {
+    log(new AALOAD(fileName, iid, mid));
+  }
+
+  public void BALOAD(String fileName, int iid, int mid) {
+    log(new BALOAD(fileName, iid, mid));
+  }
+
+  public void CALOAD(String fileName, int iid, int mid) {
+    log(new CALOAD(fileName, iid, mid));
+  }
+
+  public void SALOAD(String fileName, int iid, int mid) {
+    log(new SALOAD(fileName, iid, mid));
+  }
+
+  public void IASTORE(String fileName, int iid, int mid) {
+    log(new IASTORE(fileName, iid, mid));
+  }
+
+  public void LASTORE(String fileName, int iid, int mid) {
+    log(new LASTORE(fileName, iid, mid));
+  }
+
+  public void FASTORE(String fileName, int iid, int mid) {
+    log(new FASTORE(fileName, iid, mid));
+  }
+
+  public void DASTORE(String fileName, int iid, int mid) {
+    log(new DASTORE(fileName, iid, mid));
+  }
+
+  public void AASTORE(String fileName, int iid, int mid) {
+    log(new AASTORE(fileName, iid, mid));
+  }
+
+  public void BASTORE(String fileName, int iid, int mid) {
+    log(new BASTORE(fileName, iid, mid));
+  }
+
+  public void CASTORE(String fileName, int iid, int mid) {
+    log(new CASTORE(fileName, iid, mid));
+  }
+
+  public void SASTORE(String fileName, int iid, int mid) {
+    log(new SASTORE(fileName, iid, mid));
+  }
+
+  public void POP(String fileName, int iid, int mid) {
+    log(new POP(fileName, iid, mid));
+  }
+
+  public void POP2(String fileName, int iid, int mid) {
+    log(new POP2(fileName, iid, mid));
+  }
+
+  public void DUP(String fileName, int iid, int mid) {
+    log(new DUP(fileName, iid, mid));
+  }
+
+  public void DUP_X1(String fileName, int iid, int mid) {
+    log(new DUP_X1(fileName, iid, mid));
+  }
+
+  public void DUP_X2(String fileName, int iid, int mid) {
+    log(new DUP_X2(fileName, iid, mid));
+  }
+
+  public void DUP2(String fileName, int iid, int mid) {
+    log(new DUP2(fileName, iid, mid));
+  }
+
+  public void DUP2_X1(String fileName, int iid, int mid) {
+    log(new DUP2_X1(fileName, iid, mid));
+  }
+
+  public void DUP2_X2(String fileName, int iid, int mid) {
+    log(new DUP2_X2(fileName, iid, mid));
+  }
+
+  public void SWAP(String fileName, int iid, int mid) {
+    log(new SWAP(fileName, iid, mid));
+  }
+
+  public void IADD(String fileName, int iid, int mid) {
+    log(new IADD(fileName, iid, mid));
+  }
+
+  public void LADD(String fileName, int iid, int mid) {
+    log(new LADD(fileName, iid, mid));
+  }
+
+  public void FADD(String fileName, int iid, int mid) {
+    log(new FADD(fileName, iid, mid));
+  }
+
+  public void DADD(String fileName, int iid, int mid) {
+    log(new DADD(fileName, iid, mid));
+  }
+
+  public void ISUB(String fileName, int iid, int mid) {
+    log(new ISUB(fileName, iid, mid));
+  }
+
+  public void LSUB(String fileName, int iid, int mid) {
+    log(new LSUB(fileName, iid, mid));
+  }
+
+  public void FSUB(String fileName, int iid, int mid) {
+    log(new FSUB(fileName, iid, mid));
+  }
+
+  public void DSUB(String fileName, int iid, int mid) {
+    log(new DSUB(fileName, iid, mid));
+  }
+
+  public void IMUL(String fileName, int iid, int mid) {
+    log(new IMUL(fileName, iid, mid));
+  }
+
+  public void LMUL(String fileName, int iid, int mid) {
+    log(new LMUL(fileName, iid, mid));
+  }
+
+  public void FMUL(String fileName, int iid, int mid) {
+    log(new FMUL(fileName, iid, mid));
+  }
+
+  public void DMUL(String fileName, int iid, int mid) {
+    log(new DMUL(fileName, iid, mid));
+  }
+
+  public void IDIV(String fileName, int iid, int mid) {
+    log(new IDIV(fileName, iid, mid));
+  }
+
+  public void LDIV(String fileName, int iid, int mid) {
+    log(new LDIV(fileName, iid, mid));
+  }
+
+  public void FDIV(String fileName, int iid, int mid) {
+    log(new FDIV(fileName, iid, mid));
+  }
+
+  public void DDIV(String fileName, int iid, int mid) {
+    log(new DDIV(fileName, iid, mid));
+  }
+
+  public void IREM(String fileName, int iid, int mid) {
+    log(new IREM(fileName, iid, mid));
+  }
+
+  public void LREM(String fileName, int iid, int mid) {
+    log(new LREM(fileName, iid, mid));
+  }
+
+  public void FREM(String fileName, int iid, int mid) {
+    log(new FREM(fileName, iid, mid));
+  }
+
+  public void DREM(String fileName, int iid, int mid) {
+    log(new DREM(fileName, iid, mid));
+  }
+
+  public void INEG(String fileName, int iid, int mid) {
+    log(new INEG(fileName, iid, mid));
+  }
+
+  public void LNEG(String fileName, int iid, int mid) {
+    log(new LNEG(fileName, iid, mid));
+  }
+
+  public void FNEG(String fileName, int iid, int mid) {
+    log(new FNEG(fileName, iid, mid));
+  }
+
+  public void DNEG(String fileName, int iid, int mid) {
+    log(new DNEG(fileName, iid, mid));
+  }
+
+  public void ISHL(String fileName, int iid, int mid) {
+    log(new ISHL(fileName, iid, mid));
+  }
+
+  public void LSHL(String fileName, int iid, int mid) {
+    log(new LSHL(fileName, iid, mid));
+  }
+
+  public void ISHR(String fileName, int iid, int mid) {
+    log(new ISHR(fileName, iid, mid));
+  }
+
+  public void LSHR(String fileName, int iid, int mid) {
+    log(new LSHR(fileName, iid, mid));
+  }
+
+  public void IUSHR(String fileName, int iid, int mid) {
+    log(new IUSHR(fileName, iid, mid));
+  }
+
+  public void LUSHR(String fileName, int iid, int mid) {
+    log(new LUSHR(fileName, iid, mid));
+  }
+
+  public void IAND(String fileName, int iid, int mid) {
+    log(new IAND(fileName, iid, mid));
+  }
+
+  public void LAND(String fileName, int iid, int mid) {
+    log(new LAND(fileName, iid, mid));
+  }
+
+  public void IOR(String fileName, int iid, int mid) {
+    log(new IOR(fileName, iid, mid));
+  }
+
+  public void LOR(String fileName, int iid, int mid) {
+    log(new LOR(fileName, iid, mid));
+  }
+
+  public void IXOR(String fileName, int iid, int mid) {
+    log(new IXOR(fileName, iid, mid));
+  }
+
+  public void LXOR(String fileName, int iid, int mid) {
+    log(new LXOR(fileName, iid, mid));
+  }
+
+  public void I2L(String fileName, int iid, int mid) {
+    log(new I2L(fileName, iid, mid));
+  }
+
+  public void I2F(String fileName, int iid, int mid) {
+    log(new I2F(fileName, iid, mid));
+  }
+
+  public void I2D(String fileName, int iid, int mid) {
+    log(new I2D(fileName, iid, mid));
+  }
+
+  public void L2I(String fileName, int iid, int mid) {
+    log(new L2I(fileName, iid, mid));
+  }
+
+  public void L2F(String fileName, int iid, int mid) {
+    log(new L2F(fileName, iid, mid));
+  }
+
+  public void L2D(String fileName, int iid, int mid) {
+    log(new L2D(fileName, iid, mid));
+  }
+
+  public void F2I(String fileName, int iid, int mid) {
+    log(new F2I(fileName, iid, mid));
+  }
+
+  public void F2L(String fileName, int iid, int mid) {
+    log(new F2L(fileName, iid, mid));
+  }
+
+  public void F2D(String fileName, int iid, int mid) {
+    log(new F2D(fileName, iid, mid));
+  }
+
+  public void D2I(String fileName, int iid, int mid) {
+    log(new D2I(fileName, iid, mid));
+  }
+
+  public void D2L(String fileName, int iid, int mid) {
+    log(new D2L(fileName, iid, mid));
+  }
+
+  public void D2F(String fileName, int iid, int mid) {
+    log(new D2F(fileName, iid, mid));
+  }
+
+  public void I2B(String fileName, int iid, int mid) {
+    log(new I2B(fileName, iid, mid));
+  }
+
+  public void I2C(String fileName, int iid, int mid) {
+    log(new I2C(fileName, iid, mid));
+  }
+
+  public void I2S(String fileName, int iid, int mid) {
+    log(new I2S(fileName, iid, mid));
+  }
+
+  public void LCMP(String fileName, int iid, int mid) {
+    log(new LCMP(fileName, iid, mid));
+  }
+
+  public void FCMPL(String fileName, int iid, int mid) {
+    log(new FCMPL(fileName, iid, mid));
+  }
+
+  public void FCMPG(String fileName, int iid, int mid) {
+    log(new FCMPG(fileName, iid, mid));
+  }
+
+  public void DCMPL(String fileName, int iid, int mid) {
+    log(new DCMPL(fileName, iid, mid));
+  }
+
+  public void DCMPG(String fileName, int iid, int mid) {
+    log(new DCMPG(fileName, iid, mid));
+  }
+
+  public void IRETURN(String fileName, int iid, int mid) {
+    log(new IRETURN(fileName, iid, mid));
+  }
+
+  public void LRETURN(String fileName, int iid, int mid) {
+    log(new LRETURN(fileName, iid, mid));
+  }
+
+  public void FRETURN(String fileName, int iid, int mid) {
+    log(new FRETURN(fileName, iid, mid));
+  }
+
+  public void DRETURN(String fileName, int iid, int mid) {
+    log(new DRETURN(fileName, iid, mid));
+  }
+
+  public void ARETURN(String fileName, int iid, int mid) {
+    log(new ARETURN(fileName, iid, mid));
+  }
+
+  public void RETURN(String fileName, int iid, int mid) {
+    log(new RETURN(fileName, iid, mid));
+  }
+
+  public void ARRAYLENGTH(String fileName, int iid, int mid) {
+    log(new ARRAYLENGTH(fileName, iid, mid));
+  }
+
+  public void ATHROW(String fileName, int iid, int mid) {
+    log(new ATHROW(fileName, iid, mid));
+  }
+
+  public void MONITORENTER(String fileName, int iid, int mid) {
+    log(new MONITORENTER(fileName, iid, mid));
+  }
+
+  public void MONITOREXIT(String fileName, int iid, int mid) {
+    log(new MONITOREXIT(fileName, iid, mid));
   }
 
   public void GETVALUE_double(double v) {

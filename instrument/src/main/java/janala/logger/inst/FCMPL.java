@@ -5,7 +5,11 @@ public class FCMPL extends Instruction {
     super(iid, mid);
   }
 
-  public void visit(IVisitor visitor) {
+    public FCMPL(String fileName, int iid, int mid) {
+        super(fileName, iid, mid);
+    }
+
+    public void visit(IVisitor visitor) {
     visitor.visitFCMPL(this);
   }
 

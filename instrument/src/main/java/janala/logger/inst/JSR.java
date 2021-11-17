@@ -8,6 +8,11 @@ public class JSR extends Instruction {
     this.label = label;
   }
 
+  public JSR(String fileName, int iid, int mid, int label) {
+    super(fileName, iid, mid);
+    this.label = label;
+  }
+
   public void visit(IVisitor visitor) {
     visitor.visitJSR(this);
   }

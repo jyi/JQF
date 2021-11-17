@@ -5,7 +5,11 @@ public class IADD extends Instruction {
     super(iid, mid);
   }
 
-  public void visit(IVisitor visitor) {
+    public IADD(String fileName, int iid, int mid) {
+        super(fileName, iid, mid);
+    }
+
+    public void visit(IVisitor visitor) {
     visitor.visitIADD(this);
   }
 

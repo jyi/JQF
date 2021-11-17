@@ -5,7 +5,11 @@ public class IREM extends Instruction {
     super(iid, mid);
   }
 
-  public void visit(IVisitor visitor) {
+    public IREM(String fileName, int iid, int mid) {
+        super(fileName, iid, mid);
+    }
+
+    public void visit(IVisitor visitor) {
     visitor.visitIREM(this);
   }
 

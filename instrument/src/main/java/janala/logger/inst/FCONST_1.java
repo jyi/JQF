@@ -5,7 +5,11 @@ public class FCONST_1 extends Instruction {
     super(iid, mid);
   }
 
-  public void visit(IVisitor visitor) {
+    public FCONST_1(String fileName, int iid, int mid) {
+      super(fileName, iid, mid);
+    }
+
+    public void visit(IVisitor visitor) {
     visitor.visitFCONST_1(this);
   }
 

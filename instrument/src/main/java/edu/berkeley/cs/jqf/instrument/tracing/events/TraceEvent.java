@@ -46,6 +46,7 @@ public abstract class TraceEvent {
         this.iid = iid;
         this.containingMethod = method;
         this.lineNumber = lineNumber;
+
     }
 
     public int getIid() {

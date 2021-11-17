@@ -151,6 +151,7 @@ public class ThreadTracer {
      */
     protected final void consume(Instruction ins) {
         boolean isTargetHit = false;
+        System.out.println("Consume " + ins.toString() + " " + ins.fileName + ":" + ins.mid);
         if (!(ins instanceof SPECIAL || ins instanceof METHOD_BEGIN || ins instanceof INVOKEMETHOD_END)) {
             if (this.targets != null) {
                 for (Target target : this.targets) {
@@ -474,15 +475,19 @@ public class ThreadTracer {
 
         @Override
         public void visitGETVALUE_int(GETVALUE_int gv) {
+            int iid = gv.iid;
+            int lineNum = gv.mid;
             values.intValue = gv.v;
-
+            emit(new DumpEvent(iid, this.method, lineNum));
             super.visitGETVALUE_int(gv);
         }
 
         @Override
         public void visitGETVALUE_boolean(GETVALUE_boolean gv) {
             values.booleanValue = gv.v;
-
+            int iid = gv.iid;
+            int lineNum = gv.mid;
+            emit(new DumpEvent(iid, this.method, lineNum));
             super.visitGETVALUE_boolean(gv);
         }
 

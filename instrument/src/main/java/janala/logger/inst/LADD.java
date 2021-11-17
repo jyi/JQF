@@ -5,7 +5,11 @@ public class LADD extends Instruction {
     super(iid, mid);
   }
 
-  public void visit(IVisitor visitor) {
+    public LADD(String fileName, int iid, int mid) {
+        super(fileName, iid, mid);
+    }
+
+    public void visit(IVisitor visitor) {
     visitor.visitLADD(this);
   }
 

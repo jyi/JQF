@@ -5,7 +5,11 @@ public class AASTORE extends Instruction {
     super(iid, mid);
   }
 
-  public void visit(IVisitor visitor) {
+    public AASTORE(String fileName, int iid, int mid) {
+      super(fileName, iid, mid);
+    }
+
+    public void visit(IVisitor visitor) {
     visitor.visitAASTORE(this);
   }
 

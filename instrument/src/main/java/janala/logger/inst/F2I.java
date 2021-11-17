@@ -5,7 +5,11 @@ public class F2I extends Instruction {
     super(iid, mid);
   }
 
-  public void visit(IVisitor visitor) {
+    public F2I(String fileName, int iid, int mid) {
+        super(fileName, iid, mid);
+    }
+
+    public void visit(IVisitor visitor) {
     visitor.visitF2I(this);
   }
 

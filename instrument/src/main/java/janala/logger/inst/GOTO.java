@@ -8,7 +8,12 @@ public class GOTO extends Instruction {
     this.label = label;
   }
 
-  public void visit(IVisitor visitor) {
+  public GOTO(String fileName, int iid, int mid, int label) {
+    super(iid, mid);
+    this.label = label;
+  }
+
+    public void visit(IVisitor visitor) {
     visitor.visitGOTO(this);
   }
 

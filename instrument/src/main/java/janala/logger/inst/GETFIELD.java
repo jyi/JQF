@@ -12,7 +12,14 @@ public class GETFIELD extends Instruction {
     this.desc = desc;
   }
 
-  public void visit(IVisitor visitor) {
+    public GETFIELD(String fileName, int iid, int mid, int cIdx, int fIdx, String desc) {
+      super(fileName, iid, mid);
+      this.cIdx = cIdx;
+      this.fIdx = fIdx;
+      this.desc = desc;
+    }
+
+    public void visit(IVisitor visitor) {
     visitor.visitGETFIELD(this);
   }
 

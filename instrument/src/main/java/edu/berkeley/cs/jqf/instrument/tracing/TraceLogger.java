@@ -58,7 +58,7 @@ public class TraceLogger extends AbstractLogger {
         return singleton;
     }
 
-    /** Logs an instrumented byteode instruction for the current thread. */
+    /** Logs an instrumented bytecode instruction for the current thread. */
     @Override
     protected void log(Instruction instruction) {
         tracer.get().consume(instruction);

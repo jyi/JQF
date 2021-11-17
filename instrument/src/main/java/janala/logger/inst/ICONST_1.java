@@ -5,7 +5,11 @@ public class ICONST_1 extends Instruction {
     super(iid, mid);
   }
 
-  public void visit(IVisitor visitor) {
+    public ICONST_1(String fileName, int iid, int mid) {
+      super(fileName, iid, mid);
+    }
+
+    public void visit(IVisitor visitor) {
     visitor.visitICONST_1(this);
   }
 

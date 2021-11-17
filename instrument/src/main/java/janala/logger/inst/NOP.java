@@ -5,7 +5,11 @@ public class NOP extends Instruction {
     super(iid, mid);
   }
 
-  public void visit(IVisitor visitor) {
+    public NOP(String fileName, int iid, int mid) {
+      super(fileName, iid, mid);
+    }
+
+    public void visit(IVisitor visitor) {
     visitor.visitNOP(this);
   }
 

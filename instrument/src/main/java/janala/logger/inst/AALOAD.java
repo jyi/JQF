@@ -5,7 +5,11 @@ public class AALOAD extends Instruction {
     super(iid, mid);
   }
 
-  public void visit(IVisitor visitor) {
+    public AALOAD(String fileName, int iid, int mid) {
+      super(fileName, iid, mid);
+    }
+
+    public void visit(IVisitor visitor) {
     visitor.visitAALOAD(this);
   }
 

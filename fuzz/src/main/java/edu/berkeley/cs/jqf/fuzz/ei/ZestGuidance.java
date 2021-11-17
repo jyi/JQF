@@ -972,6 +972,8 @@ public class ZestGuidance implements Guidance {
          */
         public Coverage coverage = null;
 
+        public ArrayList<Coverage> coverageList = new ArrayList<>();
+
         /**
          * The number of non-zero elements in `coverage`.
          *

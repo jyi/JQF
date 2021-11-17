@@ -13,4 +13,11 @@ public abstract class Instruction implements Serializable {
     this.iid = iid;
     this.mid = mid;
   }
+
+  public Instruction(String fileName, int iid, int mid) {
+    this.fileName = fileName;
+    this.iid = iid;
+    this.mid = mid;
+//    System.out.println("Instruction in " + fileName + " " + Integer.toString(mid));
+  }
 }

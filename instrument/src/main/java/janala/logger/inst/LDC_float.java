@@ -8,6 +8,11 @@ public class LDC_float extends Instruction {
     this.c = c;
   }
 
+  public LDC_float(String fileName, int iid, int mid, float c) {
+    super(fileName, iid, mid);
+    this.c = c;
+  }
+
   public void visit(IVisitor visitor) {
     visitor.visitLDC_float(this);
   }

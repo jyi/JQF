@@ -5,7 +5,11 @@ public class NEWARRAY extends Instruction {
     super(iid, mid);
   }
 
-  public void visit(IVisitor visitor) {
+    public NEWARRAY(String fileName, int iid, int mid) {
+      super(fileName, iid, mid);
+    }
+
+    public void visit(IVisitor visitor) {
     visitor.visitNEWARRAY(this);
   }
 

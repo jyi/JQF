@@ -949,6 +949,732 @@ public final class SingleSnoop {
         try { intp.MONITOREXIT(iid, mid); } finally { block.set(false); }
     }
 
+    public static void LDC(String fileName, int iid, int mid, int c) {
+        if (block.get()) return; else block.set(true);
+        try { intp.LDC(fileName, iid, mid, c); } finally { block.set(false); }
+    }
+
+    public static void LDC(String fileName, int iid, int mid, long c) {
+        if (block.get()) return; else block.set(true);
+        try { intp.LDC(fileName, iid, mid, c); } finally { block.set(false); }
+    }
+
+    public static void LDC(String fileName, int iid, int mid, float c) {
+        if (block.get()) return; else block.set(true);
+        try { intp.LDC(fileName, iid, mid, c); } finally { block.set(false); }
+    }
+
+    public static void LDC(String fileName, int iid, int mid, double c) {
+        if (block.get()) return; else block.set(true);
+        try { intp.LDC(fileName, iid, mid, c); } finally { block.set(false); }
+    }
+
+    public static void LDC(String fileName, int iid, int mid, String c) {
+        if (block.get()) return; else block.set(true);
+        try { intp.LDC(fileName, iid, mid, c); } finally { block.set(false); }
+    }
+
+    public static void LDC(String fileName, int iid, int mid, Object c) {
+        if (block.get()) return; else block.set(true);
+        try { intp.LDC(fileName, iid, mid, c); } finally { block.set(false); }
+    }
+
+    public static void IINC(String fileName, int iid, int mid, int var, int increment) {
+        if (block.get()) return; else block.set(true);
+        try { intp.IINC(fileName, iid, mid, var, increment); } finally { block.set(false); }
+    }
+
+    public static void MULTIANEWARRAY(String fileName, int iid, int mid, String desc, int dims) {
+        if (block.get()) return; else block.set(true);
+        try { intp.MULTIANEWARRAY(fileName, iid, mid, desc, dims); } finally { block.set(false); }
+    }
+
+    public static void LOOKUPSWITCH(String fileName, int iid, int mid, int dflt, int[] keys, int[] labels) {
+        if (block.get()) return; else block.set(true);
+        try { intp.LOOKUPSWITCH(fileName, iid, mid, dflt, keys, labels); } finally { block.set(false); }
+    }
+
+    public static void TABLESWITCH(String fileName, int iid, int mid, int min, int max, int dflt, int[] labels) {
+        if (block.get()) return; else block.set(true);
+        try { intp.TABLESWITCH(fileName, iid, mid, min, max, dflt, labels); } finally { block.set(false); }
+    }
+
+    public static void GOTO(String fileName, int iid, int mid, int label) {
+        if (block.get()) return; else block.set(true);
+        try { intp.GOTO(fileName, iid, mid, label); } finally { block.set(false); }
+    }
+
+    public static void JSR(String fileName, int iid, int mid, int label) {
+        if (block.get()) return; else block.set(true);
+        try { intp.JSR(fileName, iid, mid, label); } finally { block.set(false); }
+    }
+
+
+    public static void INVOKEVIRTUAL(String fileName, int iid, int mid, String owner, String name, String desc) {
+        if (block.get()) return; else block.set(true);
+        try { intp.INVOKEVIRTUAL(fileName, iid, mid, owner, name, desc); } finally { block.set(false); }
+    }
+
+    public static void INVOKESPECIAL(String fileName, int iid, int mid, String owner, String name, String desc) {
+        if (block.get()) return; else block.set(true);
+        try { intp.INVOKESPECIAL(fileName, iid, mid, owner, name, desc); } finally { block.set(false); }
+    }
+
+    public static void INVOKESTATIC(String fileName, int iid, int mid, String owner, String name, String desc) {
+        if (block.get()) return; else block.set(true);
+        try { intp.INVOKESTATIC(fileName, iid, mid, owner, name, desc); } finally { block.set(false); }
+    }
+
+    public static void INVOKEINTERFACE(String fileName, int iid, int mid, String owner, String name, String desc) {
+        if (block.get()) return; else block.set(true);
+        try { intp.INVOKEINTERFACE(fileName, iid, mid, owner, name, desc); } finally { block.set(false); }
+    }
+
+    public static void GETSTATIC(String fileName, int iid, int mid, int cIdx, int fIdx, String desc) {
+        if (block.get()) return; else block.set(true);
+        try { intp.GETSTATIC(fileName, iid, mid, cIdx, fIdx, desc); } finally { block.set(false); }
+    }
+
+    public static void PUTSTATIC(String fileName, int iid, int mid, int cIdx, int fIdx, String desc) {
+        if (block.get()) return; else block.set(true);
+        try { intp.PUTSTATIC(fileName, iid, mid, cIdx, fIdx, desc); } finally { block.set(false); }
+    }
+
+    public static void GETFIELD(String fileName, int iid, int mid, int cIdx, int fIdx, String desc) {
+        if (block.get()) return; else block.set(true);
+        try { intp.GETFIELD(fileName, iid, mid, cIdx, fIdx, desc); } finally { block.set(false); }
+    }
+
+    public static void PUTFIELD(String fileName, int iid, int mid, int cIdx, int fIdx, String desc) {
+        if (block.get()) return; else block.set(true);
+        try { intp.PUTFIELD(fileName, iid, mid, cIdx, fIdx, desc); } finally { block.set(false); }
+    }
+
+    public static void NEW(String fileName, int iid, int mid, String type) {
+        if (block.get()) return; else block.set(true);
+        try { intp.NEW(fileName, iid, mid, type, 0); } finally { block.set(false); }
+    }
+
+    public static void ANEWARRAY(String fileName, int iid, int mid, String type) {
+        if (block.get()) return; else block.set(true);
+        try { intp.ANEWARRAY(fileName, iid, mid, type); } finally { block.set(false); }
+    }
+
+    public static void CHECKCAST(String fileName, int iid, int mid, String type) {
+        if (block.get()) return; else block.set(true);
+        try { intp.CHECKCAST(fileName, iid, mid, type); } finally { block.set(false); }
+    }
+
+    public static void INSTANCEOF(String fileName, int iid, int mid, String type) {
+        if (block.get()) return; else block.set(true);
+        try { intp.INSTANCEOF(fileName, iid, mid, type); } finally { block.set(false); }
+    }
+
+    public static void BIPUSH(String fileName, int iid, int mid, int value) {
+        if (block.get()) return; else block.set(true);
+        try { intp.BIPUSH(fileName, iid, mid, value); } finally { block.set(false); }
+    }
+
+    public static void SIPUSH(String fileName, int iid, int mid, int value) {
+        if (block.get()) return; else block.set(true);
+        try { intp.SIPUSH(fileName, iid, mid, value); } finally { block.set(false); }
+    }
+
+    public static void NEWARRAY(String fileName, int iid, int mid) {
+        if (block.get()) return; else block.set(true);
+        try { intp.NEWARRAY(fileName, iid, mid); } finally { block.set(false); }
+    }
+
+    public static void ILOAD(String fileName, int iid, int mid, int var) {
+        if (block.get()) return; else block.set(true);
+        try { intp.ILOAD(fileName, iid, mid, var); } finally { block.set(false); }
+    }
+
+    public static void LLOAD(String fileName, int iid, int mid, int var) {
+        if (block.get()) return; else block.set(true);
+        try { intp.LLOAD(fileName, iid, mid, var); } finally { block.set(false); }
+    }
+
+    public static void FLOAD(String fileName, int iid, int mid, int var) {
+        if (block.get()) return; else block.set(true);
+        try { intp.FLOAD(fileName, iid, mid, var); } finally { block.set(false); }
+    }
+
+    public static void DLOAD(String fileName, int iid, int mid, int var) {
+        if (block.get()) return; else block.set(true);
+        try { intp.DLOAD(fileName, iid, mid, var); } finally { block.set(false); }
+    }
+
+    public static void ALOAD(String fileName, int iid, int mid, int var) {
+        if (block.get()) return; else block.set(true);
+        try { intp.ALOAD(fileName, iid, mid, var); } finally { block.set(false); }
+    }
+
+    public static void ISTORE(String fileName, int iid, int mid, int var) {
+        if (block.get()) return; else block.set(true);
+        try { intp.ISTORE(fileName, iid, mid, var); } finally { block.set(false); }
+    }
+
+    public static void LSTORE(String fileName, int iid, int mid, int var) {
+        if (block.get()) return; else block.set(true);
+        try { intp.LSTORE(fileName, iid, mid, var); } finally { block.set(false); }
+    }
+
+    public static void FSTORE(String fileName, int iid, int mid, int var) {
+        if (block.get()) return; else block.set(true);
+        try { intp.FSTORE(fileName, iid, mid, var); } finally { block.set(false); }
+    }
+
+    public static void DSTORE(String fileName, int iid, int mid, int var) {
+        if (block.get()) return; else block.set(true);
+        try { intp.DSTORE(fileName, iid, mid, var); } finally { block.set(false); }
+    }
+
+    public static void ASTORE(String fileName, int iid, int mid, int var) {
+        if (block.get()) return; else block.set(true);
+        try { intp.ASTORE(fileName, iid, mid, var); } finally { block.set(false); }
+    }
+
+    public static void RET(String fileName, int iid, int mid, int var) {
+        if (block.get()) return; else block.set(true);
+        try { intp.RET(fileName, iid, mid, var); } finally { block.set(false); }
+    }
+
+    public static void NOP(String fileName, int iid, int mid) {
+        if (block.get()) return; else block.set(true);
+        try { intp.NOP(fileName, iid, mid); } finally { block.set(false); }
+    }
+
+    public static void ACONST_NULL(String fileName, int iid, int mid) {
+        if (block.get()) return; else block.set(true);
+        try { intp.ACONST_NULL(fileName, iid, mid); } finally { block.set(false); }
+    }
+
+    public static void ICONST_M1(String fileName, int iid, int mid) {
+        if (block.get()) return; else block.set(true);
+        try { intp.ICONST_M1(fileName, iid, mid); } finally { block.set(false); }
+    }
+
+    public static void ICONST_0(String fileName, int iid, int mid) {
+        if (block.get()) return; else block.set(true);
+        try { intp.ICONST_0(fileName, iid, mid); } finally { block.set(false); }
+    }
+
+    public static void ICONST_1(String fileName, int iid, int mid) {
+        if (block.get()) return; else block.set(true);
+        try { intp.ICONST_1(fileName, iid, mid); } finally { block.set(false); }
+    }
+
+    public static void ICONST_2(String fileName, int iid, int mid) {
+        if (block.get()) return; else block.set(true);
+        try { intp.ICONST_2(fileName, iid, mid); } finally { block.set(false); }
+    }
+
+    public static void ICONST_3(String fileName, int iid, int mid) {
+        if (block.get()) return; else block.set(true);
+        try { intp.ICONST_3(fileName, iid, mid); } finally { block.set(false); }
+    }
+
+    public static void ICONST_4(String fileName, int iid, int mid) {
+        if (block.get()) return; else block.set(true);
+        try { intp.ICONST_4(fileName, iid, mid); } finally { block.set(false); }
+    }
+
+    public static void ICONST_5(String fileName, int iid, int mid) {
+        if (block.get()) return; else block.set(true);
+        try { intp.ICONST_5(fileName, iid, mid); } finally { block.set(false); }
+    }
+
+    public static void LCONST_0(String fileName, int iid, int mid) {
+        if (block.get()) return; else block.set(true);
+        try { intp.LCONST_0(fileName, iid, mid); } finally { block.set(false); }
+    }
+
+    public static void LCONST_1(String fileName, int iid, int mid) {
+        if (block.get()) return; else block.set(true);
+        try { intp.LCONST_1(fileName, iid, mid); } finally { block.set(false); }
+    }
+
+    public static void FCONST_0(String fileName, int iid, int mid) {
+        if (block.get()) return; else block.set(true);
+        try { intp.FCONST_0(fileName, iid, mid); } finally { block.set(false); }
+    }
+
+    public static void FCONST_1(String fileName, int iid, int mid) {
+        if (block.get()) return; else block.set(true);
+        try { intp.FCONST_1(fileName, iid, mid); } finally { block.set(false); }
+    }
+
+    public static void FCONST_2(String fileName, int iid, int mid) {
+        if (block.get()) return; else block.set(true);
+        try { intp.FCONST_2(fileName, iid, mid); } finally { block.set(false); }
+    }
+
+    public static void DCONST_0(String fileName, int iid, int mid) {
+        if (block.get()) return; else block.set(true);
+        try { intp.DCONST_0(fileName, iid, mid); } finally { block.set(false); }
+    }
+
+    public static void DCONST_1(String fileName, int iid, int mid) {
+        if (block.get()) return; else block.set(true);
+        try { intp.DCONST_1(fileName, iid, mid); } finally { block.set(false); }
+    }
+
+    public static void IALOAD(String fileName, int iid, int mid) {
+        if (block.get()) return; else block.set(true);
+        try { intp.IALOAD(fileName, iid, mid); } finally { block.set(false); }
+    }
+
+    public static void LALOAD(String fileName, int iid, int mid) {
+        if (block.get()) return; else block.set(true);
+        try { intp.LALOAD(fileName, iid, mid); } finally { block.set(false); }
+    }
+
+    public static void FALOAD(String fileName, int iid, int mid) {
+        if (block.get()) return; else block.set(true);
+        try { intp.FALOAD(fileName, iid, mid); } finally { block.set(false); }
+    }
+
+    public static void DALOAD(String fileName, int iid, int mid) {
+        if (block.get()) return; else block.set(true);
+        try { intp.DALOAD(fileName, iid, mid); } finally { block.set(false); }
+    }
+
+    public static void AALOAD(String fileName, int iid, int mid) {
+        if (block.get()) return; else block.set(true);
+        try { intp.AALOAD(fileName, iid, mid); } finally { block.set(false); }
+    }
+
+    public static void BALOAD(String fileName, int iid, int mid) {
+        if (block.get()) return; else block.set(true);
+        try { intp.BALOAD(fileName, iid, mid); } finally { block.set(false); }
+    }
+
+    public static void CALOAD(String fileName, int iid, int mid) {
+        if (block.get()) return; else block.set(true);
+        try { intp.CALOAD(fileName, iid, mid); } finally { block.set(false); }
+    }
+
+    public static void SALOAD(String fileName, int iid, int mid) {
+        if (block.get()) return; else block.set(true);
+        try { intp.SALOAD(fileName, iid, mid); } finally { block.set(false); }
+    }
+
+    public static void IASTORE(String fileName, int iid, int mid) {
+        if (block.get()) return; else block.set(true);
+        try { intp.IASTORE(fileName, iid, mid); } finally { block.set(false); }
+    }
+
+    public static void LASTORE(String fileName, int iid, int mid) {
+        if (block.get()) return; else block.set(true);
+        try { intp.LASTORE(fileName, iid, mid); } finally { block.set(false); }
+    }
+
+    public static void FASTORE(String fileName, int iid, int mid) {
+        if (block.get()) return; else block.set(true);
+        try { intp.FASTORE(fileName, iid, mid); } finally { block.set(false); }
+    }
+
+    public static void DASTORE(String fileName, int iid, int mid) {
+        if (block.get()) return; else block.set(true);
+        try { intp.DASTORE(fileName, iid, mid); } finally { block.set(false); }
+    }
+
+    public static void AASTORE(String fileName, int iid, int mid) {
+        if (block.get()) return; else block.set(true);
+        try { intp.AASTORE(fileName, iid, mid); } finally { block.set(false); }
+    }
+
+    public static void BASTORE(String fileName, int iid, int mid) {
+        if (block.get()) return; else block.set(true);
+        try { intp.BASTORE(fileName, iid, mid); } finally { block.set(false); }
+    }
+
+    public static void CASTORE(String fileName, int iid, int mid) {
+        if (block.get()) return; else block.set(true);
+        try { intp.CASTORE(fileName, iid, mid); } finally { block.set(false); }
+    }
+
+    public static void SASTORE(String fileName, int iid, int mid) {
+        if (block.get()) return; else block.set(true);
+        try { intp.SASTORE(fileName, iid, mid); } finally { block.set(false); }
+    }
+
+    public static void POP(String fileName, int iid, int mid) {
+        if (block.get()) return; else block.set(true);
+        try { intp.POP(fileName, iid, mid); } finally { block.set(false); }
+    }
+
+    public static void POP2(String fileName, int iid, int mid) {
+        if (block.get()) return; else block.set(true);
+        try { intp.POP2(fileName, iid, mid); } finally { block.set(false); }
+    }
+
+    public static void DUP(String fileName, int iid, int mid) {
+        if (block.get()) return; else block.set(true);
+        try { intp.DUP(fileName, iid, mid); } finally { block.set(false); }
+    }
+
+    public static void DUP_X1(String fileName, int iid, int mid) {
+        if (block.get()) return; else block.set(true);
+        try { intp.DUP_X1(fileName, iid, mid); } finally { block.set(false); }
+    }
+
+    public static void DUP_X2(String fileName, int iid, int mid) {
+        if (block.get()) return; else block.set(true);
+        try { intp.DUP_X2(fileName, iid, mid); } finally { block.set(false); }
+    }
+
+    public static void DUP2(String fileName, int iid, int mid) {
+        if (block.get()) return; else block.set(true);
+        try { intp.DUP2(fileName, iid, mid); } finally { block.set(false); }
+    }
+
+    public static void DUP2_X1(String fileName, int iid, int mid) {
+        if (block.get()) return; else block.set(true);
+        try { intp.DUP2_X1(fileName, iid, mid); } finally { block.set(false); }
+    }
+
+    public static void DUP2_X2(String fileName, int iid, int mid) {
+        if (block.get()) return; else block.set(true);
+        try { intp.DUP2_X2(fileName, iid, mid); } finally { block.set(false); }
+    }
+
+    public static void SWAP(String fileName, int iid, int mid) {
+        if (block.get()) return; else block.set(true);
+        try { intp.SWAP(fileName, iid, mid); } finally { block.set(false); }
+    }
+
+    public static void IADD(String fileName, int iid, int mid) {
+        if (block.get()) return; else block.set(true);
+        try { intp.IADD(fileName, iid, mid); } finally { block.set(false); }
+    }
+
+    public static void LADD(String fileName, int iid, int mid) {
+        if (block.get()) return; else block.set(true);
+        try { intp.LADD(fileName, iid, mid); } finally { block.set(false); }
+    }
+
+    public static void FADD(String fileName, int iid, int mid) {
+        if (block.get()) return; else block.set(true);
+        try { intp.FADD(fileName, iid, mid); } finally { block.set(false); }
+    }
+
+    public static void DADD(String fileName, int iid, int mid) {
+        if (block.get()) return; else block.set(true);
+        try { intp.DADD(fileName, iid, mid); } finally { block.set(false); }
+    }
+
+    public static void ISUB(String fileName, int iid, int mid) {
+        if (block.get()) return; else block.set(true);
+        try { intp.ISUB(fileName, iid, mid); } finally { block.set(false); }
+    }
+
+    public static void LSUB(String fileName, int iid, int mid) {
+        if (block.get()) return; else block.set(true);
+        try { intp.LSUB(fileName, iid, mid); } finally { block.set(false); }
+    }
+
+    public static void FSUB(String fileName, int iid, int mid) {
+        if (block.get()) return; else block.set(true);
+        try { intp.FSUB(fileName, iid, mid); } finally { block.set(false); }
+    }
+
+    public static void DSUB(String fileName, int iid, int mid) {
+        if (block.get()) return; else block.set(true);
+        try { intp.DSUB(fileName, iid, mid); } finally { block.set(false); }
+    }
+
+    public static void IMUL(String fileName, int iid, int mid) {
+        if (block.get()) return; else block.set(true);
+        try { intp.IMUL(fileName, iid, mid); } finally { block.set(false); }
+    }
+
+    public static void LMUL(String fileName, int iid, int mid) {
+        if (block.get()) return; else block.set(true);
+        try { intp.LMUL(fileName, iid, mid); } finally { block.set(false); }
+    }
+
+    public static void FMUL(String fileName, int iid, int mid) {
+        if (block.get()) return; else block.set(true);
+        try { intp.FMUL(fileName, iid, mid); } finally { block.set(false); }
+    }
+
+    public static void DMUL(String fileName, int iid, int mid) {
+        if (block.get()) return; else block.set(true);
+        try { intp.DMUL(fileName, iid, mid); } finally { block.set(false); }
+    }
+
+    public static void IDIV(String fileName, int iid, int mid) {
+        if (block.get()) return; else block.set(true);
+        try { intp.IDIV(fileName, iid, mid); } finally { block.set(false); }
+    }
+
+    public static void LDIV(String fileName, int iid, int mid) {
+        if (block.get()) return; else block.set(true);
+        try { intp.LDIV(fileName, iid, mid); } finally { block.set(false); }
+    }
+
+    public static void FDIV(String fileName, int iid, int mid) {
+        if (block.get()) return; else block.set(true);
+        try { intp.FDIV(fileName, iid, mid); } finally { block.set(false); }
+    }
+
+    public static void DDIV(String fileName, int iid, int mid) {
+        if (block.get()) return; else block.set(true);
+        try { intp.DDIV(fileName, iid, mid); } finally { block.set(false); }
+    }
+
+    public static void IREM(String fileName, int iid, int mid) {
+        if (block.get()) return; else block.set(true);
+        try { intp.IREM(fileName, iid, mid); } finally { block.set(false); }
+    }
+
+    public static void LREM(String fileName, int iid, int mid) {
+        if (block.get()) return; else block.set(true);
+        try { intp.LREM(fileName, iid, mid); } finally { block.set(false); }
+    }
+
+    public static void FREM(String fileName, int iid, int mid) {
+        if (block.get()) return; else block.set(true);
+        try { intp.FREM(fileName, iid, mid); } finally { block.set(false); }
+    }
+
+    public static void DREM(String fileName, int iid, int mid) {
+        if (block.get()) return; else block.set(true);
+        try { intp.DREM(fileName, iid, mid); } finally { block.set(false); }
+    }
+
+    public static void INEG(String fileName, int iid, int mid) {
+        if (block.get()) return; else block.set(true);
+        try { intp.INEG(fileName, iid, mid); } finally { block.set(false); }
+    }
+
+    public static void LNEG(String fileName, int iid, int mid) {
+        if (block.get()) return; else block.set(true);
+        try { intp.LNEG(fileName, iid, mid); } finally { block.set(false); }
+    }
+
+    public static void FNEG(String fileName, int iid, int mid) {
+        if (block.get()) return; else block.set(true);
+        try { intp.FNEG(fileName, iid, mid); } finally { block.set(false); }
+    }
+
+    public static void DNEG(String fileName, int iid, int mid) {
+        if (block.get()) return; else block.set(true);
+        try { intp.DNEG(fileName, iid, mid); } finally { block.set(false); }
+    }
+
+    public static void ISHL(String fileName, int iid, int mid) {
+        if (block.get()) return; else block.set(true);
+        try { intp.ISHL(fileName, iid, mid); } finally { block.set(false); }
+    }
+
+    public static void LSHL(String fileName, int iid, int mid) {
+        if (block.get()) return; else block.set(true);
+        try { intp.LSHL(fileName, iid, mid); } finally { block.set(false); }
+    }
+
+    public static void ISHR(String fileName, int iid, int mid) {
+        if (block.get()) return; else block.set(true);
+        try { intp.ISHR(fileName, iid, mid); } finally { block.set(false); }
+    }
+
+    public static void LSHR(String fileName, int iid, int mid) {
+        if (block.get()) return; else block.set(true);
+        try { intp.LSHR(fileName, iid, mid); } finally { block.set(false); }
+    }
+
+    public static void IUSHR(String fileName, int iid, int mid) {
+        if (block.get()) return; else block.set(true);
+        try { intp.IUSHR(fileName, iid, mid); } finally { block.set(false); }
+    }
+
+    public static void LUSHR(String fileName, int iid, int mid) {
+        if (block.get()) return; else block.set(true);
+        try { intp.LUSHR(fileName, iid, mid); } finally { block.set(false); }
+    }
+
+    public static void IAND(String fileName, int iid, int mid) {
+        if (block.get()) return; else block.set(true);
+        try { intp.IAND(fileName, iid, mid); } finally { block.set(false); }
+    }
+
+    public static void LAND(String fileName, int iid, int mid) {
+        if (block.get()) return; else block.set(true);
+        try { intp.LAND(fileName, iid, mid); } finally { block.set(false); }
+    }
+
+    public static void IOR(String fileName, int iid, int mid) {
+        if (block.get()) return; else block.set(true);
+        try { intp.IOR(fileName, iid, mid); } finally { block.set(false); }
+    }
+
+    public static void LOR(String fileName, int iid, int mid) {
+        if (block.get()) return; else block.set(true);
+        try { intp.LOR(fileName, iid, mid); } finally { block.set(false); }
+    }
+
+    public static void IXOR(String fileName, int iid, int mid) {
+        if (block.get()) return; else block.set(true);
+        try { intp.IXOR(fileName, iid, mid); } finally { block.set(false); }
+    }
+
+    public static void LXOR(String fileName, int iid, int mid) {
+        if (block.get()) return; else block.set(true);
+        try { intp.LXOR(fileName, iid, mid); } finally { block.set(false); }
+    }
+
+    public static void I2L(String fileName, int iid, int mid) {
+        if (block.get()) return; else block.set(true);
+        try { intp.I2L(fileName, iid, mid); } finally { block.set(false); }
+    }
+
+    public static void I2F(String fileName, int iid, int mid) {
+        if (block.get()) return; else block.set(true);
+        try { intp.I2F(fileName, iid, mid); } finally { block.set(false); }
+    }
+
+    public static void I2D(String fileName, int iid, int mid) {
+        if (block.get()) return; else block.set(true);
+        try { intp.I2D(fileName, iid, mid); } finally { block.set(false); }
+    }
+
+    public static void L2I(String fileName, int iid, int mid) {
+        if (block.get()) return; else block.set(true);
+        try { intp.L2I(fileName, iid, mid); } finally { block.set(false); }
+    }
+
+    public static void L2F(String fileName, int iid, int mid) {
+        if (block.get()) return; else block.set(true);
+        try { intp.L2F(fileName, iid, mid); } finally { block.set(false); }
+    }
+
+    public static void L2D(String fileName, int iid, int mid) {
+        if (block.get()) return; else block.set(true);
+        try { intp.L2D(fileName, iid, mid); } finally { block.set(false); }
+    }
+
+    public static void F2I(String fileName, int iid, int mid) {
+        if (block.get()) return; else block.set(true);
+        try { intp.F2I(fileName, iid, mid); } finally { block.set(false); }
+    }
+
+    public static void F2L(String fileName, int iid, int mid) {
+        if (block.get()) return; else block.set(true);
+        try { intp.F2L(fileName, iid, mid); } finally { block.set(false); }
+    }
+
+    public static void F2D(String fileName, int iid, int mid) {
+        if (block.get()) return; else block.set(true);
+        try { intp.F2D(fileName, iid, mid); } finally { block.set(false); }
+    }
+
+    public static void D2I(String fileName, int iid, int mid) {
+        if (block.get()) return; else block.set(true);
+        try { intp.D2I(fileName, iid, mid); } finally { block.set(false); }
+    }
+
+    public static void D2L(String fileName, int iid, int mid) {
+        if (block.get()) return; else block.set(true);
+        try { intp.D2L(fileName, iid, mid); } finally { block.set(false); }
+    }
+
+    public static void D2F(String fileName, int iid, int mid) {
+        if (block.get()) return; else block.set(true);
+        try { intp.D2F(fileName, iid, mid); } finally { block.set(false); }
+    }
+
+    public static void I2B(String fileName, int iid, int mid) {
+        if (block.get()) return; else block.set(true);
+        try { intp.I2B(fileName, iid, mid); } finally { block.set(false); }
+    }
+
+    public static void I2C(String fileName, int iid, int mid) {
+        if (block.get()) return; else block.set(true);
+        try { intp.I2C(fileName, iid, mid); } finally { block.set(false); }
+    }
+
+    public static void I2S(String fileName, int iid, int mid) {
+        if (block.get()) return; else block.set(true);
+        try { intp.I2S(fileName, iid, mid); } finally { block.set(false); }
+    }
+
+    public static void LCMP(String fileName, int iid, int mid) {
+        if (block.get()) return; else block.set(true);
+        try { intp.LCMP(fileName, iid, mid); } finally { block.set(false); }
+    }
+
+    public static void FCMPL(String fileName, int iid, int mid) {
+        if (block.get()) return; else block.set(true);
+        try { intp.FCMPL(fileName, iid, mid); } finally { block.set(false); }
+    }
+
+    public static void FCMPG(String fileName, int iid, int mid) {
+        if (block.get()) return; else block.set(true);
+        try { intp.FCMPG(fileName, iid, mid); } finally { block.set(false); }
+    }
+
+    public static void DCMPL(String fileName, int iid, int mid) {
+        if (block.get()) return; else block.set(true);
+        try { intp.DCMPL(fileName, iid, mid); } finally { block.set(false); }
+    }
+
+    public static void DCMPG(String fileName, int iid, int mid) {
+        if (block.get()) return; else block.set(true);
+        try { intp.DCMPG(fileName, iid, mid); } finally { block.set(false); }
+    }
+
+    public static void IRETURN(String fileName, int iid, int mid) {
+        if (block.get()) return; else block.set(true);
+        try { intp.IRETURN(fileName, iid, mid); } finally { block.set(false); }
+    }
+
+    public static void LRETURN(String fileName, int iid, int mid) {
+        if (block.get()) return; else block.set(true);
+        try { intp.LRETURN(fileName, iid, mid); } finally { block.set(false); }
+    }
+
+    public static void FRETURN(String fileName, int iid, int mid) {
+        if (block.get()) return; else block.set(true);
+        try { intp.FRETURN(fileName, iid, mid); } finally { block.set(false); }
+    }
+
+    public static void DRETURN(String fileName, int iid, int mid) {
+        if (block.get()) return; else block.set(true);
+        try { intp.DRETURN(fileName, iid, mid); } finally { block.set(false); }
+    }
+
+    public static void ARETURN(String fileName, int iid, int mid) {
+        if (block.get()) return; else block.set(true);
+        try { intp.ARETURN(fileName, iid, mid); } finally { block.set(false); }
+    }
+
+    public static void RETURN(String fileName, int iid, int mid) {
+        if (block.get()) return; else block.set(true);
+        try { intp.RETURN(fileName, iid, mid); } finally { block.set(false); }
+    }
+
+    public static void ARRAYLENGTH(String fileName, int iid, int mid) {
+        if (block.get()) return; else block.set(true);
+        try { intp.ARRAYLENGTH(fileName, iid, mid); } finally { block.set(false); }
+    }
+
+    public static void ATHROW(String fileName, int iid, int mid) {
+        if (block.get()) return; else block.set(true);
+        try { intp.ATHROW(fileName, iid, mid); } finally { block.set(false); }
+    }
+
+    public static void MONITORENTER(String fileName, int iid, int mid) {
+        if (block.get()) return; else block.set(true);
+        try { intp.MONITORENTER(fileName, iid, mid); } finally { block.set(false); }
+    }
+
+    public static void MONITOREXIT(String fileName, int iid, int mid) {
+        if (block.get()) return; else block.set(true);
+        try { intp.MONITOREXIT(fileName, iid, mid); } finally { block.set(false); }
+    }
+
     public static void GETVALUE_double(double v) {
         if (block.get()) return; else block.set(true);
         try { intp.GETVALUE_double(v); } finally { block.set(false); }

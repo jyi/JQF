@@ -12,6 +12,13 @@ public class LOOKUPSWITCH extends Instruction {
     this.labels = labels;
   }
 
+  public LOOKUPSWITCH(String fileName, int iid, int mid, int dflt, int[] keys, int[] labels) {
+    super(fileName, iid, mid);
+    this.dflt = dflt;
+    this.keys = keys;
+    this.labels = labels;
+  }
+
   public void visit(IVisitor visitor) {
     visitor.visitLOOKUPSWITCH(this);
   }

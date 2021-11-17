@@ -89,6 +89,16 @@ public class SnoopInstructionMethodAdapter extends MethodVisitor implements Opco
     mv.visitVarInsn(opcode, var);
   }
 
+  private void addFileNameVarInsn(MethodVisitor mv, int var, String insn, int opcode) {
+    mv.visitLdcInsn(source);
+    addBipushInsn(mv, instrumentationState.incAndGetId());
+    addBipushInsn(mv, lastLineNumber);
+    addBipushInsn(mv, var);
+    mv.visitMethodInsn(INVOKESTATIC, Config.instance.analysisClass, insn, "(Ljava/lang/String;III)V", false);
+
+    mv.visitVarInsn(opcode, var);
+  }
+
   private void addTypeInsn(MethodVisitor mv, String type, int opcode, String name) {
     addBipushInsn(mv, instrumentationState.incAndGetId());
     addBipushInsn(mv, lastLineNumber);
@@ -479,53 +489,53 @@ public class SnoopInstructionMethodAdapter extends MethodVisitor implements Opco
     }
   }
 
-  /*@Override
+  @Override
   public void visitVarInsn(int opcode, int var) {
     switch (opcode) {
       case ILOAD:
-        addVarInsn(mv, var, "ILOAD", opcode);
+        addFileNameVarInsn(mv, var, "ILOAD", opcode);
         addValueReadInsn(mv, "I", "GETVALUE_");
         break;
       case LLOAD:
-        addVarInsn(mv, var, "LLOAD", opcode);
+        addFileNameVarInsn(mv, var, "LLOAD", opcode);
         addValueReadInsn(mv, "J", "GETVALUE_");
         break;
       case FLOAD:
-        addVarInsn(mv, var, "FLOAD", opcode);
+        addFileNameVarInsn(mv, var, "FLOAD", opcode);
         addValueReadInsn(mv, "F", "GETVALUE_");
         break;
       case DLOAD:
-        addVarInsn(mv, var, "DLOAD", opcode);
+        addFileNameVarInsn(mv, var, "DLOAD", opcode);
         addValueReadInsn(mv, "D", "GETVALUE_");
         break;
       case ALOAD:
-        addVarInsn(mv, var, "ALOAD", opcode);
+        addFileNameVarInsn(mv, var, "ALOAD", opcode);
         if (!(var == 0 && isInit && !isSuperInitCalled)) {
           addValueReadInsn(mv, "Ljava/lang/Object;", "GETVALUE_");
         }
         break;
       case ISTORE:
-        addVarInsn(mv, var, "ISTORE", opcode);
+        addFileNameVarInsn(mv, var, "ISTORE", opcode);
         break;
       case LSTORE:
-        addVarInsn(mv, var, "LSTORE", opcode);
+        addFileNameVarInsn(mv, var, "LSTORE", opcode);
         break;
       case FSTORE:
-        addVarInsn(mv, var, "FSTORE", opcode);
+        addFileNameVarInsn(mv, var, "FSTORE", opcode);
         break;
       case DSTORE:
-        addVarInsn(mv, var, "DSTORE", opcode);
+        addFileNameVarInsn(mv, var, "DSTORE", opcode);
         break;
       case ASTORE:
-        addVarInsn(mv, var, "ASTORE", opcode);
+        addFileNameVarInsn(mv, var, "ASTORE", opcode);
         break;
       case RET:
-        addVarInsn(mv, var, "RET", opcode);
+        addFileNameVarInsn(mv, var, "RET", opcode);
         break;
       default:
         throw new RuntimeException("Unknown var insn");
     }
-  }*/
+  }
 
   @Override
   public void visitIntInsn(int opcode, int operand) {
@@ -602,13 +612,13 @@ public class SnoopInstructionMethodAdapter extends MethodVisitor implements Opco
     /*
     addBipushInsn(mv, instrumentationState.incAndGetId());
     addBipushInsn(mv, lastLineNumber);
-    int cIdx = classNames.get(owner);
-    addBipushInsn(mv, cIdx);
-    ObjectInfo tmp = classNames.get(cIdx);
+//    int cIdx = classNames.get(owner);
+//    addBipushInsn(mv, cIdx);
+//    ObjectInfo tmp = classNames.get(cIdx);
     switch (opcode) {
       case GETSTATIC:
-        int fIdx = tmp.getIdx(name, true);
-        addBipushInsn(mv, fIdx);
+//        int fIdx = tmp.getIdx(name, true);
+//        addBipushInsn(mv, fIdx);
         mv.visitLdcInsn(desc);
 
         mv.visitMethodInsn(
@@ -619,8 +629,8 @@ public class SnoopInstructionMethodAdapter extends MethodVisitor implements Opco
         addValueReadInsn(mv, desc, "GETVALUE_");
         break;
       case PUTSTATIC:
-        fIdx = tmp.getIdx(name, true);
-        addBipushInsn(mv, fIdx);
+//        fIdx = tmp.getIdx(name, true);
+//        addBipushInsn(mv, fIdx);
         mv.visitLdcInsn(desc);
 
         mv.visitMethodInsn(
@@ -629,8 +639,8 @@ public class SnoopInstructionMethodAdapter extends MethodVisitor implements Opco
         addSpecialInsn(mv, 0); // for non-exceptional path
         break;
       case GETFIELD:
-        fIdx = tmp.getIdx(name, false);
-        addBipushInsn(mv, fIdx);
+//        fIdx = tmp.getIdx(name, false);
+//        addBipushInsn(mv, fIdx);
         mv.visitLdcInsn(desc);
 
         mv.visitMethodInsn(
@@ -640,8 +650,8 @@ public class SnoopInstructionMethodAdapter extends MethodVisitor implements Opco
         addValueReadInsn(mv, desc, "GETVALUE_");
         break;
       case PUTFIELD:
-        fIdx = tmp.getIdx(name, false);
-        addBipushInsn(mv, fIdx);
+//        fIdx = tmp.getIdx(name, false);
+//        addBipushInsn(mv, fIdx);
         mv.visitLdcInsn(desc);
 
         mv.visitMethodInsn(
@@ -690,6 +700,11 @@ public class SnoopInstructionMethodAdapter extends MethodVisitor implements Opco
      Config.instance.analysisClass,
      getMethodName(opcode),
      "(IILjava/lang/String;Ljava/lang/String;Ljava/lang/String;)V", false);
+//    mv.visitMethodInsn(
+//            INVOKESTATIC,
+//            Config.instance.analysisClass,
+//            getMethodName(opcode),
+//            "(Ljava/lang/String;IILjava/lang/String;Ljava/lang/String;Ljava/lang/String;)V", false);
       // Wrap the method call in a try-catch block
     Label begin = new Label();
     Label handler = new Label();
@@ -748,6 +763,11 @@ public class SnoopInstructionMethodAdapter extends MethodVisitor implements Opco
         mv.visitLdcInsn(owner);
         mv.visitLdcInsn(name);
         mv.visitLdcInsn(desc);
+//        mv.visitMethodInsn(
+//                INVOKESTATIC,
+//                Config.instance.analysisClass,
+//                getMethodName(opcode),
+//                "(Ljava/lang/String;IILjava/lang/String;Ljava/lang/String;Ljava/lang/String;)V", false);
         mv.visitMethodInsn(
                 INVOKESTATIC,
                 Config.instance.analysisClass,

@@ -10,6 +10,12 @@ public class HEAPLOAD extends Instruction {
     this.field = field;
   }
 
+  public HEAPLOAD(String fileName, int iid, int mid, int objectId, String field) {
+    super(fileName, iid, mid);
+    this.objectId = objectId;
+    this.field = field;
+  }
+
   public void visit(IVisitor visitor) {
     visitor.visitHEAPLOAD(this);
   }

@@ -5,7 +5,11 @@ public class DREM extends Instruction {
     super(iid, mid);
   }
 
-  public void visit(IVisitor visitor) {
+    public DREM(String fileName, int iid, int mid) {
+        super(fileName, iid, mid);
+    }
+
+    public void visit(IVisitor visitor) {
     visitor.visitDREM(this);
   }
 

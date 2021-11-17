@@ -8,7 +8,12 @@ public class SIPUSH extends Instruction {
     this.value = value;
   }
 
-  public void visit(IVisitor visitor) {
+    public SIPUSH(String fileName, int iid, int mid, int value) {
+      super(fileName, iid, mid);
+      this.value = value;
+    }
+
+    public void visit(IVisitor visitor) {
     visitor.visitSIPUSH(this);
   }
 

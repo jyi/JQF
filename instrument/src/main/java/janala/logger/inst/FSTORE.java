@@ -8,7 +8,12 @@ public class FSTORE extends Instruction {
     this.var = var;
   }
 
-  public void visit(IVisitor visitor) {
+    public FSTORE(String fileName, int iid, int mid, int var) {
+      super(fileName, iid, mid);
+      this.var = var;
+    }
+
+    public void visit(IVisitor visitor) {
     visitor.visitFSTORE(this);
   }
 

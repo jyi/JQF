@@ -5,7 +5,11 @@ public class SASTORE extends Instruction {
     super(iid, mid);
   }
 
-  public void visit(IVisitor visitor) {
+    public SASTORE(String fileName, int iid, int mid) {
+        super(fileName, iid, mid);
+    }
+
+    public void visit(IVisitor visitor) {
     visitor.visitSASTORE(this);
   }
 

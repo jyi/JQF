@@ -5,7 +5,11 @@ public class D2F extends Instruction {
     super(iid, mid);
   }
 
-  public void visit(IVisitor visitor) {
+    public D2F(String fileName, int iid, int mid) {
+        super(fileName, iid, mid);
+    }
+
+    public void visit(IVisitor visitor) {
     visitor.visitD2F(this);
   }
 

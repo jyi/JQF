@@ -10,6 +10,12 @@ public class IINC extends Instruction {
     this.increment = increment;
   }
 
+  public IINC(String fileName, int iid, int mid, int var, int increment) {
+    super(fileName, iid, mid);
+    this.var = var;
+    this.increment = increment;
+  }
+
   public void visit(IVisitor visitor) {
     visitor.visitIINC(this);
   }

@@ -5,7 +5,11 @@ public class POP extends Instruction {
     super(iid, mid);
   }
 
-  public void visit(IVisitor visitor) {
+    public POP(String fileName, int iid, int mid) {
+        super(fileName, iid, mid);
+    }
+
+    public void visit(IVisitor visitor) {
     visitor.visitPOP(this);
   }
 

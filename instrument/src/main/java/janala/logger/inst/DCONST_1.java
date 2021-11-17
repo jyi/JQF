@@ -5,7 +5,11 @@ public class DCONST_1 extends Instruction {
     super(iid, mid);
   }
 
-  public void visit(IVisitor visitor) {
+    public DCONST_1(String fileName, int iid, int mid) {
+      super(fileName, iid, mid);
+    }
+
+    public void visit(IVisitor visitor) {
     visitor.visitDCONST_1(this);
   }
 

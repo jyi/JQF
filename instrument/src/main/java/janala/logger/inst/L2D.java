@@ -5,7 +5,11 @@ public class L2D extends Instruction {
     super(iid, mid);
   }
 
-  public void visit(IVisitor visitor) {
+    public L2D(String fileName, int iid, int mid) {
+        super(fileName, iid, mid);
+    }
+
+    public void visit(IVisitor visitor) {
     visitor.visitL2D(this);
   }
 

@@ -5,7 +5,11 @@ public class DUP2_X2 extends Instruction {
     super(iid, mid);
   }
 
-  public void visit(IVisitor visitor) {
+    public DUP2_X2(String fileName, int iid, int mid) {
+        super(fileName, iid, mid);
+    }
+
+    public void visit(IVisitor visitor) {
     visitor.visitDUP2_X2(this);
   }
 

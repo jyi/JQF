@@ -9,6 +9,11 @@ public class LDC_Object extends Instruction {
     this.c = c;
   }
 
+  public LDC_Object(String fileName, int iid, int mid, int identityHashCode) {
+    super(fileName, iid, mid);
+    this.c = identityHashCode;
+  }
+
   public void visit(IVisitor visitor) {
     visitor.visitLDC_Object(this);
   }

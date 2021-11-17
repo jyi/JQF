@@ -5,7 +5,11 @@ public class I2L extends Instruction {
     super(iid, mid);
   }
 
-  public void visit(IVisitor visitor) {
+    public I2L(String fileName, int iid, int mid) {
+        super(fileName, iid, mid);
+    }
+
+    public void visit(IVisitor visitor) {
     visitor.visitI2L(this);
   }
 

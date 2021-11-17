@@ -5,7 +5,11 @@ public class MONITORENTER extends Instruction {
     super(iid, mid);
   }
 
-  public void visit(IVisitor visitor) {
+    public MONITORENTER(String fileName, int iid, int mid) {
+        super(fileName, iid, mid);
+    }
+
+    public void visit(IVisitor visitor) {
     visitor.visitMONITORENTER(this);
   }
 

@@ -10,7 +10,13 @@ public class NEW extends Instruction {
     this.cIdx = cIdx;
   }
 
-  public void visit(IVisitor visitor) {
+    public NEW(String fileName, int iid, int mid, String type, int cIdx) {
+      super(fileName, iid, mid);
+      this.type = type;
+      this.cIdx = cIdx;
+    }
+
+    public void visit(IVisitor visitor) {
     visitor.visitNEW(this);
   }
 

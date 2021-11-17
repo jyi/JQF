@@ -8,6 +8,11 @@ public class LDC_long extends Instruction {
     this.c = c;
   }
 
+  public LDC_long(String fileName, int iid, int mid, long c) {
+    super(fileName, iid, mid);
+    this.c = c;
+  }
+
   public void visit(IVisitor visitor) {
     visitor.visitLDC_long(this);
   }

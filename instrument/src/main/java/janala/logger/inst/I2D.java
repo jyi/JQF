@@ -5,7 +5,11 @@ public class I2D extends Instruction {
     super(iid, mid);
   }
 
-  public void visit(IVisitor visitor) {
+    public I2D(String fileName, int iid, int mid) {
+        super(fileName, iid, mid);
+    }
+
+    public void visit(IVisitor visitor) {
     visitor.visitI2D(this);
   }
 

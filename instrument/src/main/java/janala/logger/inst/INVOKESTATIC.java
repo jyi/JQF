@@ -12,7 +12,14 @@ public class INVOKESTATIC extends Instruction implements InvokeInstruction {
     this.desc = desc;
   }
 
-  public void visit(IVisitor visitor) {
+    public INVOKESTATIC(String fileName, int iid, int mid, String owner, String name, String desc) {
+      super(fileName, iid, mid);
+      this.owner = owner;
+      this.name = name;
+      this.desc = desc;
+    }
+
+    public void visit(IVisitor visitor) {
     visitor.visitINVOKESTATIC(this);
   }
 

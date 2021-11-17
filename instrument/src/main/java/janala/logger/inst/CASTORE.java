@@ -5,7 +5,11 @@ public class CASTORE extends Instruction {
     super(iid, mid);
   }
 
-  public void visit(IVisitor visitor) {
+    public CASTORE(String fileName, int iid, int mid) {
+      super(fileName, iid, mid);
+    }
+
+    public void visit(IVisitor visitor) {
     visitor.visitCASTORE(this);
   }
 

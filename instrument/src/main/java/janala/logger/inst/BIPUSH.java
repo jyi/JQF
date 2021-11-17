@@ -8,6 +8,11 @@ public class BIPUSH extends Instruction {
     this.value = value;
   }
 
+  public BIPUSH(String fileName, int iid, int mid, int value) {
+    super(fileName, iid, mid);
+    this.value = value;
+  }
+
   public void visit(IVisitor visitor) {
     visitor.visitBIPUSH(this);
   }

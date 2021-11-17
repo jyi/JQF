@@ -480,7 +480,9 @@ public class FuzzStatement extends Statement {
                     assert guidance.getCurSaveFileName() != null;
 
                     // we call the patched version
-                    if (System.getProperty("kr.ac.unist.cse.jqf.MULTI_FUZZ").equals("true")) {
+                    //TODO: check the infinite loop issue. For now, just let it as mono fuzzing
+                    if (!System.getProperty("kr.ac.unist.cse.jqf.MULTI_FUZZ").equals("true")) {
+                        guidance.setNumOfPatches(patchInfos.size());
                         for (PatchInfo pi : patchInfos) {
                             System.setProperty("jqf.ei.CURRENT_PATH_FOR_PATCH", pi.patchPath);
 //                            System.out.println("PatchInfo: " + pi.patchPath);

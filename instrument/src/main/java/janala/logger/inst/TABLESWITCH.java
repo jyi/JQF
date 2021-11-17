@@ -14,6 +14,14 @@ public class TABLESWITCH extends Instruction {
     this.labels = labels;
   }
 
+  public TABLESWITCH(String fileName, int iid, int mid, int min, int max, int dflt, int[] labels) {
+    super(fileName, iid, mid);
+    this.min = min;
+    this.max = max;
+    this.dflt = dflt;
+    this.labels = labels;
+  }
+
   public void visit(IVisitor visitor) {
     visitor.visitTABLESWITCH(this);
   }

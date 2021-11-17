@@ -3,12 +3,17 @@ package janala.logger.inst;
 public class ANEWARRAY extends Instruction {
   String type;
 
+  public ANEWARRAY(String fileName, int iid, int mid, String type) {
+    super(iid, mid);
+    this.type = type;
+  }
+
   public ANEWARRAY(int iid, int mid, String type) {
     super(iid, mid);
     this.type = type;
   }
 
-  public void visit(IVisitor visitor) {
+    public void visit(IVisitor visitor) {
     visitor.visitANEWARRAY(this);
   }
 
