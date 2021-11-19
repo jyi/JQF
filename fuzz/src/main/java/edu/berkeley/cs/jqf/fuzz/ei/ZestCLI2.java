@@ -43,18 +43,16 @@ import picocli.CommandLine;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 
-//import soot.*;
-//import soot.jimple.toolkits.callgraph.CallGraph;
-//import soot.options.Options;
-
 import java.io.File;
 import java.time.Duration;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
 import java.util.stream.Collectors;
+
+//import soot.*;
+//import soot.jimple.toolkits.callgraph.CallGraph;
+//import soot.options.Options;
 
 /**
  * CLI for Zest based guidance.
@@ -187,6 +185,9 @@ public class ZestCLI2 implements Runnable {
     //@Parameters(index="5", paramLabel = "SRCDIR_FOR_PATCH", description = "source directory for patch"")
     private String srcdirForPatch = "";
 
+    @Option(names = {"--patched-method"}, description = "patched method")
+    private String patchedMethod = "";
+
     @Option(names={"--execute-count"},description = "total count you want to run")
     private long requiredCount=0;
 
@@ -293,6 +294,9 @@ public class ZestCLI2 implements Runnable {
             System.setProperty("jqf.ei.have_srcdir", "true");
         } else {
             System.setProperty("jqf.ei.have_srcdir", "false");
+        }
+        if (this.patchedMethod != null) {
+            System.setProperty("jqf.ei.PATCHED_METHOD", this.patchedMethod);
         }
         if (this.verbose) {
             System.setProperty("jqf.ei.verbose", "true");

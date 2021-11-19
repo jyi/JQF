@@ -149,6 +149,30 @@
                 <artifactId>commons-io</artifactId>
                 <version>2.8.0</version>
             </dependency>
+
+            <!-- https://mvnrepository.com/artifact/com.dslplatform/dsl-json-java8 -->
+            <dependency>
+                <groupId>com.dslplatform</groupId>
+                <artifactId>dsl-json-java8</artifactId>
+                <version>1.9.7</version>
+            </dependency>
+
+<!--            <dependency>-->
+<!--                <groupId>com.dslplatform</groupId>-->
+<!--                <artifactId>dsl-json</artifactId>-->
+<!--                <version>1.5.1</version>-->
+<!--            </dependency>-->
+
+            <!-- https://mvnrepository.com/artifact/com.dslplatform/dsl-json -->
+<!--            <dependency>-->
+<!--                <groupId>com.dslplatform</groupId>-->
+<!--                <artifactId>dsl-json</artifactId>-->
+<!--                <scope>system</scope>-->
+<!--                <systemPath>${project.basedir}/lib/dsl-json-1.9.9.jar</systemPath>-->
+<!--                <version>1.9.9</version>-->
+<!--            </dependency>-->
+
+
         </dependencies>
     </dependencyManagement>
 
@@ -207,11 +231,11 @@
                     <artifactId>maven-plugin-plugin</artifactId>
                     <version>3.5.1</version>
                 </plugin>
-                <plugin>
-                    <groupId>edu.berkeley.cs.jqf</groupId>
-                    <artifactId>jqf-maven-plugin</artifactId>
-                    <version>1.5-SNAPSHOT</version>
-                </plugin>
+<!--                <plugin>-->
+<!--                    <groupId>edu.berkeley.cs.jqf</groupId>-->
+<!--                    <artifactId>jqf-maven-plugin</artifactId>-->
+<!--                    <version>1.5-SNAPSHOT</version>-->
+<!--                </plugin>-->
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-source-plugin</artifactId>

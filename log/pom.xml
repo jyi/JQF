@@ -4,9 +4,32 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
+    <parent>
+        <groupId>edu.berkeley.cs.jqf</groupId>
+        <artifactId>jqf</artifactId>
+        <version>1.5-SNAPSHOT</version>
+    </parent>
+
     <groupId>kr.ac.unist.cse.jqf</groupId>
     <artifactId>jqf-log</artifactId>
     <version>1.0-SNAPSHOT</version>
+
+    <dependencies>
+        <dependency>
+            <groupId>edu.berkeley.cs.jqf</groupId>
+            <artifactId>jqf-instrument</artifactId>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/com.dslplatform/dsl-json -->
+<!--        <dependency>-->
+<!--            <groupId>com.dslplatform</groupId>-->
+<!--            <artifactId>dsl-json</artifactId>-->
+<!--            <scope>system</scope>-->
+<!--            <systemPath>${project.basedir}/../lib/dsl-json-1.9.9.jar</systemPath>-->
+<!--            <version>1.9.9</version>-->
+<!--        </dependency>-->
+    </dependencies>
+
     <build>
         <plugins>
             <plugin>

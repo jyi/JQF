@@ -29,23 +29,25 @@
 
 package edu.berkeley.cs.jqf.instrument.tracing;
 
+import com.ibm.wala.cfg.cdg.BasicBlockDistance;
+import edu.berkeley.cs.jqf.instrument.tracing.events.*;
+import janala.logger.inst.*;
+import org.apache.commons.io.FileUtils;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.*;
+import java.util.ArrayDeque;
+import java.util.Deque;
+import java.util.HashMap;
 import java.util.function.Consumer;
 
-import edu.berkeley.cs.jqf.instrument.tracing.events.*;
-import janala.instrument.Method;
-import janala.logger.inst.*;
 //import sun.security.util.ArrayUtil;
-import com.ibm.wala.cfg.cdg.BasicBlockDistance;
 
-import org.apache.commons.io.FileUtils;
+
 
 /**
  * This class is responsible for tracing for an instruction stream
@@ -82,6 +84,8 @@ public class ThreadTracer {
     protected final boolean verbose = true;
 
     private final boolean enableDistToTarget;
+
+    public boolean inPatchedMethod = false;
 
     /**
      * Creates a new tracer that will process instructions executed by an application
@@ -151,7 +155,15 @@ public class ThreadTracer {
      */
     protected final void consume(Instruction ins) {
         boolean isTargetHit = false;
-        System.out.println("Consume " + ins.toString() + " " + ins.fileName + ":" + ins.mid);
+
+        if (ins instanceof METHOD_BEGIN && System.getProperty("jqf.ei.PATCHED_METHOD").contains(((METHOD_BEGIN) ins).name)) {
+            inPatchedMethod = true;
+        }
+
+        if (inPatchedMethod) {
+//            System.out.println("Consume " + ins.toString() + " " + ins.fileName + ":" + ins.mid);
+        }
+
         if (!(ins instanceof SPECIAL || ins instanceof METHOD_BEGIN || ins instanceof INVOKEMETHOD_END)) {
             if (this.targets != null) {
                 for (Target target : this.targets) {
@@ -181,6 +193,10 @@ public class ThreadTracer {
 
         // Apply the visitor at the top of the stack
         ins.visit(handlers.peek());
+
+        if (ins instanceof INVOKEMETHOD_END && System.getProperty("jqf.ei.PATCHED_METHOD").contains(((INVOKEMETHOD_END) ins).name)) {
+            inPatchedMethod = false;
+        }
         if (callBackException != null) {
             RuntimeException e = callBackException;
             callBackException = null;

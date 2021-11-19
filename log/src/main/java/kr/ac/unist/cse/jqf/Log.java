@@ -1,11 +1,15 @@
 package kr.ac.unist.cse.jqf;
 
+//import edu.berkeley.cs.jqf.instrument.tracing.TraceLogger;
+
+import edu.berkeley.cs.jqf.instrument.tracing.TraceLogger;
+
 import java.io.*;
 import java.nio.file.*;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Map;
 import java.util.List;
+import java.util.Map;
 
 public class Log {
 
@@ -13,6 +17,8 @@ public class Log {
     public static boolean verbose = true;
 
     public static File measureTimeFile;
+
+    private TraceLogger singleton;
 
     public String currOutPath = new String();
 
@@ -674,6 +680,7 @@ public class Log {
     }
 
     public static void logPathSpectrum(List<String> spectrum,boolean isPatch){
+
         String logDir = System.getProperty("jqf.ei.logDir");
         if (logDir == null) {
             System.out.println("path: " + logDir);

@@ -28,6 +28,9 @@
  */
 package edu.berkeley.cs.jqf.instrument;
 
+import janala.instrument.SnoopInstructionTransformer;
+import org.aspectj.weaver.loadtime.ClassPreProcessorAgentAdapter;
+
 import java.io.*;
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;
@@ -38,10 +41,7 @@ import java.net.URLConnection;
 import java.util.HashSet;
 import java.util.Set;
 
-import kr.ac.unist.cse.jqf.Log;
-
-import janala.instrument.SnoopInstructionTransformer;
-import org.aspectj.weaver.loadtime.ClassPreProcessorAgentAdapter;
+//import kr.ac.unist.cse.jqf.Log;
 
 /**
  * @author Rohan Padhye
@@ -128,7 +128,7 @@ public class InstrumentingClassLoader extends URLClassLoader {
 
         byte[] transformedBytes;
         try {
-            infoLog("Transform: " + name);
+//            infoLog("Transform: " + name);
             transformedBytes = transformer.transform(this, internalName, null, null, bytes);
 
             // additional transformation to dump program states
@@ -151,14 +151,14 @@ public class InstrumentingClassLoader extends URLClassLoader {
     }
 
     public void infoLog(String str, Object... args) {
-        if (Log.verbose) {
-            String line = String.format(str, args);
-            if (Log.logFile != null) {
-                appendLineToFile(Log.logFile, line);
-            } else {
-                System.err.println(line);
-            }
-        }
+//        if (Log.verbose) {
+//            String line = String.format(str, args);
+//            if (Log.logFile != null) {
+//                appendLineToFile(Log.logFile, line);
+//            } else {
+//                System.err.println(line);
+//            }
+//        }
     }
 
     protected void appendLineToFile(File file, String line) {

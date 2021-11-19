@@ -40,6 +40,15 @@
             <artifactId>xstream</artifactId>
             <version>1.4.12</version>
         </dependency>
+
+        <!-- https://mvnrepository.com/artifact/com.dslplatform/dsl-json -->
+<!--        <dependency>-->
+<!--            <groupId>com.dslplatform</groupId>-->
+<!--            <artifactId>dsl-json</artifactId>-->
+<!--            <scope>system</scope>-->
+<!--            <systemPath>${project.basedir}/../lib/dsl-json-1.9.9.jar</systemPath>-->
+<!--            <version>1.9.9</version>-->
+<!--        </dependency>-->
     </dependencies>
 
     <build>
