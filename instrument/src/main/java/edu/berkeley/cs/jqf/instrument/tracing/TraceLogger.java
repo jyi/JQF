@@ -33,10 +33,8 @@ import com.dslplatform.json.DslJson;
 import com.dslplatform.json.JsonWriter;
 import edu.berkeley.cs.jqf.instrument.tracing.events.TraceEvent;
 import janala.logger.AbstractLogger;
-import janala.logger.inst.INVOKEMETHOD_END;
 import janala.logger.inst.Instruction;
 import janala.logger.inst.METHOD_BEGIN;
-import janala.logger.inst.METHOD_THROW;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -57,12 +55,14 @@ public class TraceLogger extends AbstractLogger {
         public methodCallInfo () {
         }
 
-        public methodCallInfo (String methodID, String methodName) {
+        public methodCallInfo (String methodID, String fileName, String methodName) {
             this.methodID = methodID;
+            this.fileName = fileName;
             this.methodName = methodName;
         }
 
         public String methodID = new String();
+        public String fileName = new String();
         public String methodName = new String();
         public int callCount = 0;
 
@@ -111,6 +111,8 @@ public class TraceLogger extends AbstractLogger {
     public ArrayList<String> methodStack = new ArrayList<>();
     public ArrayList<String > keyWordStack = new ArrayList<>();
 
+    public boolean firstCall = false;
+
     private TraceLogger() {
 
         // Singleton: Prevent outside construction
@@ -125,46 +127,55 @@ public class TraceLogger extends AbstractLogger {
     @Override
     protected void log(Instruction instruction) {
         if (instruction instanceof METHOD_BEGIN) {
+            firstCall = true;
+            boolean exist = false;
             methodStack.add(((METHOD_BEGIN) instruction).name);
-            if (!methods.contains(((METHOD_BEGIN) instruction).name)) {
-                String newKeyword = "m_id" + Integer.toString(numofMethods);
-                MethodLog newMethod;
-                if (keyWordStack.size() == 0) {
-                    newMethod = new MethodLog(newKeyword + "_" + Integer.toString(0), "Entry", 0);
-                }
-                else {
-                    newMethod = new MethodLog(newKeyword + "_" + Integer.toString(0), keyWordStack.get(keyWordStack.size()-1), 0);
-                }
-
-                keyWordStack.add(newKeyword + "_" + Integer.toString(0));
-                methods.add(new methodCallInfo(newKeyword, ((METHOD_BEGIN) instruction).name));
-                newMethod.addExe(instruction.fileName + ":" + instruction.mid);
-                methodMap.put(newKeyword + "_" + Integer.toString(methods.get(-1).callCount), newMethod);
-
-                numofMethods++;
-            }
-            else {
-                for (methodCallInfo m : methods) {
-                    if (m.methodName.equals(((METHOD_BEGIN) instruction).name)) {
-                        m.incCallCount();
-                        MethodLog newMethod = new MethodLog(m.methodID + "_" + Integer.toString(m.callCount), keyWordStack.get(keyWordStack.size()-1), m.callCount);
-                        keyWordStack.add(m.methodID + "_" + Integer.toString(m.callCount));
-                        newMethod.addExe(instruction.fileName + ":" + instruction.mid);
-                        methodMap.put(m.methodID + "_" + Integer.toString(m.callCount), newMethod);
-                    }
-                }
-            }
+            System.out.println("MethodName: " + ((METHOD_BEGIN) instruction).name);
+//            for (methodCallInfo m : methods) {
+//                if (m.methodName.equals(((METHOD_BEGIN) instruction).name) && m.fileName.equals(((METHOD_BEGIN) instruction).fileName)) {
+//                    System.out.println("ExistName: " + ((METHOD_BEGIN) instruction).name);
+//                    exist = true;
+//                    m.incCallCount();
+//                    System.out.println("CurKey: " + keyWordStack.get(keyWordStack.size()-1));
+//                    MethodLog newMethod = new MethodLog(m.methodID + "_" + Integer.toString(m.callCount), keyWordStack.get(keyWordStack.size()-1), m.callCount);
+//                    keyWordStack.add(m.methodID + "_" + Integer.toString(m.callCount));
+//                    newMethod.addExe(instruction.fileName + ":" + instruction.mid);
+////                    methodMap.put(m.methodID + "_" + Integer.toString(m.callCount), newMethod);
+//                }
+//                break;
+//            }
+//            if (!exist) {
+//                String newKeyword = "m_id" + Integer.toString(numofMethods);
+//                MethodLog newMethod;
+//                if (keyWordStack.size() == 0) {
+//                    newMethod = new MethodLog(newKeyword + "_" + Integer.toString(0), "Entry", 0);
+//                }
+//                else {
+//                    newMethod = new MethodLog(newKeyword + "_" + Integer.toString(0), keyWordStack.get(keyWordStack.size()-1), 0);
+//                }
+//
+//                System.out.println(newKeyword + "_" + Integer.toString(0));
+//
+//                keyWordStack.add(newKeyword + "_" + Integer.toString(0));
+//                methods.add(new methodCallInfo(newKeyword, ((METHOD_BEGIN) instruction).fileName, ((METHOD_BEGIN) instruction).name));
+//                newMethod.addExe(instruction.fileName + ":" + instruction.mid);
+//                methodMap.put(newKeyword + "_" + Integer.toString(methods.get(-1).callCount), newMethod);
+//
+//                numofMethods++;
+//            }
         }
-        else if (instruction instanceof INVOKEMETHOD_END || instruction instanceof METHOD_THROW) {
-            ((MethodLog)methodMap.get(keyWordStack.get(keyWordStack.size()-1))).addExe(instruction.fileName + ":" + instruction.mid);
-            methodStack.remove(methodStack.size()-1);
-            keyWordStack.remove(keyWordStack.size()-1);
-        }
-        else {
-            ((MethodLog)methodMap.get(keyWordStack.get(keyWordStack.size()-1))).addExe(instruction.fileName + ":" + instruction.mid);
-        }
-
-
+//        else if (instruction instanceof INVOKEMETHOD_END || instruction instanceof METHOD_THROW) {
+//            System.out.println("KeyWordSize: " + Integer.toString(keyWordStack.size()-1));
+//            ((MethodLog)methodMap.get(keyWordStack.get(keyWordStack.size()-1))).addExe(instruction.fileName + ":" + instruction.mid);
+//            methodStack.remove(methodStack.size()-1);
+//            keyWordStack.remove(keyWordStack.size()-1);
+//        }
+//        else if (firstCall) {
+//            ((MethodLog)methodMap.get(keyWordStack.get(keyWordStack.size()-1))).addExe(instruction.fileName + ":" + instruction.mid);
+//        }
+//        if (firstCall) {
+//            System.out.println("CurrentID : " + keyWordStack.get(keyWordStack.size() - 1));
+//        }
 //        System.out.println("Patched Method: " + System.getProperty("jqf.ei.PATCHED_METHOD"));
         tracer.get().consume(instruction);
     }
