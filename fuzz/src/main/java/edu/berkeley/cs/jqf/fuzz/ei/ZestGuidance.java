@@ -28,22 +28,6 @@
  */
 package edu.berkeley.cs.jqf.fuzz.ei;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.Console;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.PrintWriter;
-import java.time.Duration;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Consumer;
-
 import edu.berkeley.cs.jqf.fuzz.guidance.Guidance;
 import edu.berkeley.cs.jqf.fuzz.guidance.GuidanceException;
 import edu.berkeley.cs.jqf.fuzz.guidance.Result;
@@ -52,7 +36,13 @@ import edu.berkeley.cs.jqf.fuzz.reach.PoracleGuidance;
 import edu.berkeley.cs.jqf.fuzz.util.Coverage;
 import edu.berkeley.cs.jqf.instrument.tracing.events.TraceEvent;
 import kr.ac.unist.cse.jqf.Log;
-import org.magicwerk.brownies.collections.BigList;
+
+import java.io.*;
+import java.time.Duration;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 
 import static java.lang.Math.ceil;
 import static java.lang.Math.log;
@@ -641,6 +631,7 @@ public class ZestGuidance implements Guidance {
             List<String> pathSpectrum=runCoverage.getPathSpectrum();
             Log.logBranchSpectrum(branchSpectrum,false);
             Log.logPathSpectrum(pathSpectrum,false);
+            Log.logJson(false);
 
             // Compute a list of keys for which this input can assume responsiblity.
             // Newly covered branches are always included.

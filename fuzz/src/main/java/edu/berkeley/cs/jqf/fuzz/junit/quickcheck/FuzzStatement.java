@@ -27,15 +27,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 package edu.berkeley.cs.jqf.fuzz.junit.quickcheck;
-import java.io.*;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.*;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
 import com.pholser.junit.quickcheck.generator.GenerationStatus;
 import com.pholser.junit.quickcheck.generator.Generator;
 import com.pholser.junit.quickcheck.generator.InRange;
@@ -45,22 +36,18 @@ import com.pholser.junit.quickcheck.internal.ParameterTypeContext;
 import com.pholser.junit.quickcheck.internal.generator.CompositeGenerator;
 import com.pholser.junit.quickcheck.internal.generator.GeneratorRepository;
 import com.pholser.junit.quickcheck.random.SourceOfRandomness;
+import edu.berkeley.cs.jqf.fuzz.Fuzz;
+import edu.berkeley.cs.jqf.fuzz.PatchInfo;
 import edu.berkeley.cs.jqf.fuzz.ei.ZestCLI2;
 import edu.berkeley.cs.jqf.fuzz.ei.ZestGuidance;
-import edu.berkeley.cs.jqf.fuzz.guidance.Guidance;
-import edu.berkeley.cs.jqf.fuzz.guidance.GuidanceException;
-import edu.berkeley.cs.jqf.fuzz.guidance.TimeoutException;
+import edu.berkeley.cs.jqf.fuzz.guidance.*;
+import edu.berkeley.cs.jqf.fuzz.junit.GuidedFuzzing;
 import edu.berkeley.cs.jqf.fuzz.junit.ReproRun;
+import edu.berkeley.cs.jqf.fuzz.junit.TrialRunner;
 import edu.berkeley.cs.jqf.fuzz.random.NoGuidance;
 import edu.berkeley.cs.jqf.fuzz.reach.PoracleGuidance;
 import edu.berkeley.cs.jqf.fuzz.reach.Target;
 import edu.berkeley.cs.jqf.fuzz.repro.ReproGuidance;
-import edu.berkeley.cs.jqf.fuzz.guidance.Result;
-import edu.berkeley.cs.jqf.fuzz.guidance.StreamBackedRandom;
-import edu.berkeley.cs.jqf.fuzz.Fuzz;
-import edu.berkeley.cs.jqf.fuzz.PatchInfo;
-import edu.berkeley.cs.jqf.fuzz.junit.GuidedFuzzing;
-import edu.berkeley.cs.jqf.fuzz.junit.TrialRunner;
 import edu.berkeley.cs.jqf.instrument.InstrumentingClassLoader;
 import edu.berkeley.cs.jqf.instrument.tracing.ThreadTracer;
 import kr.ac.unist.cse.jqf.Log;
@@ -72,6 +59,15 @@ import org.junit.runners.model.MultipleFailureException;
 import org.junit.runners.model.Statement;
 import org.junit.runners.model.TestClass;
 import ru.vyarus.java.generics.resolver.GenericsResolver;
+
+import java.io.*;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import static edu.berkeley.cs.jqf.fuzz.guidance.Result.*;
 //import org.apache.commons.io.FileUtils;
@@ -481,11 +477,11 @@ public class FuzzStatement extends Statement {
 
                     // we call the patched version
                     //TODO: check the infinite loop issue. For now, just let it as mono fuzzing
-                    if (!System.getProperty("kr.ac.unist.cse.jqf.MULTI_FUZZ").equals("true")) {
+                    if (System.getProperty("kr.ac.unist.cse.jqf.MULTI_FUZZ").equals("true")) {
                         guidance.setNumOfPatches(patchInfos.size());
                         for (PatchInfo pi : patchInfos) {
                             System.setProperty("jqf.ei.CURRENT_PATH_FOR_PATCH", pi.patchPath);
-//                            System.out.println("PatchInfo: " + pi.patchPath);
+                            System.out.println("PatchInfo: " + pi.patchPath);
                             runPatch(guidance, resultOfOrg, pi.getPatchLoader(), argsList.size());
                             if (!guidance.isDiffOutFound()) {
                                 guidance.setDiffOutputFound(isDiffOutputFound());
@@ -509,7 +505,7 @@ public class FuzzStatement extends Statement {
                                 DumpUtil.exitMethods.clear();
                                 DumpUtil.enterMethods.clear();
                             }
-
+                            Log.turnOffRunBuggyVersion();
                             resultOfPatchesList.add(guidance.handleResultOfPatch(result, targetHit));
                         }
                     }
@@ -532,10 +528,10 @@ public class FuzzStatement extends Statement {
                             DumpUtil.exitMethods.clear();
                             DumpUtil.enterMethods.clear();
                         }
-
+                        Log.turnOffRunBuggyVersion();
                         resultOfPatch = guidance.handleResultOfPatch(result, targetHit);
                     }
-
+                    Log.turnOnRunBuggyVersion();
                 } else {
                     guidance.infoLog("Ignore input");
                 }
@@ -679,6 +675,8 @@ public class FuzzStatement extends Statement {
 
     private void evaluatePatch(ReproGuidance guidance, List<Generator<?>> generators) throws Throwable {
         // Keep fuzzing until no more input or I/O error with guidance
+        Log.turnOffRunBuggyVersion();
+        System.setProperty("jqf.ei.run_patch", "true");
         try {
             // Keep fuzzing as long as guidance wants to
             while (guidance.hasInput()) {
@@ -815,6 +813,8 @@ public class FuzzStatement extends Statement {
                 throw new MultipleFailureException(failures);
             }
         }
+        System.setProperty("jqf.ei.run_patch", "false");
+        Log.turnOnRunBuggyVersion();
     }
 
     private void updateInputRange(Guidance guidance, List<Generator<?>> generators, int wideningCount) {

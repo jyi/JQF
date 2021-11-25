@@ -6,8 +6,25 @@ package janala.logger.inst;
   */
 public class METHOD_THROW extends Instruction {
 
+  public final String fileName;
+  public final String owner;
+  public final String name;
+  public final String desc;
+
   public METHOD_THROW() {
     super(-1, -1);
+    this.fileName = "";
+    this.owner = "";
+    this.name = "";
+    this.desc = "";
+  }
+
+  public METHOD_THROW(String fileName, String owner, String name, String desc) {
+    super(-1, -1);
+    this.fileName = fileName;
+    this.owner = owner;
+    this.name = name;
+    this.desc = desc;
   }
 
   public void visit(IVisitor visitor) {

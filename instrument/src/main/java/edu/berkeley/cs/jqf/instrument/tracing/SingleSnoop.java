@@ -29,15 +29,15 @@
 
 package edu.berkeley.cs.jqf.instrument.tracing;
 
+import edu.berkeley.cs.jqf.instrument.tracing.events.TraceEvent;
+import edu.berkeley.cs.jqf.instrument.util.DoublyLinkedList;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.function.Consumer;
 import java.util.function.Function;
-
-import edu.berkeley.cs.jqf.instrument.tracing.events.TraceEvent;
-import edu.berkeley.cs.jqf.instrument.util.DoublyLinkedList;
 
 
 @SuppressWarnings("unused") // Dynamically loaded
@@ -91,6 +91,7 @@ public final class SingleSnoop {
      *                   <tt>FooBar#main</tt>).
      */
     public static void startSnooping(String entryPoint) {
+        System.setProperty("jqf.ei.run_patch", "false");
         // Mark entry point
         entryPoints.put(Thread.currentThread(), entryPoint);
         // XXX: Offer a dummy instruction to warm-up
@@ -1653,6 +1654,36 @@ public final class SingleSnoop {
     public static void RETURN(String fileName, int iid, int mid) {
         if (block.get()) return; else block.set(true);
         try { intp.RETURN(fileName, iid, mid); } finally { block.set(false); }
+    }
+
+    public static void IRETURN(String fileName, String method, int iid, int mid) {
+        if (block.get()) return; else block.set(true);
+        try { intp.IRETURN(fileName, method, iid, mid); } finally { block.set(false); }
+    }
+
+    public static void LRETURN(String fileName, String method, int iid, int mid) {
+        if (block.get()) return; else block.set(true);
+        try { intp.LRETURN(fileName, method, iid, mid); } finally { block.set(false); }
+    }
+
+    public static void FRETURN(String fileName, String method, int iid, int mid) {
+        if (block.get()) return; else block.set(true);
+        try { intp.FRETURN(fileName, method, iid, mid); } finally { block.set(false); }
+    }
+
+    public static void DRETURN(String fileName, String method, int iid, int mid) {
+        if (block.get()) return; else block.set(true);
+        try { intp.DRETURN(fileName, method, iid, mid); } finally { block.set(false); }
+    }
+
+    public static void ARETURN(String fileName, String  method, int iid, int mid) {
+        if (block.get()) return; else block.set(true);
+        try { intp.ARETURN(fileName, method, iid, mid); } finally { block.set(false); }
+    }
+
+    public static void RETURN(String fileName, String method, int iid, int mid) {
+        if (block.get()) return; else block.set(true);
+        try { intp.RETURN(fileName, method, iid, mid); } finally { block.set(false); }
     }
 
     public static void ARRAYLENGTH(String fileName, int iid, int mid) {

@@ -29,12 +29,9 @@
 
 package edu.berkeley.cs.jqf.instrument.tracing;
 
-import com.dslplatform.json.DslJson;
-import com.dslplatform.json.JsonWriter;
 import edu.berkeley.cs.jqf.instrument.tracing.events.TraceEvent;
 import janala.logger.AbstractLogger;
-import janala.logger.inst.Instruction;
-import janala.logger.inst.METHOD_BEGIN;
+import janala.logger.inst.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -51,67 +48,59 @@ import java.util.Map;
  */
 public class TraceLogger extends AbstractLogger {
 
-    public class methodCallInfo {
-        public methodCallInfo () {
-        }
-
-        public methodCallInfo (String methodID, String fileName, String methodName) {
-            this.methodID = methodID;
-            this.fileName = fileName;
-            this.methodName = methodName;
-        }
-
-        public String methodID = new String();
-        public String fileName = new String();
-        public String methodName = new String();
-        public int callCount = 0;
-
-        public void incCallCount() {
-            this.callCount++;
-        }
-    }
-
-    public class MethodLog {
-        public MethodLog () {
-        }
-
-        public MethodLog (String id, String caller, int Nth) {
-            this.id = id;
-            this.caller = caller;
-            this.Nth = Nth;
-        }
-
+    public class FileInfo {
         public String id = new String();
-        public int Nth = 0;
-        public String caller = new String();
-        public ArrayList<String> exe = new ArrayList<>();
+        public String name = new String();
 
-        public void addExe(String newLine) {
-            this.exe.add(newLine);
+        public FileInfo() {
         }
 
-        public ArrayList<String> getExe () {
-            return this.exe;
+        public FileInfo(String id, String name) {
+            this.id = id;
+            this.name = name;
         }
     }
+
+
+
+
+
 
     private static final TraceLogger singleton = new TraceLogger();
 
     private final ThreadLocal<ThreadTracer> tracer
             = ThreadLocal.withInitial(() -> ThreadTracer.spawn(Thread.currentThread()));
 
-    public DslJson<Object> dslJson = new DslJson<Object>();
-    //writer should be reused. For per thread reuse use ThreadLocal pattern
-    public JsonWriter writer = dslJson.newWriter();
+
 
     public ArrayList<methodCallInfo> methods = new ArrayList<>();
     public int numofMethods = 0;
+    public int numofFiles = 0;
     public Map<String, Object> methodMap = new HashMap<String, Object>();
+    public Map<String, String> fileMap = new HashMap<String, String>();
+    public Map<String, String> methodNameMap = new HashMap<String, String>();
 
     public ArrayList<String> methodStack = new ArrayList<>();
-    public ArrayList<String > keyWordStack = new ArrayList<>();
+    public ArrayList<String> keyWordStack = new ArrayList<>();
+    public ArrayList<FileInfo> fileList = new ArrayList<>();
+
+    public ArrayList<methodCallInfo> methodsP = new ArrayList<>();
+    public int numofMethodsP = 0;
+    public int numofFilesP = 0;
+    public Map<String, Object> methodMapP = new HashMap<String, Object>();
+    public Map<String, String> fileMapP = new HashMap<String, String>();
+    public Map<String, String> methodNameMapP = new HashMap<String, String>();
+
+    public ArrayList<String> methodStackP = new ArrayList<>();
+    public ArrayList<String> keyWordStackP = new ArrayList<>();
+    public ArrayList<FileInfo> fileListP = new ArrayList<>();
+
 
     public boolean firstCall = false;
+
+    public int stackSize = 0;
+
+
 
     private TraceLogger() {
 
@@ -126,53 +115,290 @@ public class TraceLogger extends AbstractLogger {
     /** Logs an instrumented bytecode instruction for the current thread. */
     @Override
     protected void log(Instruction instruction) {
-        if (instruction instanceof METHOD_BEGIN) {
-            firstCall = true;
-            boolean exist = false;
-            methodStack.add(((METHOD_BEGIN) instruction).name);
-            System.out.println("MethodName: " + ((METHOD_BEGIN) instruction).name);
-//            for (methodCallInfo m : methods) {
-//                if (m.methodName.equals(((METHOD_BEGIN) instruction).name) && m.fileName.equals(((METHOD_BEGIN) instruction).fileName)) {
-//                    System.out.println("ExistName: " + ((METHOD_BEGIN) instruction).name);
-//                    exist = true;
-//                    m.incCallCount();
-//                    System.out.println("CurKey: " + keyWordStack.get(keyWordStack.size()-1));
-//                    MethodLog newMethod = new MethodLog(m.methodID + "_" + Integer.toString(m.callCount), keyWordStack.get(keyWordStack.size()-1), m.callCount);
-//                    keyWordStack.add(m.methodID + "_" + Integer.toString(m.callCount));
-//                    newMethod.addExe(instruction.fileName + ":" + instruction.mid);
-////                    methodMap.put(m.methodID + "_" + Integer.toString(m.callCount), newMethod);
-//                }
-//                break;
-//            }
-//            if (!exist) {
-//                String newKeyword = "m_id" + Integer.toString(numofMethods);
-//                MethodLog newMethod;
-//                if (keyWordStack.size() == 0) {
-//                    newMethod = new MethodLog(newKeyword + "_" + Integer.toString(0), "Entry", 0);
-//                }
-//                else {
-//                    newMethod = new MethodLog(newKeyword + "_" + Integer.toString(0), keyWordStack.get(keyWordStack.size()-1), 0);
-//                }
-//
-//                System.out.println(newKeyword + "_" + Integer.toString(0));
-//
-//                keyWordStack.add(newKeyword + "_" + Integer.toString(0));
-//                methods.add(new methodCallInfo(newKeyword, ((METHOD_BEGIN) instruction).fileName, ((METHOD_BEGIN) instruction).name));
-//                newMethod.addExe(instruction.fileName + ":" + instruction.mid);
-//                methodMap.put(newKeyword + "_" + Integer.toString(methods.get(-1).callCount), newMethod);
-//
-//                numofMethods++;
-//            }
+//        System.out.println("KeyStack: " + keyWordStack);
+        boolean fileExist = false;
+
+        if(!System.getProperty("jqf.ei.run_patch").equals("true")) {
+            System.out.println("RunPatch: " + System.getProperty("jqf.ei.run_patch"));
+            try {
+                if (instruction.fileName.contains("\\.")) {
+//                    System.out.println("Contain: " + instruction.fileName);
+                    if (!fileMap.containsKey(instruction.fileName.split("\\.")[0])) {
+                        fileMap.put(instruction.fileName.split("\\.")[0], "f" + Integer.toString(numofFiles));
+//                        System.out.println("NewFile: " + instruction.fileName.split("\\.")[0] + "f" + Integer.toString(numofFiles));
+                        numofFiles++;
+                    }
+                }
+                else if (instruction instanceof INVOKESTATIC || instruction instanceof INVOKESPECIAL || instruction instanceof METHOD_BEGIN || instruction instanceof INVOKEVIRTUAL || instruction instanceof INVOKEINTERFACE) {
+                    if (!fileMap.containsKey(((MemberRef) instruction).getOwner())) {
+                        fileMap.put(((MemberRef) instruction).getOwner(), "f" + Integer.toString(numofFiles));
+//                        System.out.println("NewOwner: " + ((MemberRef) instruction).getOwner() + "f" + Integer.toString(numofFiles));
+                        numofFiles++;
+                    }
+                }
+                else if (!instruction.owner.equals("")) {
+                    if (!fileMap.containsKey(instruction.owner)) {
+                        fileMap.put(instruction.owner,  "f" + Integer.toString(numofFiles));
+                        numofFiles++;
+                    }
+                }
+                else {
+//                    System.out.println("File:" + instruction.fileName);
+                    fileMap.put(instruction.fileName, "n");
+                }
+
+            }
+            catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            if (instruction instanceof INVOKESTATIC || instruction instanceof INVOKESPECIAL || instruction instanceof METHOD_BEGIN || instruction instanceof INVOKEVIRTUAL || instruction instanceof INVOKEINTERFACE) {
+                stackSize++;
+                firstCall = true;
+                boolean exist = false;
+//            methodStack.add(((INVOKESTATIC) instruction).name);
+//                System.out.println("MethodName: " + ((MemberRef) instruction).getOwner() + " " + ((MemberRef) instruction).getName());
+                for (methodCallInfo m : methods) {
+                    try {
+                        if (m.methodName.equals(((MemberRef) instruction).getName()) && m.fileName.equals(((MemberRef) instruction).getOwner())) {
+
+//                            System.out.println("ExistName: " + ((MemberRef) instruction).getName());
+                            exist = true;
+                            m.incCallCount();
+//                        System.out.println("KeyStackSize: " + keyWordStack.size());
+//                        System.out.println("CurKey: " + keyWordStack.get(keyWordStack.size()-1));
+                            MethodLog newMethod;
+
+                            if (keyWordStack.size() == 0) {
+                                newMethod = new MethodLog(m.methodID + "_" + Integer.toString(m.callCount), "Entry", m.callCount);
+                            }
+                            else {
+                                ((MethodLog)methodMap.get(keyWordStack.get(keyWordStack.size()-1))).addExe(m.methodID + "_" + Integer.toString(m.callCount));
+                                newMethod = new MethodLog(m.methodID + "_" + Integer.toString(m.callCount), keyWordStack.get(keyWordStack.size()-1), m.callCount);
+                            }
+
+                            keyWordStack.add(m.methodID + "_" + Integer.toString(m.callCount));
+                            if (!((MemberRef) instruction).getOwner().equals("")) {
+                                newMethod.addExe(((MemberRef) instruction).getName() + fileMap.get(((MemberRef) instruction).getOwner()) + ":" + instruction.mid);
+                            }
+                            methodMap.put(m.methodID + "_" + Integer.toString(m.callCount), newMethod);
+                            break;
+                        }
+                    }
+                    catch (Exception e) {
+                        System.out.println("Exception in Exist");
+                        e.printStackTrace();
+                    }
+
+                }
+                if (!exist) {
+                    try {
+                        String newKeyword = "m_id" + Integer.toString(numofMethods);
+                        methodNameMap.put(newKeyword, ((MemberRef) instruction).getOwner() + ((MemberRef) instruction).getName());
+                        MethodLog newMethod;
+                        if (keyWordStack.size() == 0) {
+                            newMethod = new MethodLog(newKeyword + "_" + Integer.toString(0), "Entry", 0);
+                        }
+                        else {
+                            ((MethodLog)methodMap.get(keyWordStack.get(keyWordStack.size()-1))).addExe(newKeyword + "_" + Integer.toString(0));
+                            newMethod = new MethodLog(newKeyword + "_" + Integer.toString(0), keyWordStack.get(keyWordStack.size()-1), 0);
+                        }
+
+                        System.out.println(newKeyword + "_" + Integer.toString(0));
+
+                        keyWordStack.add(newKeyword + "_" + Integer.toString(0));
+                        methods.add(new methodCallInfo(newKeyword, ((MemberRef) instruction).getOwner(), ((MemberRef) instruction).getName()));
+                        if (!((MemberRef) instruction).getOwner().equals("")) {
+                            newMethod.addExe(((MemberRef) instruction).getName() + fileMap.get(((MemberRef) instruction).getOwner()) + ":" + instruction.mid);
+                        }
+                        methodMap.put(newKeyword + "_0", newMethod);
+
+                        numofMethods++;
+                    }
+                    catch (Exception e) {
+                        System.out.println("Exception in Not Exist");
+                        e.printStackTrace();
+                    }
+
+                }
+            }
+//        instruction instanceof RETURN || instruction instanceof ARETURN ||
+//                instruction instanceof DRETURN || instruction instanceof FRETURN ||
+//                instruction instanceof IRETURN || instruction instanceof LRETURN
+            else if (instruction instanceof INVOKEMETHOD_END ||         instruction instanceof RETURN || instruction instanceof ARETURN ||
+                    instruction instanceof DRETURN || instruction instanceof FRETURN ||
+                    instruction instanceof IRETURN || instruction instanceof LRETURN) {
+                try {
+//                System.out.println("KeyWordSize: " + Integer.toString(keyWordStack.size()));
+                    System.out.println(instruction.getClass().getName());
+//                    System.out.println("Mehtod: " + instruction.fileName + instruction.name);
+//                System.out.println("Owner: " + instruction.owner);
+                    if (!instruction.fileName.equals("")) {
+                        ((MethodLog)methodMap.get(keyWordStack.get(keyWordStack.size()-1))).addExe(fileMap.get(instruction.fileName.split("\\.")[0]) + ":" + instruction.mid);
+                    }
+//                int lastIndex = methodStack.size()-1;
+//                methodStack.remove(lastIndex);
+                    int lastIndex = keyWordStack.size()-1;
+                    keyWordStack.remove(lastIndex);
+                }
+                catch (Exception e) {
+                    System.out.println("Exception in End");
+                    e.printStackTrace();
+                }
+                stackSize--;
+            }
+            else if (keyWordStack.size() > 0) {
+                if (!instruction.fileName.equals("")) {
+                    ((MethodLog)methodMap.get(keyWordStack.get(keyWordStack.size()-1))).addExe(fileMap.get(instruction.fileName.split("\\.")[0]) + ":" + instruction.mid);
+                }
+            }
+            else {
+                System.out.println("Out of Method");
+            }
+//            System.out.println(instruction.getClass().getName());
         }
-//        else if (instruction instanceof INVOKEMETHOD_END || instruction instanceof METHOD_THROW) {
-//            System.out.println("KeyWordSize: " + Integer.toString(keyWordStack.size()-1));
-//            ((MethodLog)methodMap.get(keyWordStack.get(keyWordStack.size()-1))).addExe(instruction.fileName + ":" + instruction.mid);
-//            methodStack.remove(methodStack.size()-1);
-//            keyWordStack.remove(keyWordStack.size()-1);
-//        }
-//        else if (firstCall) {
-//            ((MethodLog)methodMap.get(keyWordStack.get(keyWordStack.size()-1))).addExe(instruction.fileName + ":" + instruction.mid);
-//        }
+        else {
+            System.out.println("RunPatch: " + System.getProperty("jqf.ei.run_patch"));
+            try {
+                if (instruction.fileName.contains("\\.")) {
+                    System.out.println("Contain: " + instruction.fileName);
+                    if (!fileMapP.containsKey(instruction.fileName.split("\\.")[0])) {
+                        fileMapP.put(instruction.fileName.split("\\.")[0], "f" + Integer.toString(numofFilesP));
+                        System.out.println("NewFile: " + instruction.fileName.split("\\.")[0] + "f" + Integer.toString(numofFilesP));
+                        numofFilesP++;
+                    }
+                }
+                else if (instruction instanceof INVOKESTATIC || instruction instanceof INVOKESPECIAL || instruction instanceof METHOD_BEGIN || instruction instanceof INVOKEVIRTUAL || instruction instanceof INVOKEINTERFACE) {
+                    if (!fileMapP.containsKey(((MemberRef) instruction).getOwner())) {
+                        fileMapP.put(((MemberRef) instruction).getOwner(), "f" + Integer.toString(numofFilesP));
+                        System.out.println("NewOwner: " + ((MemberRef) instruction).getOwner() + "f" + Integer.toString(numofFilesP));
+                        numofFilesP++;
+                    }
+                }
+                else if (!instruction.owner.equals("")) {
+                    if (!fileMapP.containsKey(instruction.owner)) {
+                        fileMap.put(instruction.owner,  "f" + Integer.toString(numofFilesP));
+                        numofFilesP++;
+                    }
+                }
+                else {
+                    System.out.println("File:" + instruction.fileName);
+                    fileMapP.put(instruction.fileName, "n");
+                }
+
+            }
+            catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            if (instruction instanceof INVOKESTATIC || instruction instanceof INVOKESPECIAL || instruction instanceof METHOD_BEGIN || instruction instanceof INVOKEVIRTUAL || instruction instanceof INVOKEINTERFACE) {
+                stackSize++;
+                firstCall = true;
+                boolean exist = false;
+//            methodStack.add(((INVOKESTATIC) instruction).name);
+                System.out.println("MethodName: " + ((MemberRef) instruction).getOwner() + " " + ((MemberRef) instruction).getName());
+                for (methodCallInfo m : methodsP) {
+                    try {
+                        if (m.methodName.equals(((MemberRef) instruction).getName()) && m.fileName.equals(((MemberRef) instruction).getOwner())) {
+
+                            System.out.println("ExistName: " + ((MemberRef) instruction).getName());
+                            exist = true;
+                            m.incCallCount();
+//                        System.out.println("KeyStackSize: " + keyWordStack.size());
+//                        System.out.println("CurKey: " + keyWordStack.get(keyWordStack.size()-1));
+                            MethodLog newMethod;
+
+                            if (keyWordStackP.size() == 0) {
+                                newMethod = new MethodLog(m.methodID + "_" + Integer.toString(m.callCount), "Entry", m.callCount);
+                            }
+                            else {
+                                ((MethodLog)methodMapP.get(keyWordStackP.get(keyWordStackP.size()-1))).addExe(m.methodID + "_" + Integer.toString(m.callCount));
+                                newMethod = new MethodLog(m.methodID + "_" + Integer.toString(m.callCount), keyWordStackP.get(keyWordStackP.size()-1), m.callCount);
+                            }
+
+                            keyWordStackP.add(m.methodID + "_" + Integer.toString(m.callCount));
+                            if (!((MemberRef) instruction).getOwner().equals("")) {
+                                newMethod.addExe(((MemberRef) instruction).getName() + fileMapP.get(((MemberRef) instruction).getOwner()) + ":" + instruction.mid);
+                            }
+                            methodMapP.put(m.methodID + "_" + Integer.toString(m.callCount), newMethod);
+                            break;
+                        }
+                    }
+                    catch (Exception e) {
+                        System.out.println("Exception in Exist");
+                        e.printStackTrace();
+                    }
+
+                }
+                if (!exist) {
+                    try {
+                        String newKeyword = "m_id" + Integer.toString(numofMethodsP);
+                        methodNameMapP.put(newKeyword, ((MemberRef) instruction).getOwner() + ((MemberRef) instruction).getName());
+                        MethodLog newMethod;
+                        if (keyWordStackP.size() == 0) {
+                            newMethod = new MethodLog(newKeyword + "_" + Integer.toString(0), "Entry", 0);
+                        }
+                        else {
+                            ((MethodLog)methodMapP.get(keyWordStackP.get(keyWordStackP.size()-1))).addExe(newKeyword + "_" + Integer.toString(0));
+                            newMethod = new MethodLog(newKeyword + "_" + Integer.toString(0), keyWordStackP.get(keyWordStackP.size()-1), 0);
+                        }
+
+//                        System.out.println(newKeyword + "_" + Integer.toString(0));
+
+                        keyWordStackP.add(newKeyword + "_" + Integer.toString(0));
+                        methodsP.add(new methodCallInfo(newKeyword, ((MemberRef) instruction).getOwner(), ((MemberRef) instruction).getName()));
+                        if (!((MemberRef) instruction).getOwner().equals("")) {
+                            newMethod.addExe(((MemberRef) instruction).getName() + fileMapP.get(((MemberRef) instruction).getOwner()) + ":" + instruction.mid);
+                        }
+                        methodMapP.put(newKeyword + "_0", newMethod);
+
+                        numofMethodsP++;
+                    }
+                    catch (Exception e) {
+                        System.out.println("Exception in Not Exist");
+                        e.printStackTrace();
+                    }
+
+                }
+            }
+//        instruction instanceof RETURN || instruction instanceof ARETURN ||
+//                instruction instanceof DRETURN || instruction instanceof FRETURN ||
+//                instruction instanceof IRETURN || instruction instanceof LRETURN
+            else if (instruction instanceof INVOKEMETHOD_END ||         instruction instanceof RETURN || instruction instanceof ARETURN ||
+                    instruction instanceof DRETURN || instruction instanceof FRETURN ||
+                    instruction instanceof IRETURN || instruction instanceof LRETURN) {
+                try {
+//                System.out.println("KeyWordSize: " + Integer.toString(keyWordStack.size()));
+                    System.out.println(instruction.getClass().getName());
+                    System.out.println("Mehtod: " + instruction.fileName + instruction.name);
+//                System.out.println("Owner: " + instruction.owner);
+                    if (!instruction.fileName.equals("")) {
+                        ((MethodLog)methodMapP.get(keyWordStackP.get(keyWordStackP.size()-1))).addExe(fileMapP.get(instruction.fileName.split("\\.")[0]) + ":" + instruction.mid);
+                    }
+//                int lastIndex = methodStack.size()-1;
+//                methodStack.remove(lastIndex);
+                    int lastIndex = keyWordStackP.size()-1;
+                    keyWordStackP.remove(lastIndex);
+                }
+                catch (Exception e) {
+                    System.out.println("Exception in End");
+                    e.printStackTrace();
+                }
+                stackSize--;
+            }
+            else if (keyWordStackP.size() > 0) {
+                if (!instruction.fileName.equals("")) {
+                    ((MethodLog)methodMapP.get(keyWordStackP.get(keyWordStackP.size()-1))).addExe(fileMapP.get(instruction.fileName.split("\\.")[0]) + ":" + instruction.mid);
+                }
+            }
+            else {
+                System.out.println("Out of Method");
+            }
+//            System.out.println(instruction.getClass().getName());
+        }
+
+
+//        System.out.println("StackSize: " + Integer.toString(stackSize));
 //        if (firstCall) {
 //            System.out.println("CurrentID : " + keyWordStack.get(keyWordStack.size() - 1));
 //        }
@@ -185,4 +411,24 @@ public class TraceLogger extends AbstractLogger {
         tracer.get().emit(event);
     }
 
+    public void initMethodLog () {
+        this.stackSize = 0;
+        this.keyWordStack = new ArrayList<>();
+        this.firstCall = false;
+        this.methodMap = new HashMap<String, Object>();
+        this.numofMethods = 0;
+        this.methods = new ArrayList<methodCallInfo>();
+        this.methodNameMap = new HashMap<String, String>();
+    }
+    public void initMethodLogP () {
+        this.stackSize = 0;
+        this.keyWordStackP = new ArrayList<>();
+        this.firstCall = false;
+        this.methodMapP = new HashMap<String, Object>();
+        this.numofMethodsP = 0;
+        this.methodsP = new ArrayList<methodCallInfo>();
+        this.methodNameMapP = new HashMap<String, String>();
+    }
+
 }
+

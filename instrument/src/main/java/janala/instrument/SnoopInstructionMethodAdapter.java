@@ -1,11 +1,11 @@
 package janala.instrument;
 
-import java.util.LinkedList;
-
 import janala.logger.inst.SPECIAL;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
+
+import java.util.LinkedList;
 
 public class SnoopInstructionMethodAdapter extends MethodVisitor implements Opcodes {
   boolean isInit;
@@ -78,6 +78,17 @@ public class SnoopInstructionMethodAdapter extends MethodVisitor implements Opco
 
     mv.visitInsn(opcode);
   }
+
+  private void addReturnInsn(MethodVisitor mv, String insn, int opcode) {
+    mv.visitLdcInsn(source);
+    mv.visitLdcInsn(methodName);
+    addBipushInsn(mv, instrumentationState.incAndGetId());
+    addBipushInsn(mv, lastLineNumber);
+    mv.visitMethodInsn(INVOKESTATIC, Config.instance.analysisClass, insn, "(Ljava/lang/String;Ljava/lang/String;II)V", false);
+
+    mv.visitInsn(opcode);
+  }
+
 
   /** Add var insn and its instrumentation code. */
   private void addVarInsn(MethodVisitor mv, int var, String insn, int opcode) {
@@ -432,22 +443,22 @@ public class SnoopInstructionMethodAdapter extends MethodVisitor implements Opco
         addInsn(mv, "DCMPG", opcode);
         break;*/
       case IRETURN:
-        addInsn(mv, "IRETURN", opcode);
+        addReturnInsn(mv, "IRETURN", opcode);
         break;
       case LRETURN:
-        addInsn(mv, "LRETURN", opcode);
+        addReturnInsn(mv, "LRETURN", opcode);
         break;
       case FRETURN:
-        addInsn(mv, "FRETURN", opcode);
+        addReturnInsn(mv, "FRETURN", opcode);
         break;
       case DRETURN:
-        addInsn(mv, "DRETURN", opcode);
+        addReturnInsn(mv, "DRETURN", opcode);
         break;
       case ARETURN:
-        addInsn(mv, "ARETURN", opcode);
+        addReturnInsn(mv, "ARETURN", opcode);
         break;
       case RETURN:
-        addInsn(mv, "RETURN", opcode);
+        addReturnInsn(mv, "RETURN", opcode);
         break;
       /*case ARRAYLENGTH:
         addInsn(mv, "ARRAYLENGTH", opcode);
@@ -689,6 +700,8 @@ public class SnoopInstructionMethodAdapter extends MethodVisitor implements Opco
   }
 
   private void addMethodWithTryCatch(int opcode, String owner, String name, String desc, boolean itf) {
+
+    mv.visitLdcInsn(source);
     addBipushInsn(mv, instrumentationState.incAndGetId());
     addBipushInsn(mv, lastLineNumber);
 
@@ -699,7 +712,7 @@ public class SnoopInstructionMethodAdapter extends MethodVisitor implements Opco
      INVOKESTATIC,
      Config.instance.analysisClass,
      getMethodName(opcode),
-     "(IILjava/lang/String;Ljava/lang/String;Ljava/lang/String;)V", false);
+     "(Ljava/lang/String;IILjava/lang/String;Ljava/lang/String;Ljava/lang/String;)V", false);
 //    mv.visitMethodInsn(
 //            INVOKESTATIC,
 //            Config.instance.analysisClass,
@@ -757,7 +770,10 @@ public class SnoopInstructionMethodAdapter extends MethodVisitor implements Opco
 
 
         // Register the call to <init>
+
+
         addSpecialInsn(mv, SPECIAL.CALLING_SUPER_OR_THIS); // for true path
+//        mv.visitLdcInsn(source);
         addBipushInsn(mv, instrumentationState.incAndGetId());
         addBipushInsn(mv, lastLineNumber);
         mv.visitLdcInsn(owner);

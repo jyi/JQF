@@ -1217,6 +1217,32 @@ public abstract class AbstractLogger implements Logger {
     log(new RETURN(fileName, iid, mid));
   }
 
+  public void IRETURN(String fileName, String method, int iid, int mid) {
+    log(new IRETURN(fileName, method, iid, mid));
+  }
+
+  public void LRETURN(String fileName, String method, int iid, int mid) {
+    log(new LRETURN(fileName, method, iid, mid));
+  }
+
+  public void FRETURN(String fileName, String method, int iid, int mid) {
+    log(new FRETURN(fileName, method, iid, mid));
+  }
+
+  public void DRETURN(String fileName, String method, int iid, int mid) {
+    log(new DRETURN(fileName, method, iid, mid));
+  }
+
+  public void ARETURN(String fileName, String method, int iid, int mid) {
+    log(new ARETURN(fileName, method, iid, mid));
+  }
+
+  public void RETURN(String fileName, String method, int iid, int mid) {
+    log(new RETURN(fileName, method, iid, mid));
+  }
+
+
+
   public void ARRAYLENGTH(String fileName, int iid, int mid) {
     log(new ARRAYLENGTH(fileName, iid, mid));
   }

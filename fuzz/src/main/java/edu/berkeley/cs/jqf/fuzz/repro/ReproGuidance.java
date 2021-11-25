@@ -28,11 +28,6 @@
  */
 package edu.berkeley.cs.jqf.fuzz.repro;
 
-import java.io.*;
-import java.lang.reflect.Method;
-import java.util.*;
-import java.util.function.Consumer;
-
 import edu.berkeley.cs.jqf.fuzz.guidance.Guidance;
 import edu.berkeley.cs.jqf.fuzz.guidance.GuidanceException;
 import edu.berkeley.cs.jqf.fuzz.guidance.Result;
@@ -46,6 +41,11 @@ import org.jacoco.core.analysis.CoverageBuilder;
 import org.jacoco.core.tools.ExecFileLoader;
 import org.jacoco.report.IReportVisitor;
 import org.jacoco.report.csv.CSVFormatter;
+
+import java.io.*;
+import java.lang.reflect.Method;
+import java.util.*;
+import java.util.function.Consumer;
 
 /**
  * A front-end that provides a specified set of inputs for test
@@ -252,6 +252,7 @@ public class ReproGuidance implements Guidance {
         List<String> pathSpectrum=coverage.getPathSpectrum();
         Log.logBranchSpectrum(branchSpectrum,false);
         Log.logPathSpectrum(pathSpectrum,false);
+//        Log.logJson(false);
 
         // Possibly accumulate coverage
         if (allBranchesCovered != null && (ignoreInvalidCoverage == false || result == Result.SUCCESS)) {

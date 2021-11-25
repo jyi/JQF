@@ -608,6 +608,18 @@ public interface Logger {
 
   public void RETURN(String fileName, int iid, int mid);
 
+  public void RETURN(String fileName, String method, int iid, int mid);
+
+  public void IRETURN(String fileName, String method, int iid, int mid);
+
+  public void LRETURN(String fileName, String method, int iid, int mid);
+
+  public void FRETURN(String fileName, String method, int iid, int mid);
+
+  public void DRETURN(String fileName, String method, int iid, int mid);
+
+  public void ARETURN(String fileName, String method, int iid, int mid);
+
   public void ARRAYLENGTH(String fileName, int iid, int mid);
 
   public void ATHROW(String fileName, int iid, int mid);

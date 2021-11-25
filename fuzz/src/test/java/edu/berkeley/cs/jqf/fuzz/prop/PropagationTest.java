@@ -3,11 +3,13 @@ package edu.berkeley.cs.jqf.fuzz.prop;
 import edu.berkeley.cs.jqf.fuzz.ei.ZestCLI;
 import edu.berkeley.cs.jqf.fuzz.ei.ZestCLI2;
 import edu.berkeley.cs.jqf.fuzz.repro.ReproDriver;
-import edu.berkeley.cs.jqf.fuzz.repro.ReproDriver2;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -35,12 +37,45 @@ public class PropagationTest {
 
     @Test
     public void runRepro2() {
-        ReproDriver.main(new String[] {
-                "--batch", "--target", "org/apache/commons/math3/optimization/univariate/BrentOptimizer.java:202", "--logdir", "~/Remote/euibin_poracle/probank-experiments/math24-repro/test1/1/Correct",
+        ZestCLI2.main(new String[] {
+                "--batch", "--target", "org/apache/commons/math/complex/Complex.java:164", "--logdir", "~/Remote/euibin_poracle/probank-experiments/Repro/math53-repro/test1/1",
+                "--patched-method",
+                "org.apache.commons.math.complex.Complex.add",
                 "org.apache.commons.math3.optimization.univariate.JQF_BrentOptimizerTest",
                 "testMath855",
                 "~/Remote/euibin_poracle/probank-experiments/math24-ids",
                 "~/Remote/euibin_poracle/probank-experiments/.poracle2/Math24f/target/test-classes:~/Remote/euibin_poracle/probank-experiments/.poracle2/Math24f/target/classes",
+        });
+
+
+    }
+
+    @Test
+    public void runFuzz() {
+        ZestCLI2.main(new String[] {
+                "--target", "org/apache/commons/math/complex/Complex.java:164", "--logdir", "/home/changhyeon//Remote/euibin_poracle/probank-experiments/Repro/math53-repro/test1/1",
+                "--patched-method",
+                "org.apache.commons.math.complex.Complex.add",
+                "--seed", "885441",
+                "--threadName", "main",
+                "--max-corpus-size", "10",
+                "--widening-plateau-threshold", "10",
+                "--max-mutations", "50",
+                "--timeout", "6000",
+                "--aop", "/home/changhyeon//Remote/euibin_poracle/poracle/modules/JQF/aspect/aop.xml",
+                "--duration", "10m",
+                "--exploreDuration", "5s",
+                "--delta", "0",
+                "--execute-count", "300",
+                "--use-seed",
+                "--go-on",
+                "--multi-fuzzing",
+                "--cp-for-patch",
+                "/home/changhyeon/Remote/euibin_poracle/probank-experiments/.poracle2/patched/target/test-classes:/home/changhyeon/Remote/euibin_poracle/probank-experiments/.poracle2/patched/target/classes:/home/changhyeon/Remote/euibin_poracle/poracle/modules/JQF/aspect/tracing.jar",
+                "-o /home/changhyeon/Remote/euibin_poracle/probank-experiments/.poracle2/fuzz-results/test1/1",
+                "/home/changhyeon/Remote/euibin_poracle/probank-experiments/.poracle2/Math53b/target/test-classes:/home/changhyeon/Remote/euibin_poracle/probank-experiments/.poracle2/Math53b/target/classes:/home/changhyeon/Remote/euibin_poracle/poracle/modules/JQF/aspect/tracing.jar",
+                "org.apache.commons.math.complex.JQF_ComplexTest",
+                "testAddNaN"
         });
 
 

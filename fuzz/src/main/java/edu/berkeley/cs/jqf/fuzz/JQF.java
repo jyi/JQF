@@ -28,28 +28,24 @@
  */
 package edu.berkeley.cs.jqf.fuzz;
 
-import java.io.File;
-import java.lang.reflect.Array;
-import java.net.MalformedURLException;
-import java.util.List;
-import java.util.Random;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 import com.pholser.junit.quickcheck.Property;
 import com.pholser.junit.quickcheck.internal.generator.GeneratorRepository;
 import com.pholser.junit.quickcheck.internal.generator.ServiceLoaderGeneratorSource;
 import com.pholser.junit.quickcheck.random.SourceOfRandomness;
 import com.pholser.junit.quickcheck.runner.JUnitQuickcheck;
 import edu.berkeley.cs.jqf.fuzz.ei.ZestCLI2;
-import edu.berkeley.cs.jqf.fuzz.PatchInfo;
 import edu.berkeley.cs.jqf.fuzz.junit.quickcheck.FuzzStatement;
 import edu.berkeley.cs.jqf.instrument.InstrumentingClassLoader;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.Statement;
+
+import java.io.File;
+import java.net.MalformedURLException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Random;
 
 
 /**
@@ -125,8 +121,8 @@ public class JQF extends JUnitQuickcheck {
                         File files[] = dir.listFiles();
 
                         for (int i = 0; i < files.length; i++) {
-//                            System.out.println("patched dir: " + files[i]);
-//                            System.out.println("Replaced: " + this.classPathForPatch.replace("patched", "patched/"+files[i].toString().split("patched/")[1]));
+                            System.out.println("patched dir: " + files[i]);
+                            System.out.println("Replaced: " + this.classPathForPatch.replace("patched", "patched/"+files[i].toString().split("patched/")[1]));
                             ClassLoader newClassLoader = new InstrumentingClassLoader(
                                     this.classPathForPatch.replace("patched", "patched/"+files[i].toString().split("patched/")[1]).split(File.pathSeparator),
                                     ZestCLI2.class.getClassLoader());

@@ -9,7 +9,7 @@ public class INVOKEMETHOD_END extends Instruction {
   public final String desc;
 
   public INVOKEMETHOD_END(String owner, String name, String desc) {
-    super(-1, -1);
+    super(owner, name, -1, -1);
     this.owner = owner;
     this.name = name;
     this.desc = desc;

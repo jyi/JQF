@@ -108,6 +108,7 @@ public class InstrumentingClassLoader extends URLClassLoader {
         // Try to read the class file in as a resource
         String internalName = name.replace('.', '/');
         String path = internalName.concat(".class");
+        System.out.println("FindClass: " + path);
         try (InputStream in = getResourceAsStream(path)) {
             if (in == null) {
                 throw new ClassNotFoundException("Cannot find class " + name);

@@ -28,18 +28,9 @@
  */
 package edu.berkeley.cs.jqf.fuzz.reach;
 
-import java.io.*;
-import java.nio.file.*;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Consumer;
-import java.time.Duration;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 import com.pholser.junit.quickcheck.Pair;
 import com.sun.istack.Nullable;
+import de.hub.se.cfg.CFGAnalysis;
 import edu.berkeley.cs.jqf.fuzz.ei.ZestGuidance;
 import edu.berkeley.cs.jqf.fuzz.guidance.GuidanceException;
 import edu.berkeley.cs.jqf.fuzz.guidance.Result;
@@ -48,8 +39,6 @@ import edu.berkeley.cs.jqf.fuzz.util.Coverage;
 import edu.berkeley.cs.jqf.fuzz.util.TargetCoverage;
 import edu.berkeley.cs.jqf.fuzz.util.TargetDistance;
 import edu.berkeley.cs.jqf.instrument.tracing.events.TraceEvent;
-
-import de.hub.se.cfg.CFGAnalysis;
 import kr.ac.unist.cse.jqf.Log;
 import kr.ac.unist.cse.jqf.aspect.DumpUtil;
 import kr.ac.unist.cse.jqf.aspect.MethodInfo;
@@ -60,6 +49,17 @@ import org.xmlunit.builder.DiffBuilder;
 import org.xmlunit.diff.Comparison;
 import org.xmlunit.diff.Diff;
 import org.xmlunit.diff.Difference;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.time.Duration;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 
 /**
  * A front-end that only generates random inputs.
@@ -796,6 +796,7 @@ public class PoracleGuidance extends ZestGuidance {
         List<String> pathSpectrum=runCoverageOfPatch.getPathSpectrum();
         Log.logBranchSpectrum(branchSpectrum,true);
         Log.logPathSpectrum(pathSpectrum,true);
+        Log.logJson(true);
 
         // Compute a list of keys for which this input can assume responsiblity.
         // Newly covered branches are always included.
@@ -1135,7 +1136,7 @@ public class PoracleGuidance extends ZestGuidance {
     /** Handles a trace event generated during test execution */
     protected void handleEvent(TraceEvent e) {
         // Collect totalCoverage
-//        System.out.println("Method:" + e.getContainingMethodName() + " " + Integer.toString(e.getLineNumber()));
+        System.out.println("Method:" + e.getContainingMethodName() + " " + Integer.toString(e.getLineNumber()));
         getRunCoverage().handleEvent(e);
         if (Boolean.getBoolean("jqf.ei.run_patch")) {
             targetDistance.handleEvent(e);
@@ -1184,6 +1185,7 @@ public class PoracleGuidance extends ZestGuidance {
         List<String> pathSpectrum=runCoverageOfOrg.getPathSpectrum();
         Log.logBranchSpectrum(branchSpectrum,false);
         Log.logPathSpectrum(pathSpectrum,false);
+        Log.logJson(false);
 
         boolean newCoverageFound = false;
         String why = "";
