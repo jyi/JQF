@@ -28,6 +28,8 @@ public class Log {
     public static JsonWriter writer = dslJson.newWriter();
     public static JsonWriter methodWriter = dslJson2.newWriter();
 
+    public boolean diffOutFound = false;
+
     public static class LogResult {
         private static String outputForOrg = null;
         private static String outputForPatch = null;
@@ -75,6 +77,9 @@ public class Log {
         }
 
         public static boolean isDiffOutputFound() {
+            if(outputForOrg == null || outputForPatch == null) {
+                return false;
+            }
             assert outputForOrg != null;
             assert outputForPatch != null;
 
@@ -282,7 +287,7 @@ public class Log {
     }
 
     protected static void logOut(String msg) {
-        System.out.println("Output: " + msg);
+//        System.out.println("Output: " + msg);
         LogResult.addOutput(msg);
         String logDir = System.getProperty("jqf.ei.logDir");
         if (logDir == null) {
@@ -295,9 +300,9 @@ public class Log {
                 logDir += File.separator + "ORG";
             } else if (System.getProperty("kr.ac.unist.cse.jqf.MULTI_FUZZ").equals("true")) {
                 String patchIndex = System.getProperty("jqf.ei.CURRENT_PATH_FOR_PATCH");
-                System.out.println("Current Patch: " + patchIndex);
+//                System.out.println("Current Patch: " + patchIndex);
                 logDir += File.separator + "PATCH" + File.separator + patchIndex.split("patched/")[1].split("/target")[0];
-                System.out.println("New LogDir: " + logDir);
+//                System.out.println("New LogDir: " + logDir);
             }
             else {
                 logDir += File.separator + "PATCH";
@@ -489,8 +494,8 @@ public class Log {
             return;
         }
 //        System.out.println("in: " + msg);
-        System.out.println("LogMultiFuzzing" + System.getProperty("kr.ac.unist.cse.jqf.MULTI_FUZZ"));
-        System.out.println("RunBuggy: " + Log.runBuggyVersion);
+//        System.out.println("LogMultiFuzzing" + System.getProperty("kr.ac.unist.cse.jqf.MULTI_FUZZ"));
+//        System.out.println("RunBuggy: " + Log.runBuggyVersion);
 
         if (Boolean.getBoolean("jqf.ei.run_two_versions")) {
             if (Log.runBuggyVersion) {
@@ -498,9 +503,9 @@ public class Log {
             }
             else if (System.getProperty("kr.ac.unist.cse.jqf.MULTI_FUZZ").equals("true")) {
                 String patchIndex = System.getProperty("jqf.ei.CURRENT_PATH_FOR_PATCH");
-                System.out.println("Current Patch: " + patchIndex);
+//                System.out.println("Current Patch: " + patchIndex);
                 logDir += File.separator + "PATCH" + File.separator + patchIndex.split("patched/")[1].split("/target")[0];
-                System.out.println("New In LogDir: " + logDir);
+//                System.out.println("New In LogDir: " + logDir);
             }
             else {
                 logDir += File.separator + "PATCH";
@@ -622,7 +627,7 @@ public class Log {
     public static void logBranchSpectrum(Map<String,Integer> spectrum,boolean isPatch){
         String logDir = System.getProperty("jqf.ei.logDir");
         if (logDir == null) {
-            System.out.println("branch: " + logDir);
+//            System.out.println("branch: " + logDir);
             return;
         }
 
@@ -694,7 +699,7 @@ public class Log {
 
         String logDir = System.getProperty("jqf.ei.logDir");
         if (logDir == null) {
-            System.out.println("path: " + logDir);
+//            System.out.println("path: " + logDir);
             return;
         }
 
@@ -749,8 +754,8 @@ public class Log {
             msg+=id+",";
 
         try {
-            System.out.println("InFile: " + inFile.toString());
-            System.out.println(msg);
+//            System.out.println("InFile: " + inFile.toString());
+//            System.out.println(msg);
             Files.write(inFile, msg.getBytes(),
                     StandardOpenOption.WRITE);
         } catch (IOException e) {
@@ -849,64 +854,65 @@ public class Log {
     }
 
     public static void logJson(boolean isPatch) {
-
-
-        String logDir = System.getProperty("jqf.ei.logDir");
-        if (logDir == null) {
-            System.out.println("path: " + logDir);
-            return;
-        }
-
-        if (Boolean.getBoolean("jqf.ei.run_two_versions")) {
-            if (!isPatch) {
-                logDir += File.separator + "ORG";
+//        System.out.println("LogJson");
+        if (LogResult.isDiffOutputFound()) {
+            System.out.println("LogJson");
+            String logDir = System.getProperty("jqf.ei.logDir");
+            if (logDir == null) {
+//            System.out.println("path: " + logDir);
+                return;
             }
-            else if (System.getProperty("kr.ac.unist.cse.jqf.MULTI_FUZZ").equals("true")) {
-                String patchIndex = System.getProperty("jqf.ei.CURRENT_PATH_FOR_PATCH");
-                System.out.println("Current Patch: " + patchIndex);
-                logDir += File.separator + "PATCH" + File.separator + patchIndex.split("patched/")[1].split("/target")[0];
-                System.out.println("New Path LogDir: " + logDir);
-            }
-            else {
-                logDir += File.separator + "PATCH";
-            }
-        }
 
-        Path inFile = null;
-        String inputID = System.getProperty("jqf.ei.inputID");
-
-
-        try {
-            writer = dslJson.newWriter();
-            methodWriter = dslJson2.newWriter();
-
-            if (isPatch) {
-                dslJson.serialize(writer, TraceLogger.get().methodMapP);
-                dslJson2.serialize(methodWriter, TraceLogger.get().methodNameMapP);
+            if (Boolean.getBoolean("jqf.ei.run_two_versions")) {
+                if (!isPatch) {
+                    logDir += File.separator + "ORG";
+                }
+                else if (System.getProperty("kr.ac.unist.cse.jqf.MULTI_FUZZ").equals("true")) {
+                    String patchIndex = System.getProperty("jqf.ei.CURRENT_PATH_FOR_PATCH");
+//                System.out.println("Current Patch: " + patchIndex);
+                    logDir += File.separator + "PATCH" + File.separator + patchIndex.split("patched/")[1].split("/target")[0];
+//                System.out.println("New Path LogDir: " + logDir);
+                }
+                else {
+                    logDir += File.separator + "PATCH";
+                }
             }
-            else {
-                dslJson.serialize(writer, TraceLogger.get().methodMap);
-                dslJson2.serialize(methodWriter, TraceLogger.get().methodNameMap);
-            }
+
+            Path inFile = null;
+            String inputID = System.getProperty("jqf.ei.inputID");
+
+
+            try {
+                writer = dslJson.newWriter();
+                methodWriter = dslJson2.newWriter();
+
+                if (isPatch) {
+                    dslJson.serialize(writer, TraceLogger.get().methodMapP);
+                    dslJson2.serialize(methodWriter, TraceLogger.get().methodNameMapP);
+                }
+                else {
+                    dslJson.serialize(writer, TraceLogger.get().methodMap);
+                    dslJson2.serialize(methodWriter, TraceLogger.get().methodNameMap);
+                }
 
 //            writer.flush();
 //            methodWriter.flush();
 //            writer.reset();
 //            methodWriter.reset();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
 
-        //resulting buffer with JSON
-        byte[] buffer = writer.getByteBuffer();
-        byte[] methodBuffer = methodWriter.getByteBuffer();
+            //resulting buffer with JSON
+            byte[] buffer = writer.getByteBuffer();
+            byte[] methodBuffer = methodWriter.getByteBuffer();
 
-        //end of buffer
-        int size = writer.size();
+            //end of buffer
+            int size = writer.size();
 //        System.out.println(writer);
-        Path methodListFile;
+            Path methodListFile;
 
-        if (inputID == null) {
+            if (inputID == null) {
 //            if (!Files.exists(FileSystems.getDefault().getPath(logDir))) {
 //                try {
 //                    Files.createDirectories(FileSystems.getDefault().getPath(logDir));
@@ -915,57 +921,66 @@ public class Log {
 //                    e.printStackTrace();
 //                }
 //            }
-            inFile = Paths.get(logDir, "TRACE.json");
-            methodListFile = Paths.get(logDir, "METHODMAP.json");
-        } else {
+                inFile = Paths.get(logDir, "TRACE.json");
+                methodListFile = Paths.get(logDir, "METHODMAP.json");
+            } else {
+                try {
+//                System.out.println("Path for each test" + Paths.get(logDir, System.getProperty("kr.ac.unist.cse.jqf.TEST_METHOD"), inputID).toString());
+                    Files.createDirectories(Paths.get(logDir, System.getProperty("kr.ac.unist.cse.jqf.TEST_METHOD"), inputID));
+                } catch (IOException e) {
+                    System.err.println("Failed to create directory " + Paths.get(logDir, inputID));
+                    e.printStackTrace();
+                }
+                inFile = Paths.get(logDir, System.getProperty("kr.ac.unist.cse.jqf.TEST_METHOD"), inputID, "TRACE.json");
+                methodListFile = Paths.get(logDir, System.getProperty("kr.ac.unist.cse.jqf.TEST_METHOD"), inputID, "METHODMAP.json");
+            }
+
+
+
+            if (!Files.exists(inFile)) {
+                try {
+                    Files.createFile(inFile);
+                    Files.createFile(methodListFile);
+                } catch (IOException e) {
+                    System.err.println("Failed to create a file: " + inFile);
+                    e.printStackTrace();
+                }
+            }
+
             try {
-                Files.createDirectories(Paths.get(logDir, inputID));
+//            for (byte b : buffer) {
+////                if(Byte.toUnsignedInt(b) == 64 || Byte.toUnsignedInt(b) == 94)
+//                System.out.println("Buffer: " + (char) b);
+//            }
+//            System.out.println("Json: " + inFile.toString());
+                Files.write(inFile, buffer,
+                        StandardOpenOption.CREATE);
             } catch (IOException e) {
-                System.err.println("Failed to create directory " + Paths.get(logDir, inputID));
+                System.err.println("Failed to write path to " + inFile);
                 e.printStackTrace();
             }
-            inFile = Paths.get(logDir, inputID, "TRACE.json");
-            methodListFile = Paths.get(logDir, inputID, "METHODMAP.json");
-        }
 
-
-
-        if (!Files.exists(inFile)) {
-            try {
-                Files.createFile(inFile);
-                Files.createFile(methodListFile);
-            } catch (IOException e) {
-                System.err.println("Failed to create a file: " + inFile);
-                e.printStackTrace();
-            }
-        }
-
-        try {
-            Files.write(inFile, buffer,
-                    StandardOpenOption.CREATE);
-        } catch (IOException e) {
-            System.err.println("Failed to write path to " + inFile);
-            e.printStackTrace();
-        }
-
-        try {
-            System.out.println(methodWriter);
-            Files.write(methodListFile, methodBuffer,
-                    StandardOpenOption.CREATE);
-            
-        } catch (IOException e) {
-            System.err.println("Failed to write path to " + methodListFile);
-            e.printStackTrace();
-        }
+//        try {
+////            System.out.println(methodWriter);
+//            Files.write(methodListFile, methodBuffer,
+//                    StandardOpenOption.CREATE);
+//
+//        } catch (IOException e) {
+//            System.err.println("Failed to write path to " + methodListFile);
+//            e.printStackTrace();
+//        }
 //        writer = dslJson.newWriter();
 //        methodWriter = dslJson2.newWriter();
 
-        if (isPatch) {
-            TraceLogger.get().initMethodLogP();
+            if (isPatch) {
+                TraceLogger.get().initMethodLogP();
+            }
+            else {
+                TraceLogger.get().initMethodLog();
+            }
         }
-        else {
-            TraceLogger.get().initMethodLog();
-        }
+
+
     }
 
 }

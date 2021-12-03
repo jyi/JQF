@@ -76,7 +76,7 @@ public class JQF extends JUnitQuickcheck {
             File files[] = dir.listFiles();
 
             for (int i = 0; i < files.length; i++) {
-                System.out.println("patched dir: " + files[i]);
+//                System.out.println("patched dir: " + files[i]);
                 classPathForEachPatch.add(files[i].toString() + classPathForPatch.split("patched")[1]);
             }
         }
@@ -105,14 +105,14 @@ public class JQF extends JUnitQuickcheck {
     }
 
     public void setEachClasspath(int index) {
-        System.out.println("Current Classpath: " + classPathForEachPatch.get(index));
+//        System.out.println("Current Classpath: " + classPathForEachPatch.get(index));
         this.classPathForPatch = classPathForEachPatch.get(index);
     }
 
     @Override public Statement methodBlock(FrameworkMethod method) {
         if (method.getAnnotation(Fuzz.class) != null) {
             if (this.classPathForPatch != null) {
-                System.out.println("MULTIFUZZ: " + System.getProperty("kr.ac.unist.cse.jqf.MULTI_FUZZ"));
+//                System.out.println("MULTIFUZZ: " + System.getProperty("kr.ac.unist.cse.jqf.MULTI_FUZZ"));
                 if (System.getProperty("kr.ac.unist.cse.jqf.MULTI_FUZZ").equals("true")) {
                     ArrayList<ClassLoader> loaderForPatch = new ArrayList<>();
                     ArrayList<PatchInfo> patchInfos = new ArrayList<>();
@@ -121,8 +121,8 @@ public class JQF extends JUnitQuickcheck {
                         File files[] = dir.listFiles();
 
                         for (int i = 0; i < files.length; i++) {
-                            System.out.println("patched dir: " + files[i]);
-                            System.out.println("Replaced: " + this.classPathForPatch.replace("patched", "patched/"+files[i].toString().split("patched/")[1]));
+//                            System.out.println("patched dir: " + files[i]);
+//                            System.out.println("Replaced: " + this.classPathForPatch.replace("patched", "patched/"+files[i].toString().split("patched/")[1]));
                             ClassLoader newClassLoader = new InstrumentingClassLoader(
                                     this.classPathForPatch.replace("patched", "patched/"+files[i].toString().split("patched/")[1]).split(File.pathSeparator),
                                     ZestCLI2.class.getClassLoader());
@@ -135,7 +135,7 @@ public class JQF extends JUnitQuickcheck {
                         e.printStackTrace();
                         System.exit(2);
                     }
-                    System.out.println("Multi");
+//                    System.out.println("Multi");
                     return new FuzzStatement(method, getTestClass(), generatorRepository, patchInfos);
                 }
                 else {
@@ -148,7 +148,7 @@ public class JQF extends JUnitQuickcheck {
                         e.printStackTrace();
                         System.exit(2);
                     }
-                    System.out.println("Not multi");
+//                    System.out.println("Not multi");
                     return new FuzzStatement(method, getTestClass(), generatorRepository, loaderForPatch);
                 }
 

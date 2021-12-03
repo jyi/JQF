@@ -119,7 +119,6 @@ public class TraceLogger extends AbstractLogger {
         boolean fileExist = false;
 
         if(!System.getProperty("jqf.ei.run_patch").equals("true")) {
-            System.out.println("RunPatch: " + System.getProperty("jqf.ei.run_patch"));
             try {
                 if (instruction.fileName.contains("\\.")) {
 //                    System.out.println("Contain: " + instruction.fileName);
@@ -157,7 +156,6 @@ public class TraceLogger extends AbstractLogger {
                 firstCall = true;
                 boolean exist = false;
 //            methodStack.add(((INVOKESTATIC) instruction).name);
-//                System.out.println("MethodName: " + ((MemberRef) instruction).getOwner() + " " + ((MemberRef) instruction).getName());
                 for (methodCallInfo m : methods) {
                     try {
                         if (m.methodName.equals(((MemberRef) instruction).getName()) && m.fileName.equals(((MemberRef) instruction).getOwner())) {
@@ -165,16 +163,14 @@ public class TraceLogger extends AbstractLogger {
 //                            System.out.println("ExistName: " + ((MemberRef) instruction).getName());
                             exist = true;
                             m.incCallCount();
-//                        System.out.println("KeyStackSize: " + keyWordStack.size());
-//                        System.out.println("CurKey: " + keyWordStack.get(keyWordStack.size()-1));
                             MethodLog newMethod;
 
                             if (keyWordStack.size() == 0) {
-                                newMethod = new MethodLog(m.methodID + "_" + Integer.toString(m.callCount), "Entry", m.callCount);
+                                newMethod = new MethodLog(m.methodID + "_" + Integer.toString(m.callCount), m.methodName, "Entry", m.callCount);
                             }
                             else {
                                 ((MethodLog)methodMap.get(keyWordStack.get(keyWordStack.size()-1))).addExe(m.methodID + "_" + Integer.toString(m.callCount));
-                                newMethod = new MethodLog(m.methodID + "_" + Integer.toString(m.callCount), keyWordStack.get(keyWordStack.size()-1), m.callCount);
+                                newMethod = new MethodLog(m.methodID + "_" + Integer.toString(m.callCount), m.methodName, keyWordStack.get(keyWordStack.size()-1), m.callCount);
                             }
 
                             keyWordStack.add(m.methodID + "_" + Integer.toString(m.callCount));
@@ -194,17 +190,15 @@ public class TraceLogger extends AbstractLogger {
                 if (!exist) {
                     try {
                         String newKeyword = "m_id" + Integer.toString(numofMethods);
-                        methodNameMap.put(newKeyword, ((MemberRef) instruction).getOwner() + ((MemberRef) instruction).getName());
+                        methodNameMap.put(newKeyword, ((MemberRef) instruction).getOwner() + ":" + ((MemberRef) instruction).getName());
                         MethodLog newMethod;
                         if (keyWordStack.size() == 0) {
-                            newMethod = new MethodLog(newKeyword + "_" + Integer.toString(0), "Entry", 0);
+                            newMethod = new MethodLog(newKeyword + "_" + Integer.toString(0), ((MemberRef) instruction).getName(), "Entry", 0);
                         }
                         else {
                             ((MethodLog)methodMap.get(keyWordStack.get(keyWordStack.size()-1))).addExe(newKeyword + "_" + Integer.toString(0));
-                            newMethod = new MethodLog(newKeyword + "_" + Integer.toString(0), keyWordStack.get(keyWordStack.size()-1), 0);
+                            newMethod = new MethodLog(newKeyword + "_" + Integer.toString(0), ((MemberRef) instruction).getName(), keyWordStack.get(keyWordStack.size()-1), 0);
                         }
-
-                        System.out.println(newKeyword + "_" + Integer.toString(0));
 
                         keyWordStack.add(newKeyword + "_" + Integer.toString(0));
                         methods.add(new methodCallInfo(newKeyword, ((MemberRef) instruction).getOwner(), ((MemberRef) instruction).getName()));
@@ -229,10 +223,7 @@ public class TraceLogger extends AbstractLogger {
                     instruction instanceof DRETURN || instruction instanceof FRETURN ||
                     instruction instanceof IRETURN || instruction instanceof LRETURN) {
                 try {
-//                System.out.println("KeyWordSize: " + Integer.toString(keyWordStack.size()));
-                    System.out.println(instruction.getClass().getName());
-//                    System.out.println("Mehtod: " + instruction.fileName + instruction.name);
-//                System.out.println("Owner: " + instruction.owner);
+
                     if (!instruction.fileName.equals("")) {
                         ((MethodLog)methodMap.get(keyWordStack.get(keyWordStack.size()-1))).addExe(fileMap.get(instruction.fileName.split("\\.")[0]) + ":" + instruction.mid);
                     }
@@ -258,20 +249,16 @@ public class TraceLogger extends AbstractLogger {
 //            System.out.println(instruction.getClass().getName());
         }
         else {
-            System.out.println("RunPatch: " + System.getProperty("jqf.ei.run_patch"));
             try {
                 if (instruction.fileName.contains("\\.")) {
-                    System.out.println("Contain: " + instruction.fileName);
                     if (!fileMapP.containsKey(instruction.fileName.split("\\.")[0])) {
                         fileMapP.put(instruction.fileName.split("\\.")[0], "f" + Integer.toString(numofFilesP));
-                        System.out.println("NewFile: " + instruction.fileName.split("\\.")[0] + "f" + Integer.toString(numofFilesP));
                         numofFilesP++;
                     }
                 }
                 else if (instruction instanceof INVOKESTATIC || instruction instanceof INVOKESPECIAL || instruction instanceof METHOD_BEGIN || instruction instanceof INVOKEVIRTUAL || instruction instanceof INVOKEINTERFACE) {
                     if (!fileMapP.containsKey(((MemberRef) instruction).getOwner())) {
                         fileMapP.put(((MemberRef) instruction).getOwner(), "f" + Integer.toString(numofFilesP));
-                        System.out.println("NewOwner: " + ((MemberRef) instruction).getOwner() + "f" + Integer.toString(numofFilesP));
                         numofFilesP++;
                     }
                 }
@@ -282,7 +269,6 @@ public class TraceLogger extends AbstractLogger {
                     }
                 }
                 else {
-                    System.out.println("File:" + instruction.fileName);
                     fileMapP.put(instruction.fileName, "n");
                 }
 
@@ -296,24 +282,19 @@ public class TraceLogger extends AbstractLogger {
                 firstCall = true;
                 boolean exist = false;
 //            methodStack.add(((INVOKESTATIC) instruction).name);
-                System.out.println("MethodName: " + ((MemberRef) instruction).getOwner() + " " + ((MemberRef) instruction).getName());
                 for (methodCallInfo m : methodsP) {
                     try {
                         if (m.methodName.equals(((MemberRef) instruction).getName()) && m.fileName.equals(((MemberRef) instruction).getOwner())) {
-
-                            System.out.println("ExistName: " + ((MemberRef) instruction).getName());
                             exist = true;
                             m.incCallCount();
-//                        System.out.println("KeyStackSize: " + keyWordStack.size());
-//                        System.out.println("CurKey: " + keyWordStack.get(keyWordStack.size()-1));
                             MethodLog newMethod;
 
                             if (keyWordStackP.size() == 0) {
-                                newMethod = new MethodLog(m.methodID + "_" + Integer.toString(m.callCount), "Entry", m.callCount);
+                                newMethod = new MethodLog(m.methodID + "_" + Integer.toString(m.callCount), m.methodName, "Entry", m.callCount);
                             }
                             else {
                                 ((MethodLog)methodMapP.get(keyWordStackP.get(keyWordStackP.size()-1))).addExe(m.methodID + "_" + Integer.toString(m.callCount));
-                                newMethod = new MethodLog(m.methodID + "_" + Integer.toString(m.callCount), keyWordStackP.get(keyWordStackP.size()-1), m.callCount);
+                                newMethod = new MethodLog(m.methodID + "_" + Integer.toString(m.callCount), m.methodName, keyWordStackP.get(keyWordStackP.size()-1), m.callCount);
                             }
 
                             keyWordStackP.add(m.methodID + "_" + Integer.toString(m.callCount));
@@ -333,17 +314,16 @@ public class TraceLogger extends AbstractLogger {
                 if (!exist) {
                     try {
                         String newKeyword = "m_id" + Integer.toString(numofMethodsP);
-                        methodNameMapP.put(newKeyword, ((MemberRef) instruction).getOwner() + ((MemberRef) instruction).getName());
+                        methodNameMapP.put(newKeyword, ((MemberRef) instruction).getOwner() + ":"  + ((MemberRef) instruction).getName());
                         MethodLog newMethod;
                         if (keyWordStackP.size() == 0) {
-                            newMethod = new MethodLog(newKeyword + "_" + Integer.toString(0), "Entry", 0);
+                            newMethod = new MethodLog(newKeyword + "_" + Integer.toString(0), ((MemberRef) instruction).getName(), "Entry", 0);
                         }
                         else {
                             ((MethodLog)methodMapP.get(keyWordStackP.get(keyWordStackP.size()-1))).addExe(newKeyword + "_" + Integer.toString(0));
-                            newMethod = new MethodLog(newKeyword + "_" + Integer.toString(0), keyWordStackP.get(keyWordStackP.size()-1), 0);
+                            newMethod = new MethodLog(newKeyword + "_" + Integer.toString(0), ((MemberRef) instruction).getName(), keyWordStackP.get(keyWordStackP.size()-1), 0);
                         }
 
-//                        System.out.println(newKeyword + "_" + Integer.toString(0));
 
                         keyWordStackP.add(newKeyword + "_" + Integer.toString(0));
                         methodsP.add(new methodCallInfo(newKeyword, ((MemberRef) instruction).getOwner(), ((MemberRef) instruction).getName()));
@@ -368,10 +348,7 @@ public class TraceLogger extends AbstractLogger {
                     instruction instanceof DRETURN || instruction instanceof FRETURN ||
                     instruction instanceof IRETURN || instruction instanceof LRETURN) {
                 try {
-//                System.out.println("KeyWordSize: " + Integer.toString(keyWordStack.size()));
-                    System.out.println(instruction.getClass().getName());
-                    System.out.println("Mehtod: " + instruction.fileName + instruction.name);
-//                System.out.println("Owner: " + instruction.owner);
+
                     if (!instruction.fileName.equals("")) {
                         ((MethodLog)methodMapP.get(keyWordStackP.get(keyWordStackP.size()-1))).addExe(fileMapP.get(instruction.fileName.split("\\.")[0]) + ":" + instruction.mid);
                     }
@@ -394,7 +371,6 @@ public class TraceLogger extends AbstractLogger {
             else {
                 System.out.println("Out of Method");
             }
-//            System.out.println(instruction.getClass().getName());
         }
 
 

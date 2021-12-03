@@ -292,6 +292,9 @@ public class FuzzStatement extends Statement {
 
                 // Inform guidance about the outcome of this trial
                 guidance.handleResult(result, error);
+                if (System.getProperty("kr.ac.unist.cse.jqf.NO_FUZZ").equals("true")) {
+                    break;
+                }
             }
         } catch (GuidanceException e) {
             System.err.println("Fuzzing stopped due to guidance exception: " + e.getMessage());
@@ -432,7 +435,11 @@ public class FuzzStatement extends Statement {
                         throw e;
                     } catch (Throwable e) {
                         // Throw the guidance exception outside to stop fuzzing
+                        if (!System.getProperty("kr.ac.unist.cse.jqf.NO_FUZZ").equals("true")) {
+                            throw new GuidanceException(e);
+                        }
                         throw new GuidanceException(e);
+
                     } finally {
                         // System.out.println(randomFile.getTotalBytesRead() + " random bytes read");
                     }
@@ -465,6 +472,7 @@ public class FuzzStatement extends Statement {
                         failures.add(e);
                     }
                 }
+                System.out.println("Result: " + result.toString());
 
                 PoracleGuidance.ResultOfOrg resultOfOrg = guidance.handleResultOfOrg(result, error);
                 PoracleGuidance.ResultOfPatch resultOfPatch = null;
@@ -476,9 +484,9 @@ public class FuzzStatement extends Statement {
                     assert guidance.getCurSaveFileName() != null;
 
                     // we call the patched version
-                    //TODO: check the infinite loop issue. For now, just let it as mono fuzzing
                     if (System.getProperty("kr.ac.unist.cse.jqf.MULTI_FUZZ").equals("true")) {
                         guidance.setNumOfPatches(patchInfos.size());
+                        System.out.println("PatchesLength:" + Integer.toString(patchInfos.size()));
                         for (PatchInfo pi : patchInfos) {
                             System.setProperty("jqf.ei.CURRENT_PATH_FOR_PATCH", pi.patchPath);
                             System.out.println("PatchInfo: " + pi.patchPath);
@@ -590,6 +598,9 @@ public class FuzzStatement extends Statement {
 
 
                 guidance.checkProgress();
+                if (System.getProperty("kr.ac.unist.cse.jqf.NO_FUZZ").equals("true")) {
+                    break;
+                }
             }
         } catch (GuidanceException e) {
             System.err.println("Fuzzing stopped due to guidance exception: " + e.getMessage());
@@ -670,6 +681,7 @@ public class FuzzStatement extends Statement {
 
     // return true when outputs are equal to each other
     private boolean isDiffOutputFound() {
+
         return Log.LogResult.isDiffOutputFound();
     }
 
@@ -796,6 +808,9 @@ public class FuzzStatement extends Statement {
 
                 // Inform guidance about the outcome of this trial
                 guidance.handleResult(result, error);
+                if (System.getProperty("kr.ac.unist.cse.jqf.NO_FUZZ").equals("true")) {
+                    break;
+                }
             }
         } catch (GuidanceException e) {
             System.err.println("Fuzzing stopped due to guidance exception: " + e.getMessage());

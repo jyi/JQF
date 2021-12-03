@@ -1136,7 +1136,7 @@ public class PoracleGuidance extends ZestGuidance {
     /** Handles a trace event generated during test execution */
     protected void handleEvent(TraceEvent e) {
         // Collect totalCoverage
-        System.out.println("Method:" + e.getContainingMethodName() + " " + Integer.toString(e.getLineNumber()));
+//        System.out.println("Method:" + e.getContainingMethodName() + " " + Integer.toString(e.getLineNumber()));
         getRunCoverage().handleEvent(e);
         if (Boolean.getBoolean("jqf.ei.run_patch")) {
             targetDistance.handleEvent(e);
@@ -1168,7 +1168,8 @@ public class PoracleGuidance extends ZestGuidance {
         // Stop timeout handling
         this.runStart = null;
 
-        if (Log.getActualCount() > 0) {
+        if (Log.getActualCount() > 0 || System.getProperty("kr.ac.unist.cse.jqf.NO_FUZZ").equals("true")) {
+            System.out.println("DoNotIgnore");
             // Trim input (remove unused keys)
             currentInput.gc();
 

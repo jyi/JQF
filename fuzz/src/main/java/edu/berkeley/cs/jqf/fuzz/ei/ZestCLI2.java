@@ -197,6 +197,9 @@ public class ZestCLI2 implements Runnable {
     @Option(names={"--go-on"},description="o not pause fuzzing")
     private boolean goOn=false;
 
+    @Option(names={"--no-fuzzing"},description="o not pause fuzzing")
+    private boolean noFuzz=false;
+
     @Option(names={"--use-seed"},description="use seed value in parameter")
     private boolean useSeed=false;
 
@@ -327,6 +330,7 @@ public class ZestCLI2 implements Runnable {
 
         System.setProperty("kr.ac.unist.cse.jqf.IGNORE_COND",Boolean.toString(this.ignoreCondition));
         System.setProperty("kr.ac.unist.cse.jqf.GO_ON",Boolean.toString(this.goOn));
+        System.setProperty("kr.ac.unist.cse.jqf.NO_FUZZ",Boolean.toString(this.noFuzz));
         System.setProperty("kr.ac.unist.cse.jqf.USE_SEED",Boolean.toString(this.useSeed));
         System.setProperty("kr.ac.unist.cse.jqf.MULTI_FUZZ",Boolean.toString(this.multiFuzz));
 
@@ -340,6 +344,7 @@ public class ZestCLI2 implements Runnable {
 
             // Load the guidance
             String title = this.testClassName +"#"+this.testMethodName;
+            System.setProperty("kr.ac.unist.cse.jqf.TEST_METHOD", this.testMethodName);
             ZestGuidance guidance;
             if (targets != null) {
                 System.setProperty("jqf.ei.targets", Arrays.toString(targets));
