@@ -855,7 +855,7 @@ public class Log {
 
     public static void logJson(boolean isPatch) {
 //        System.out.println("LogJson");
-        if (LogResult.isDiffOutputFound()) {
+        if (LogResult.isDiffOutputFound() || !System.getProperty("kr.ac.unist.cse.jqf.ONLY_DIFF").equals("true")) {
             System.out.println("LogJson");
             String logDir = System.getProperty("jqf.ei.logDir");
             if (logDir == null) {

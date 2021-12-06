@@ -203,6 +203,9 @@ public class ZestCLI2 implements Runnable {
     @Option(names={"--use-seed"},description="use seed value in parameter")
     private boolean useSeed=false;
 
+    @Option(names={"--only-diff"},description="save trace for different output")
+    private boolean onlyDiff=false;
+
     @Option(names={"--multi-fuzzing"},description="multi version differential fuzzing")
     private boolean multiFuzz=false;
 
@@ -333,6 +336,7 @@ public class ZestCLI2 implements Runnable {
         System.setProperty("kr.ac.unist.cse.jqf.NO_FUZZ",Boolean.toString(this.noFuzz));
         System.setProperty("kr.ac.unist.cse.jqf.USE_SEED",Boolean.toString(this.useSeed));
         System.setProperty("kr.ac.unist.cse.jqf.MULTI_FUZZ",Boolean.toString(this.multiFuzz));
+        System.setProperty("kr.ac.unist.cse.jqf.ONLY_DIFF",Boolean.toString(this.onlyDiff));
 
 //        System.out.println("MULTIFUZZ: " + Boolean.toString(Boolean.getBoolean(System.getProperty("kr.ac.unist.cse.jqf.MULTI_FUZZ"))));
 
