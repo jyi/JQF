@@ -171,21 +171,21 @@ public class Log {
                 e.printStackTrace();
             }
         }
-            try {
-                Files.createFile(outFile);
-            } catch (IOException e) {
-                System.err.println("Failed to create a file: " + outFile);
-                e.printStackTrace();
-            }
-
-
-            try {
-                Files.write(outFile, xml.getBytes(),
-                        StandardOpenOption.WRITE);
-            } catch (IOException e) {
-                System.err.println("Failed to write output due to IOException");
-            }
-        }
+//        try {
+//            Files.createFile(outFile);
+//        } catch (IOException e) {
+//            System.err.println("Failed to create a file: " + outFile);
+//            e.printStackTrace();
+//        }
+//
+//
+//        try {
+//            Files.write(outFile, xml.getBytes(),
+//                    StandardOpenOption.WRITE);
+//        } catch (IOException e) {
+//            System.err.println("Failed to write output due to IOException");
+//        }
+    }
 
 
     public static void reset() {

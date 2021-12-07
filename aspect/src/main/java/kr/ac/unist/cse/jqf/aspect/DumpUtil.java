@@ -1,15 +1,12 @@
 package kr.ac.unist.cse.jqf.aspect;
 
+import org.aspectj.lang.JoinPoint;
+import org.aspectj.lang.Signature;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
-import com.thoughtworks.xstream.XStream;
-import com.thoughtworks.xstream.io.json.JettisonMappedXmlDriver;
-import kr.ac.unist.cse.jqf.Log;
-import org.aspectj.lang.JoinPoint;
-import org.aspectj.lang.Signature;
 
 public class DumpUtil {
 
@@ -51,58 +48,60 @@ public class DumpUtil {
 
     // dump at an exit point
     public static void dumpAtExit(Object returnVal, JoinPoint jp) {
-        if (DumpUtil.handledExit.contains(jp.getSignature().getName())) {
-            return;
-        } else {
-            DumpUtil.handledExit.add(jp.getSignature().getName());
-        }
-        try {
-            duringDumping = true;
-//            new JettisonMappedXmlDriver()
-            XStream stream = new XStream();
-            String xml = null;
-            if (jp.getTarget() == null)
-                xml = stream.toXML(jp.getStaticPart());
-            else
-                xml = stream.toXML(jp.getTarget());
-            if (returnVal != null)
-                xml = String.format("<values>\n<return>\n%s\n</return>\n%s\n</values>", stream.toXML(returnVal), xml);
-            Log.writeToFile(xml, jp.getSignature().getName() + "Exit" + ".xml");
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            duringDumping = false;
-        }
+        return;
+//        if (DumpUtil.handledExit.contains(jp.getSignature().getName())) {
+//            return;
+//        } else {
+//            DumpUtil.handledExit.add(jp.getSignature().getName());
+//        }
+//        try {
+//            duringDumping = true;
+////            new JettisonMappedXmlDriver()
+//            XStream stream = new XStream();
+//            String xml = null;
+//            if (jp.getTarget() == null)
+//                xml = stream.toXML(jp.getStaticPart());
+//            else
+//                xml = stream.toXML(jp.getTarget());
+//            if (returnVal != null)
+//                xml = String.format("<values>\n<return>\n%s\n</return>\n%s\n</values>", stream.toXML(returnVal), xml);
+//            Log.writeToFile(xml, jp.getSignature().getName() + "Exit" + ".xml");
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        } finally {
+//            duringDumping = false;
+//        }
     }
 
     // dump at an entry point
     public static void dumpAtEntry(JoinPoint jp) {
-        if (DumpUtil.handledEntry.contains(jp.getSignature().getName())) {
-            return;
-        } else {
-            DumpUtil.handledEntry.add(jp.getSignature().getName());
-        }
-        try {
-            duringDumping = true;
-            Object[] args = jp.getArgs();
-            XStream stream = new XStream();
-            String xml = null;
-            if (jp.getTarget() == null) {
-                xml = stream.toXML(jp.getStaticPart());
-            } else {
-                Object target = jp.getTarget();
-                xml = stream.toXML(target);
-            }
-            if (args != null) {
-                String argsXml = stream.toXML(args);
-                xml = String.format("<values>\n<args>\n%s\n</args>\n%s\n</values>", argsXml, xml);
-            }
-            Log.writeToFile(xml, jp.getSignature().getName() + "Entry" + ".xml");
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            duringDumping = false;
-        }
+        return;
+//        if (DumpUtil.handledEntry.contains(jp.getSignature().getName())) {
+//            return;
+//        } else {
+//            DumpUtil.handledEntry.add(jp.getSignature().getName());
+//        }
+//        try {
+//            duringDumping = true;
+//            Object[] args = jp.getArgs();
+//            XStream stream = new XStream();
+//            String xml = null;
+//            if (jp.getTarget() == null) {
+//                xml = stream.toXML(jp.getStaticPart());
+//            } else {
+//                Object target = jp.getTarget();
+//                xml = stream.toXML(target);
+//            }
+//            if (args != null) {
+//                String argsXml = stream.toXML(args);
+//                xml = String.format("<values>\n<args>\n%s\n</args>\n%s\n</values>", argsXml, xml);
+//            }
+//            Log.writeToFile(xml, jp.getSignature().getName() + "Entry" + ".xml");
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        } finally {
+//            duringDumping = false;
+//        }
     }
 
     public static boolean isInterestingExit(JoinPoint jp) {

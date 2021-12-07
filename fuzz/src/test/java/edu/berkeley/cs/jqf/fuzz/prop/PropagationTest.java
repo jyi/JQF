@@ -53,26 +53,25 @@ public class PropagationTest {
     @Test
     public void runFuzz() {
         ZestCLI2.main(new String[] {
-                "--target", "org/apache/commons/math3/util/MathArrays.java:862", "--logdir", "/home/changhyeon/Remote/euibin_poracle/probank-experiments/Repro/math3-repro/test1/1",
+                "--target", "org/apache/commons/math3/distribution/DiscreteDistribution.java:182", "--logdir", "/home/changhyeon/Remote/euibin_poracle/probank-experiments/Repro/math8-repro/test1/1",
                 "--seed", "885441",
                 "--threadName", "main",
                 "--max-corpus-size", "10",
                 "--widening-plateau-threshold", "10",
                 "--max-mutations", "50",
-                "--timeout", "6000",
+                "--timeout", "40000",
                 "--aop", "/home/changhyeon/Remote/euibin_poracle/poracle/modules/JQF/aspect/aop.xml",
                 "--duration", "10m",
                 "--exploreDuration", "5s",
                 "--delta", "0",
-                "--execute-count", "0",
-                "--use-seed",
+                "--execute-count", "1",
                 "--multi-fuzzing",
                 "--cp-for-patch",
                 "/home/changhyeon/Remote/euibin_poracle/probank-experiments/.poracle2/patched/target/test-classes:/home/changhyeon/Remote/euibin_poracle/probank-experiments/.poracle2/patched/target/classes:/home/changhyeon/Remote/euibin_poracle/poracle/modules/JQF/aspect/tracing.jar",
                 "-o /home/changhyeon/Remote/euibin_poracle/probank-experiments/.poracle2/fuzz-results/test1/1",
-                "/home/changhyeon/Remote/euibin_poracle/probank-experiments/.poracle2/Math3b/target/test-classes:/home/changhyeon/Remote/euibin_poracle/probank-experiments/.poracle2/Math3b/target/classes:/home/changhyeon/Remote/euibin_poracle/poracle/modules/JQF/aspect/tracing.jar",
-                "org.apache.commons.math3.util.JQF_MathArraysTest",
-                "testLinearCombinationWithSingleElementArray"
+                "/home/changhyeon/Remote/euibin_poracle/probank-experiments/.poracle2/Math8b/target/test-classes:/home/changhyeon/Remote/euibin_poracle/probank-experiments/.poracle2/Math8b/target/classes:/home/changhyeon/Remote/euibin_poracle/poracle/modules/JQF/aspect/tracing.jar",
+                "org.apache.commons.math3.distribution.JQF_DiscreteRealDistributionTest",
+                        "testIssue942"
         });
 
 

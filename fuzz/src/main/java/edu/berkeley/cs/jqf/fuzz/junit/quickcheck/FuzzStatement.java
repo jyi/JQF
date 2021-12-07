@@ -455,7 +455,8 @@ public class FuzzStatement extends Statement {
                 } catch (AssumptionViolatedException e) {
                     result = INVALID;
                     error = e;
-                } catch (TimeoutException e) {
+                }
+                catch (TimeoutException e) {
                     result = TIMEOUT;
                     error = e;
                 } catch (NoSuchMethodError e) {
@@ -467,6 +468,7 @@ public class FuzzStatement extends Statement {
                     if (isExceptionExpected(e.getClass())) {
                         result = SUCCESS; // Swallow the error
                     } else {
+//                        continue;
                         result = FAILURE;
                         error = e;
                         failures.add(e);
