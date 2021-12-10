@@ -53,25 +53,54 @@ public class PropagationTest {
     @Test
     public void runFuzz() {
         ZestCLI2.main(new String[] {
-                "--target", "org/apache/commons/math3/distribution/DiscreteDistribution.java:182", "--logdir", "/home/changhyeon/Remote/euibin_poracle/probank-experiments/Repro/math8-repro/test1/1",
+                "--target", "org/apache/commons/math/complex/Complex.java:152", "--logdir", "/home/changhyeon/Remote/1301/probank-experiments/Repro/math53-repro/test1/1",
                 "--seed", "885441",
                 "--threadName", "main",
                 "--max-corpus-size", "10",
                 "--widening-plateau-threshold", "10",
                 "--max-mutations", "50",
                 "--timeout", "40000",
-                "--aop", "/home/changhyeon/Remote/euibin_poracle/poracle/modules/JQF/aspect/aop.xml",
+                "--aop", "/home/changhyeon/Remote/1301/poracle/modules/JQF/aspect/aop.xml",
+                "--duration", "10m",
+                "--exploreDuration", "5s",
+                "--delta", "0",
+                "--execute-count", "10",
+                "--multi-fuzzing",
+                "--cp-for-patch",
+                "/home/changhyeon/Remote/1301/probank-experiments/.poracle2/patched/target/test-classes:/home/changhyeon/Remote/1301/probank-experiments/.poracle2/patched/target/classes:/home/changhyeon/Remote/1301/poracle/modules/JQF/aspect/tracing.jar",
+                "--cp-for-fix",                "/home/changhyeon/Remote/1301/probank-experiments/.poracle2/Math53f/target/test-classes:/home/changhyeon/Remote/1301/probank-experiments/.poracle2/Math53f/target/classes:/home/changhyeon/Remote/1301/poracle/modules/JQF/aspect/tracing.jar",
+                "-o /home/changhyeon/Remote/1301/probank-experiments/.poracle2/fuzz-results/test1/1",
+                "/home/changhyeon/Remote/1301/probank-experiments/.poracle2/Math53b/target/test-classes:/home/changhyeon/Remote/1301/probank-experiments/.poracle2/Math53b/target/classes:/home/changhyeon/Remote/1301/poracle/modules/JQF/aspect/tracing.jar",
+                "org.apache.commons.math.complex.JQF_ComplexTest",
+                        "testAddNaN"
+        });
+
+
+    }
+
+    @Test
+    public void runOneTest() {
+        ZestCLI2.main(new String[] {
+                "--target", "org/apache/commons/math/complex/Complex.java:152", "--logdir", "/home/changhyeon/Remote/1301/probank-experiments/Repro/math53-repro/test1/1",
+                "--seed", "885441",
+                "--threadName", "main",
+                "--max-corpus-size", "10",
+                "--widening-plateau-threshold", "10",
+                "--max-mutations", "50",
+                "--timeout", "40000",
+                "--aop", "/home/changhyeon/Remote/1301/poracle/modules/JQF/aspect/aop.xml",
                 "--duration", "10m",
                 "--exploreDuration", "5s",
                 "--delta", "0",
                 "--execute-count", "1",
-                "--multi-fuzzing",
+                "--no-fuzzing",
                 "--cp-for-patch",
-                "/home/changhyeon/Remote/euibin_poracle/probank-experiments/.poracle2/patched/target/test-classes:/home/changhyeon/Remote/euibin_poracle/probank-experiments/.poracle2/patched/target/classes:/home/changhyeon/Remote/euibin_poracle/poracle/modules/JQF/aspect/tracing.jar",
-                "-o /home/changhyeon/Remote/euibin_poracle/probank-experiments/.poracle2/fuzz-results/test1/1",
-                "/home/changhyeon/Remote/euibin_poracle/probank-experiments/.poracle2/Math8b/target/test-classes:/home/changhyeon/Remote/euibin_poracle/probank-experiments/.poracle2/Math8b/target/classes:/home/changhyeon/Remote/euibin_poracle/poracle/modules/JQF/aspect/tracing.jar",
-                "org.apache.commons.math3.distribution.JQF_DiscreteRealDistributionTest",
-                        "testIssue942"
+                "/home/changhyeon/Remote/1301/probank-experiments/.poracle2/Math53b/target/test-classes:/home/changhyeon/Remote/1301/probank-experiments/.poracle2/Math53b/target/classes:/home/changhyeon/Remote/1301/poracle/modules/JQF/aspect/tracing.jar",
+                "--cp-for-fix",                "/home/changhyeon/Remote/1301/probank-experiments/.poracle2/Math53f/target/test-classes:/probank-experiments/.poracle2/Math53f/target/classes:/poracle/modules/JQF/aspect/tracing.jar",
+                "-o /home/changhyeon/Remote/1301/probank-experiments/.poracle2/fuzz-results/test1/1",
+                "/home/changhyeon/Remote/1301/probank-experiments/.poracle2/Math53b/target/test-classes:/home/changhyeon/Remote/1301/probank-experiments/.poracle2/Math53b/target/classes:/home/changhyeon/Remote/1301/poracle/modules/JQF/aspect/tracing.jar",
+                "org.apache.commons.math.complex.ComplexTest_Fuzz",
+                "testAddInfinite"
         });
 
 

@@ -81,6 +81,7 @@ import static edu.berkeley.cs.jqf.fuzz.guidance.Result.*;
  */
 public class FuzzStatement extends Statement {
     private ClassLoader loaderForPatch;
+    private ClassLoader loaderForFix;
     private ArrayList<ClassLoader> loaderForPatchList = new ArrayList<>();
     private ArrayList<PatchInfo> patchInfos = new ArrayList<>();
     private FrameworkMethod method;
@@ -129,6 +130,14 @@ public class FuzzStatement extends Statement {
         this.patchInfos = patchInfos;
     }
 
+    public FuzzStatement(FrameworkMethod method, TestClass testClass,
+                         GeneratorRepository generatorRepository, ArrayList<PatchInfo> patchInfos, ClassLoader loaderForFix) {
+        this(method, testClass, generatorRepository);
+        this.loaderForPatch = patchInfos.get(0).patchLoader;
+        this.patchInfos = patchInfos;
+        this.loaderForFix = loaderForFix;
+    }
+
 
 
     /**
@@ -139,11 +148,11 @@ public class FuzzStatement extends Statement {
     @Override
     public void evaluate() throws Throwable {
         if (this.loaderForPatch != null && Boolean.getBoolean("jqf.ei.run_two_versions")) {
-            System.out.println("RunTwoVersion: " + Boolean.toString(Boolean.getBoolean("jqf.ei.run_two_versions")));
+//            System.out.println("RunTwoVersion: " + Boolean.toString(Boolean.getBoolean("jqf.ei.run_two_versions")));
             evaluateTwoVersions();
             return;
         }
-        System.out.println("RunTwoVersion: " + Boolean.toString(Boolean.getBoolean("jqf.ei.run_two_versions")));
+//        System.out.println("RunTwoVersion: " + Boolean.toString(Boolean.getBoolean("jqf.ei.run_two_versions")));
         // Construct generators for each parameter
         List<Generator<?>> generators = Arrays.stream(method.getMethod().getParameters())
                 .map(this::createParameterTypeContext)
@@ -346,6 +355,7 @@ public class FuzzStatement extends Statement {
                 Log.reset();
                 Result result = INVALID;
                 Throwable error = null;
+                System.setProperty("jqf.ei.run_fix", "false");
 
                 if (!guidance.isRangeFixed() && guidance.isWideningPlateauReached()) {
                     guidance.infoLog("Plateau is reached, and the range is widened");
@@ -364,9 +374,7 @@ public class FuzzStatement extends Statement {
                         SourceOfRandomness random = new FastSourceOfRandomness(randomFile);
                         GenerationStatus genStatus = new NonTrackingGenerationStatus(random);
 
-                        args = generators.stream()
-                                .map(g -> g.generate(random, genStatus))
-                                .toArray();
+                        args = generators.stream().map(g -> g.generate(random, genStatus)).toArray();
 
                         Log.resetLogDirForInput();
 
@@ -438,7 +446,7 @@ public class FuzzStatement extends Statement {
                         if (!System.getProperty("kr.ac.unist.cse.jqf.NO_FUZZ").equals("true")) {
                             throw new GuidanceException(e);
                         }
-                        throw new GuidanceException(e);
+//                        throw new GuidanceException(e);
 
                     } finally {
                         // System.out.println(randomFile.getTotalBytesRead() + " random bytes read");
@@ -476,8 +484,10 @@ public class FuzzStatement extends Statement {
                 }
                 System.out.println("Result: " + result.toString());
 
+                System.setProperty("jqf.ei.run_fix", "false");
                 PoracleGuidance.ResultOfOrg resultOfOrg = guidance.handleResultOfOrg(result, error);
                 PoracleGuidance.ResultOfPatch resultOfPatch = null;
+                PoracleGuidance.ResultOfPatch resultOfFix = null;
                 ArrayList<PoracleGuidance.ResultOfPatch> resultOfPatchesList = new ArrayList<>();
                 if (resultOfOrg.isInputNotIgnored()) {
                     guidance.infoLog("Found an non-ignoring input");
@@ -493,6 +503,7 @@ public class FuzzStatement extends Statement {
                             System.setProperty("jqf.ei.CURRENT_PATH_FOR_PATCH", pi.patchPath);
                             System.out.println("PatchInfo: " + pi.patchPath);
                             runPatch(guidance, resultOfOrg, pi.getPatchLoader(), argsList.size());
+
                             if (!guidance.isDiffOutFound()) {
                                 guidance.setDiffOutputFound(isDiffOutputFound());
                             }
@@ -516,7 +527,19 @@ public class FuzzStatement extends Statement {
                                 DumpUtil.enterMethods.clear();
                             }
                             Log.turnOffRunBuggyVersion();
+                            System.setProperty("jqf.ei.run_patch", "true");
                             resultOfPatchesList.add(guidance.handleResultOfPatch(result, targetHit));
+                            System.setProperty("jqf.ei.run_patch", "false");
+
+
+                            if (System.getProperty("jqf.ei.CLASSPATH_FOR_FIX") != null) {
+                                System.setProperty("jqf.ei.run_fix", "true");
+                                // TODO: Should be outside of this loop
+                                runFixed(guidance, resultOfOrg, loaderForFix, argsList.size());
+                                resultOfFix = guidance.handleResultOfFix(result, targetHit);
+                                System.setProperty("jqf.ei.run_fix", "false");
+                            }
+
                         }
                     }
                     else {
@@ -669,6 +692,33 @@ public class FuzzStatement extends Statement {
             guidance.isWideningPlateauReached = false;
             Log.turnOnRunBuggyVersion();
         }
+    }
+
+    private void runFixed(PoracleGuidance guidance, PoracleGuidance.ResultOfOrg resultOfOrg, ClassLoader loaderFix, int argLen) throws ClassNotFoundException {
+        ReproGuidance reproGuidance;
+        if (argLen > 0) {
+            reproGuidance = new ReproGuidance(resultOfOrg.getInputFile(), null,
+                    guidance.getOutputDirectory(), true);
+        }
+        else {
+            reproGuidance = new ReproGuidance(resultOfOrg.getInputFile(), null,
+                    guidance.getOutputDirectory());
+        }
+
+        System.setProperty("jqf.ei.run_fix", "true");
+        if (loaderFix instanceof InstrumentingClassLoader) {
+            // make sure that target classes are instrumented
+            Target[] targets = Target.getTargetArray(System.getProperty("jqf.ei.targets"));
+            for (Target target: targets) {
+                ((InstrumentingClassLoader) loaderFix).instrumentClass(target.getClassName());
+            }
+        }
+        run(testClass.getName(), method.getName(), loaderFix, reproGuidance);
+        System.setProperty("jqf.ei.run_fix", "false");
+
+        guidance.isWideningPlateauReached = false;
+        Log.turnOnRunBuggyVersion();
+
     }
 
     private void run(String className, String methodName, ClassLoader loader, ReproGuidance reproGuidance) throws ClassNotFoundException {

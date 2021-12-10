@@ -171,6 +171,9 @@ public class ZestCLI2 implements Runnable {
     @Option(names = {"--cp-for-patch"}, description = "classpath for patched program")
     private String classPathForPatch = null;
 
+    @Option(names = {"--cp-for-fix"}, description = "classpath for fixed program")
+    private String classPathForFix = null;
+
     @Parameters(index="1", paramLabel = "TEST_CLASS", description = "full class name where the fuzz function is located")
     private String testClassName;
 
@@ -286,6 +289,10 @@ public class ZestCLI2 implements Runnable {
         }
         if (this.classPathForOrg != null) {
             System.setProperty("jqf.ei.CLASSPATH_FOR_ORG", this.classPathForOrg);
+        }
+
+        if (this.classPathForFix != null) {
+            System.setProperty("jqf.ei.CLASSPATH_FOR_FIX", this.classPathForFix);
         }
         if (this.classPathForPatch != null) {
             System.setProperty("jqf.ei.CLASSPATH_FOR_PATCH", this.classPathForPatch);

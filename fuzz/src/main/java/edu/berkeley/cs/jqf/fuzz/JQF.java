@@ -58,6 +58,7 @@ public class JQF extends JUnitQuickcheck {
 
     protected final GeneratorRepository generatorRepository;
     private String classPathForPatch;
+    private String classPathForFix;
     private ArrayList<String> classPathForEachPatch = new ArrayList<>();
 
     @SuppressWarnings("unused") // Invoked reflectively by JUnit
@@ -68,6 +69,7 @@ public class JQF extends JUnitQuickcheck {
         this.generatorRepository = new GeneratorRepository(randomness).register(new ServiceLoaderGeneratorSource());
 
         classPathForPatch = System.getProperty("jqf.ei.CLASSPATH_FOR_PATCH");
+        classPathForFix = System.getProperty("jqf.ei.CLASSPATH_FOR_FIX");
         classPathForEachPatch = new ArrayList<String>(Arrays.asList(System.getProperty("jqf.ei.CLASSPATH_FOR_PATCH").split(File.pathSeparator)));
 
 
@@ -136,7 +138,22 @@ public class JQF extends JUnitQuickcheck {
                         System.exit(2);
                     }
 //                    System.out.println("Multi");
-                    return new FuzzStatement(method, getTestClass(), generatorRepository, patchInfos);
+                    if (System.getProperty("jqf.ei.CLASSPATH_FOR_FIX") != null) {
+                        ClassLoader loaderForFix = null;
+                        try {
+                            loaderForFix = new InstrumentingClassLoader(
+                                    this.classPathForFix.split(File.pathSeparator),
+                                    ZestCLI2.class.getClassLoader());
+                        } catch (MalformedURLException e) {
+                            e.printStackTrace();
+                            System.exit(2);
+                        }
+                        return new FuzzStatement(method, getTestClass(), generatorRepository, patchInfos, loaderForFix);
+                    }
+                    else {
+                        return new FuzzStatement(method, getTestClass(), generatorRepository, patchInfos);
+                    }
+
                 }
                 else {
                     ClassLoader loaderForPatch = null;

@@ -296,9 +296,13 @@ public class Log {
         }
 
         if (Boolean.getBoolean("jqf.ei.run_two_versions")) {
-            if (Log.runBuggyVersion) {
+            if (System.getProperty("jqf.ei.run_fix").equals("true")) {
+                logDir += File.separator + "FIXED";
+            }
+            else if (Log.runBuggyVersion) {
                 logDir += File.separator + "ORG";
-            } else if (System.getProperty("kr.ac.unist.cse.jqf.MULTI_FUZZ").equals("true")) {
+            }
+            else if (System.getProperty("kr.ac.unist.cse.jqf.MULTI_FUZZ").equals("true")) {
                 String patchIndex = System.getProperty("jqf.ei.CURRENT_PATH_FOR_PATCH");
 //                System.out.println("Current Patch: " + patchIndex);
                 logDir += File.separator + "PATCH" + File.separator + patchIndex.split("patched/")[1].split("/target")[0];
@@ -632,7 +636,10 @@ public class Log {
         }
 
         if (Boolean.getBoolean("jqf.ei.run_two_versions")) {
-            if (!isPatch) {
+            if (System.getProperty("jqf.ei.run_fix").equals("true")) {
+                logDir += File.separator + "FIXED";
+            }
+            else if (!isPatch) {
                 logDir += File.separator + "ORG";
             }
             else if (System.getProperty("kr.ac.unist.cse.jqf.MULTI_FUZZ").equals("true")) {
@@ -704,7 +711,10 @@ public class Log {
         }
 
         if (Boolean.getBoolean("jqf.ei.run_two_versions")) {
-            if (!isPatch) {
+            if (System.getProperty("jqf.ei.run_fix").equals("true")) {
+                logDir += File.separator + "FIXED";
+            }
+            else if (!isPatch) {
                 logDir += File.separator + "ORG";
             }
             else if (System.getProperty("kr.ac.unist.cse.jqf.MULTI_FUZZ").equals("true")) {
@@ -855,8 +865,9 @@ public class Log {
 
     public static void logJson(boolean isPatch) {
 //        System.out.println("LogJson");
-        if (LogResult.isDiffOutputFound() || !System.getProperty("kr.ac.unist.cse.jqf.ONLY_DIFF").equals("true")) {
-            System.out.println("LogJson");
+        if (LogResult.isDiffOutputFound() || !System.getProperty("kr.ac.unist.cse.jqf.ONLY_DIFF").equals("true") || true) {
+            System.out.println("LogJson Diff: " + LogResult.isDiffOutputFound());
+            System.out.println("LogJson Diff: " + LogResult.outputForPatch + " " + LogResult.outputForOrg);
             String logDir = System.getProperty("jqf.ei.logDir");
             if (logDir == null) {
 //            System.out.println("path: " + logDir);
@@ -864,7 +875,10 @@ public class Log {
             }
 
             if (Boolean.getBoolean("jqf.ei.run_two_versions")) {
-                if (!isPatch) {
+                if (System.getProperty("jqf.ei.run_fix").equals("true")) {
+                    logDir += File.separator + "FIXED";
+                }
+                else if (!isPatch) {
                     logDir += File.separator + "ORG";
                 }
                 else if (System.getProperty("kr.ac.unist.cse.jqf.MULTI_FUZZ").equals("true")) {
@@ -880,6 +894,15 @@ public class Log {
 
             Path inFile = null;
             String inputID = System.getProperty("jqf.ei.inputID");
+
+            if(LogResult.isDiffOutputFound()) {
+                logDir = logDir + "/" + "DIFF";
+                System.out.println("Diff Log: " + logDir);
+            }
+            else {
+                logDir = logDir + "/" + "SAME";
+                System.out.println("Same Log: " + logDir);
+            }
 
 
             try {

@@ -769,6 +769,137 @@ public class PoracleGuidance extends ZestGuidance {
     }
 
     public ResultOfPatch handleResultOfPatch(Result result, boolean targetHit) {
+        System.out.println("handleResultOfPatch");
+        // Stop timeout handling
+        this.runStart = null;
+
+        // Increment run count
+        this.numTrials++;
+
+        boolean valid = result == Result.SUCCESS;
+        if (valid) {
+            // Increment valid counter
+            numValid++;
+        }
+
+
+
+        // Possibly save input
+        boolean newCoverageFound = false;
+        String why = "";
+
+        // Coverage before
+        int nonZeroBefore = totalCoverageOfPatch.getNonZeroCount();
+        int validNonZeroBefore = validCoverageOfPatch.getNonZeroCount();
+
+        // Get spectrums
+        Map<String,Integer> branchSpectrum=runCoverageOfPatch.getBranchSpectrum();
+        List<String> pathSpectrum=runCoverageOfPatch.getPathSpectrum();
+        Log.logBranchSpectrum(branchSpectrum,true);
+        Log.logPathSpectrum(pathSpectrum,true);
+        Log.logJson(true);
+
+        // Compute a list of keys for which this input can assume responsiblity.
+        // Newly covered branches are always included.
+        // Existing branches *may* be included, depending on the heuristics used.
+        // A valid input will steal responsibility from invalid inputs
+        Set<Object> responsibilities = computeResponsibilities(valid);
+
+        // Update total coverage
+        boolean coverageBitsUpdated = totalCoverageOfPatch.updateBits(runCoverageOfPatch);
+
+        if (this.totalCoverageOfPatchList.size() < this.numOfPatches) {
+            runCoverageOfPatchList.add(runCoverageOfPatch);
+            totalCoverageOfPatchList.add(totalCoverageOfPatch);
+        }
+        else {
+            //TODO: update coverage by index
+        }
+
+        if (valid) {
+            validCoverageOfPatch.updateBits(runCoverageOfPatch);
+        }
+
+        // Coverage after
+        int nonZeroAfter = totalCoverageOfPatch.getNonZeroCount();
+        if (nonZeroAfter > maxCoverageOfPatch) {
+            maxCoverageOfPatch = nonZeroAfter;
+        }
+
+        if (SAVE_NEW_COUNTS && coverageBitsUpdated) {
+            newCoverageFound = true;
+            why = why + "+count";
+        }
+
+        // Save if new total coverage found
+        if (nonZeroAfter > nonZeroBefore) {
+            // Must be responsible for some branch
+            assert (responsibilities.size() > 0);
+            newCoverageFound = true;
+            why = why + "+cov";
+        }
+
+        // Save if new valid coverage is found
+        int validNonZeroAfter = validCoverageOfPatch.getNonZeroCount();
+        if (this.validityFuzzing && validNonZeroAfter > validNonZeroBefore) {
+            // Must be responsible for some branch
+            assert (responsibilities.size() > 0);
+            currentInput.valid = true;
+            newCoverageFound = true;
+            why = why + "+valid";
+        }
+
+        // save the input that reaches the target
+        if (targetHit) {
+            String targetHitPath = outputDirectory.getPath() + File.separator + "target_hit";
+            if(!Files.exists(Paths.get(targetHitPath))) {
+                try {
+                    Files.createDirectories(Paths.get(targetHitPath));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            try {
+                String inputID = System.getProperty("jqf.ei.inputID");
+                Path inFile = Paths.get(targetHitPath, inputID);
+                if (Files.exists(inFile)) {
+                    Files.delete(inFile);
+                }
+                Files.createFile(inFile);
+                writeCurrentInputToFile(inFile.toFile());
+            } catch (IOException e) {
+                infoLog("Something went wrong while writing target-reaching input");
+                System.err.println("Something went wrong while writing target-reaching input");
+                e.printStackTrace();
+            }
+        }
+
+        List<Double> versionDistCallerExit = null;
+        List<Double> versionDistCalleeExit = null;
+        List<Double> versionDistCalleeEntry = null;
+        Pair<Long, Long> pathDiffDist = new Pair(0L, 0L);
+
+        List<MethodInfo> callers = DumpUtil.getCallerChain();
+        List<MethodInfo> callees = DumpUtil.getCalleesOfTaregetMethod();
+
+        double distToTarget = Double.POSITIVE_INFINITY;
+        if (targetHit && callers != null && callees != null) {
+            distToTarget = 0;
+            pathDiffDist = this.runCoverageOfPatch.getDistance(this.runCoverageOfOrg);
+            versionDistCallerExit = getVersionDistance(inputID, callers, PointCutLocation.EXIT);
+            versionDistCalleeExit = getVersionDistance(inputID, callees, PointCutLocation.EXIT);
+            versionDistCalleeEntry = getVersionDistance(inputID, callees, PointCutLocation.ENTRY);
+        } else if (!targetHit) {
+            distToTarget = targetDistance.getDistance();
+        }
+        Distance dist = new Distance(distToTarget, versionDistCallerExit, versionDistCalleeExit, versionDistCalleeEntry, pathDiffDist);
+
+        ResultOfPatch resultOfPatch = new ResultOfPatch(newCoverageFound, why, valid, dist);
+        return resultOfPatch;
+    }
+
+    public ResultOfPatch handleResultOfFix(Result result, boolean targetHit) {
         // Stop timeout handling
         this.runStart = null;
 
