@@ -969,6 +969,15 @@ public class Log {
                     e.printStackTrace();
                 }
             }
+            else {
+                if (isPatch) {
+                    TraceLogger.get().initMethodLogP();
+                }
+                else {
+                    TraceLogger.get().initMethodLog();
+                }
+                return;
+            }
 
             try {
 //            for (byte b : buffer) {
@@ -977,7 +986,7 @@ public class Log {
 //            }
 //            System.out.println("Json: " + inFile.toString());
                 Files.write(inFile, buffer,
-                        StandardOpenOption.CREATE);
+                        StandardOpenOption.WRITE);
             } catch (IOException e) {
                 System.err.println("Failed to write path to " + inFile);
                 e.printStackTrace();
