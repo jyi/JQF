@@ -28,6 +28,7 @@
  */
 package edu.berkeley.cs.jqf.fuzz.repro;
 
+import com.ibm.wala.analysis.exceptionanalysis.IntraproceduralExceptionAnalysis;
 import edu.berkeley.cs.jqf.fuzz.guidance.Guidance;
 import edu.berkeley.cs.jqf.fuzz.guidance.GuidanceException;
 import edu.berkeley.cs.jqf.fuzz.guidance.Result;
@@ -83,6 +84,8 @@ public class ReproGuidance implements Guidance {
     HashMap<Integer, String> branchDescCache = new HashMap<>();
 
     private boolean useSeed = false;
+
+    public boolean doNotLog = false;
 
 
     /**
@@ -152,16 +155,24 @@ public class ReproGuidance implements Guidance {
     @Override
     public InputStream getInput() {
 //        runCoverage.clear();
-        System.out.println("getInput in repro");
         try {
+            //Not sure? But There are difference between inputs for zest and repro
             File inputFile = inputFiles[nextFileIdx];
-            if (inputFile.toString().contains("id_000000001") || inputFile.toString().contains("id_000000000") || this.useSeed == true) {
-                System.setProperty("kr.ac.unist.cse.jqf.USE_SEED",Boolean.toString(true));
-                System.out.println("UseSeed in Repro");
-            }
-            else {
-                System.setProperty("kr.ac.unist.cse.jqf.USE_SEED",Boolean.toString(false));
-            }
+            System.out.println("Save in Repro: " + inputFile.toString());
+//            if (nextFileIdx > 0) {
+//                inputFile = inputFiles[nextFileIdx-1];
+//            }
+//            else {
+//                inputFile = inputFiles[nextFileIdx];
+//            }
+
+//            if (inputFile.toString().contains("id_000000001") || inputFile.toString().contains("id_000000000") || this.useSeed == true) {
+//                System.setProperty("kr.ac.unist.cse.jqf.USE_SEED",Boolean.toString(true));
+//                System.out.println("UseSeed in Repro");
+//            }
+//            else {
+//                System.setProperty("kr.ac.unist.cse.jqf.USE_SEED",Boolean.toString(false));
+//            }
             this.inputStream = new BufferedInputStream(new FileInputStream(inputFile));
 
             if (allBranchesCovered != null) {
@@ -250,8 +261,21 @@ public class ReproGuidance implements Guidance {
         // Get spectrums
         Map<String,Integer> branchSpectrum=coverage.getBranchSpectrum();
         List<String> pathSpectrum=coverage.getPathSpectrum();
-        Log.logBranchSpectrum(branchSpectrum,false);
-        Log.logPathSpectrum(pathSpectrum,false);
+
+        if (!doNotLog || true) {
+            if(System.getProperty("jqf.ei.run_patch").equals("true")) {
+                System.out.println("HandleResultPatch in Repro");
+                Log.logBranchSpectrum(branchSpectrum,true);
+                Log.logPathSpectrum(pathSpectrum,true);
+                Log.logJson(true);
+            }
+            else {
+                Log.logBranchSpectrum(branchSpectrum,false);
+                Log.logPathSpectrum(pathSpectrum,false);
+                Log.logJson(false);
+            }
+        }
+
 //        Log.logJson(false);
 
         // Possibly accumulate coverage
@@ -284,6 +308,26 @@ public class ReproGuidance implements Guidance {
         // Increment file
         nextFileIdx++;
 
+
+    }
+
+    public void handleResultPatch(Result result, Throwable error) {
+
+        // Close the open input file
+        try {
+            if (inputStream != null) {
+                inputStream.close();
+            }
+        } catch (IOException e) {
+            throw new GuidanceException(e);
+        }
+
+        // Get spectrums
+        Map<String,Integer> branchSpectrum=coverage.getBranchSpectrum();
+        List<String> pathSpectrum=coverage.getPathSpectrum();
+        Log.logBranchSpectrum(branchSpectrum,true);
+        Log.logPathSpectrum(pathSpectrum,true);
+        Log.logJson(true);
 
     }
 
@@ -418,6 +462,10 @@ public class ReproGuidance implements Guidance {
         } catch (Exception e) {
             System.err.println(e);
         }
+    }
+
+    public void setDoNotLog (boolean doNot) {
+        this.doNotLog = doNot;
     }
 
 }

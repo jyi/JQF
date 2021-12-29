@@ -76,6 +76,10 @@ public class ReproDriver implements Runnable {
             description = "")
     private String[] targets;
 
+    @Option(names = { "--failing-tests" }, split = ",",
+            description = "")
+    private String[] failTests;
+
     @Override
     public void run() {
         System.out.println("Repro");
@@ -85,6 +89,13 @@ public class ReproDriver implements Runnable {
 
             System.setProperty("kr.ac.unist.cse.jqf.BATCH",Boolean.toString(this.batch));
             System.setProperty("kr.ac.unist.cse.jqf.MULTI_FUZZ",Boolean.toString(this.multiFuzz));
+            System.setProperty("kr.ac.unist.cse.jqf.IS_REPRO", Boolean.toString(true));
+            System.setProperty("kr.ac.unist.cse.jqf.ONLY_DIFF", Boolean.toString(false));
+            System.setProperty("kr.ac.unist.cse.jqf.NO_FUZZ", "true");
+            System.setProperty("kr.ac.unist.cse.jqf.IGNORE_COND",Boolean.toString(true));
+            System.setProperty("kr.ac.unist.cse.jqf.GO_ON",Boolean.toString(false));
+            System.setProperty("kr.ac.unist.cse.jqf.USE_SEED",Boolean.toString(false));
+            System.setProperty("jqf.ei.PATCHED_METHOD", "");
             if (this.classPath != null) {
                 System.setProperty("jqf.ei.CLASSPATH_FOR_PATCH", this.classPath);
             }
@@ -94,14 +105,18 @@ public class ReproDriver implements Runnable {
                 edu.berkeley.cs.jqf.instrument.tracing.Target.init(Arrays.toString(targets));
             }
 
+            if (failTests != null) {
+                System.setProperty("jqf.ei.fail_tests", Arrays.toString(failTests));
+            }
 
+            System.out.println(testInputFiles[0].toString());
             if (System.getProperty("kr.ac.unist.cse.jqf.BATCH").equals("true")) {
                 File dir = testInputFiles[0];
                 File files[] = dir.listFiles();
-//
-//                for (int i = 0; i < files.length; i++) {
-//                    System.out.println("file: " + files[i]);
-//                }
+
+                for (int i = 0; i < files.length; i++) {
+                    System.out.println("file: " + files[i]);
+                }
 
                 testInputFiles = files;
             }

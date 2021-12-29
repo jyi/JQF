@@ -29,6 +29,10 @@ public class Log {
     public static JsonWriter methodWriter = dslJson2.newWriter();
 
     public boolean diffOutFound = false;
+    public boolean itWasDiff = false;
+
+    public String savedOutForOrg = null;
+    public String SavedOutForPatch = null;
 
     public static class LogResult {
         private static String outputForOrg = null;
@@ -133,16 +137,36 @@ public class Log {
             return null;
         }
 
-        if (Boolean.getBoolean("jqf.ei.run_two_versions")) {
-            if (Log.runBuggyVersion) {
+//        if (Boolean.getBoolean("jqf.ei.run_two_versions")) {
+//            if (Log.runBuggyVersion) {
+//                logDir += File.separator + "ORG";
+//            } else {
+//                logDir += File.separator + "PATCH";
+//            }
+//        }
+        if (System.getProperty("jqf.ei.run_fix") != null) {
+            if (System.getProperty("jqf.ei.run_fix").equals("true")) {
+                logDir += File.separator + "FIXED";
+            }
+            else if (Log.runBuggyVersion) {
                 logDir += File.separator + "ORG";
-            } else {
+            }
+            else if (System.getProperty("kr.ac.unist.cse.jqf.MULTI_FUZZ").equals("true")) {
+                String patchIndex = System.getProperty("jqf.ei.CURRENT_PATH_FOR_PATCH");
+//                System.out.println("Current Patch: " + patchIndex);
+                logDir += File.separator + "PATCH" + File.separator + patchIndex.split("patched/")[1].split("/target")[0];
+//                System.out.println("New LogDir: " + logDir);
+            }
+            else {
                 logDir += File.separator + "PATCH";
             }
         }
 
+
         return logDir;
     }
+
+
 
     public static void writeToFile(String xml, String filename) {
         String logDir = getLogDir();
@@ -291,26 +315,39 @@ public class Log {
         LogResult.addOutput(msg);
         String logDir = System.getProperty("jqf.ei.logDir");
         if (logDir == null) {
-            System.out.println("out: " + msg);
+//            System.out.println("out: " + msg);
             return;
         }
 
-        if (Boolean.getBoolean("jqf.ei.run_two_versions")) {
-            if (System.getProperty("jqf.ei.run_fix").equals("true")) {
-                logDir += File.separator + "FIXED";
-            }
-            else if (Log.runBuggyVersion) {
-                logDir += File.separator + "ORG";
-            }
-            else if (System.getProperty("kr.ac.unist.cse.jqf.MULTI_FUZZ").equals("true")) {
-                String patchIndex = System.getProperty("jqf.ei.CURRENT_PATH_FOR_PATCH");
-//                System.out.println("Current Patch: " + patchIndex);
-                logDir += File.separator + "PATCH" + File.separator + patchIndex.split("patched/")[1].split("/target")[0];
-//                System.out.println("New LogDir: " + logDir);
+//        if (Boolean.getBoolean("jqf.ei.run_two_versions")) {
+//            if (System.getProperty("jqf.ei.run_fix").equals("true")) {
+//                logDir += File.separator + "FIXED";
+//            }
+//            else if (Log.runBuggyVersion) {
+//                logDir += File.separator + "ORG";
+//            }
+//            else if (System.getProperty("kr.ac.unist.cse.jqf.MULTI_FUZZ").equals("true")) {
+//                String patchIndex = System.getProperty("jqf.ei.CURRENT_PATH_FOR_PATCH");
+////                System.out.println("Current Patch: " + patchIndex);
+//                logDir += File.separator + "PATCH" + File.separator + patchIndex.split("patched/")[1].split("/target")[0];
+////                System.out.println("New LogDir: " + logDir);
+//            }
+//            else {
+//                logDir += File.separator + "PATCH";
+//            }
+//        }
+        logDir = getLogDir();
+
+        if(System.getProperty("jqf.ei.fail_tests") != null && System.getProperty("kr.ac.unist.cse.jqf.TEST_METHOD") != null) {
+            if (System.getProperty("jqf.ei.fail_tests").contains(System.getProperty("kr.ac.unist.cse.jqf.TEST_METHOD"))) {
+                logDir = logDir + "/" + "FAIL";
             }
             else {
-                logDir += File.separator + "PATCH";
+                logDir = logDir + "/" + "PASS";
             }
+        }
+        if (System.getProperty("kr.ac.unist.cse.jqf.TEST_METHOD") != null) {
+            logDir = logDir + "/" + System.getProperty("kr.ac.unist.cse.jqf.TEST_METHOD");
         }
 
         Path outFile;
@@ -346,10 +383,15 @@ public class Log {
         }
 
         try {
-//            Files.write(outFile, msg.getBytes(),
-//                    StandardOpenOption.APPEND);
-            Files.write(outFile, msg.getBytes(),
-                    StandardOpenOption.CREATE);
+            if (msg.length() > 0) {
+//                System.out.println("out: " + msg);
+                Files.write(outFile, msg.getBytes(),
+                        StandardOpenOption.WRITE);
+            }
+            else {
+                Files.write(outFile, msg.getBytes(),
+                        StandardOpenOption.APPEND);
+            }
         } catch (IOException e) {
             System.err.println("Failed to write output due to IOException");
         }
@@ -501,19 +543,33 @@ public class Log {
 //        System.out.println("LogMultiFuzzing" + System.getProperty("kr.ac.unist.cse.jqf.MULTI_FUZZ"));
 //        System.out.println("RunBuggy: " + Log.runBuggyVersion);
 
-        if (Boolean.getBoolean("jqf.ei.run_two_versions")) {
-            if (Log.runBuggyVersion) {
-                logDir += File.separator + "ORG";
-            }
-            else if (System.getProperty("kr.ac.unist.cse.jqf.MULTI_FUZZ").equals("true")) {
-                String patchIndex = System.getProperty("jqf.ei.CURRENT_PATH_FOR_PATCH");
-//                System.out.println("Current Patch: " + patchIndex);
-                logDir += File.separator + "PATCH" + File.separator + patchIndex.split("patched/")[1].split("/target")[0];
-//                System.out.println("New In LogDir: " + logDir);
+//        if (Boolean.getBoolean("jqf.ei.run_two_versions")) {
+//            if (Log.runBuggyVersion) {
+//                logDir += File.separator + "ORG";
+//            }
+//            else if (System.getProperty("kr.ac.unist.cse.jqf.MULTI_FUZZ").equals("true")) {
+//                String patchIndex = System.getProperty("jqf.ei.CURRENT_PATH_FOR_PATCH");
+////                System.out.println("Current Patch: " + patchIndex);
+//                logDir += File.separator + "PATCH" + File.separator + patchIndex.split("patched/")[1].split("/target")[0];
+////                System.out.println("New In LogDir: " + logDir);
+//            }
+//            else {
+//                logDir += File.separator + "PATCH";
+//            }
+//        }
+        logDir = getLogDir();
+
+        if(System.getProperty("jqf.ei.fail_tests") != null && System.getProperty("kr.ac.unist.cse.jqf.TEST_METHOD") != null) {
+            if (System.getProperty("jqf.ei.fail_tests").contains(System.getProperty("kr.ac.unist.cse.jqf.TEST_METHOD"))) {
+                logDir = logDir + "/" + "FAIL";
             }
             else {
-                logDir += File.separator + "PATCH";
+                logDir = logDir + "/" + "PASS";
             }
+        }
+
+        if (System.getProperty("kr.ac.unist.cse.jqf.TEST_METHOD") != null) {
+            logDir = logDir + "/" + System.getProperty("kr.ac.unist.cse.jqf.TEST_METHOD");
         }
 
         Path inFile;
@@ -548,13 +604,17 @@ public class Log {
         }
 
         try {
-            // Files.write(inFile, msg.getBytes(),
-            //                    StandardOpenOption.APPEND);
-            Files.write(inFile, msg.getBytes(),
-                    StandardOpenOption.WRITE);
+            if (msg.length() > 0) {
+//                System.out.println("out: " + msg);
+                Files.write(inFile, msg.getBytes(),
+                        StandardOpenOption.WRITE);
+            }
+            else {
+                Files.write(inFile, msg.getBytes(),
+                        StandardOpenOption.APPEND);
+            }
         } catch (IOException e) {
-            System.err.println("Failed to write output to " + inFile);
-            e.printStackTrace();
+            System.err.println("Failed to write output due to IOException");
         }
     }
 
@@ -635,26 +695,50 @@ public class Log {
             return;
         }
 
-        if (Boolean.getBoolean("jqf.ei.run_two_versions")) {
-            if (System.getProperty("jqf.ei.run_fix").equals("true")) {
-                logDir += File.separator + "FIXED";
-            }
-            else if (!isPatch) {
-                logDir += File.separator + "ORG";
-            }
-            else if (System.getProperty("kr.ac.unist.cse.jqf.MULTI_FUZZ").equals("true")) {
-                String patchIndex = System.getProperty("jqf.ei.CURRENT_PATH_FOR_PATCH");
-//                System.out.println("Current Patch: " + patchIndex);
-                logDir += File.separator + "PATCH" + File.separator + patchIndex.split("patched/")[1].split("/target")[0];
-//                System.out.println("New Branch LogDir: " + logDir);
+//        if (Boolean.getBoolean("jqf.ei.run_two_versions")) {
+//            if (System.getProperty("jqf.ei.run_fix").equals("true")) {
+//                logDir += File.separator + "FIXED";
+//            }
+//            else if (!isPatch) {
+//                logDir += File.separator + "ORG";
+//            }
+//            else if (System.getProperty("kr.ac.unist.cse.jqf.MULTI_FUZZ").equals("true")) {
+//                String patchIndex = System.getProperty("jqf.ei.CURRENT_PATH_FOR_PATCH");
+////                System.out.println("Current Patch: " + patchIndex);
+//                logDir += File.separator + "PATCH" + File.separator + patchIndex.split("patched/")[1].split("/target")[0];
+////                System.out.println("New Path LogDir: " + logDir);
+//            }
+//            else {
+//                logDir += File.separator + "PATCH";
+//            }
+//        }
+        logDir = getLogDir();
+
+        Path inFile = null;
+        String inputID = System.getProperty("jqf.ei.inputID");
+
+        if(System.getProperty("jqf.ei.fail_tests") != null && System.getProperty("kr.ac.unist.cse.jqf.TEST_METHOD") != null) {
+            if (System.getProperty("jqf.ei.fail_tests").contains(System.getProperty("kr.ac.unist.cse.jqf.TEST_METHOD"))) {
+                logDir = logDir + "/" + "FAIL";
             }
             else {
-                logDir += File.separator + "PATCH";
+                logDir = logDir + "/" + "PASS";
             }
         }
+        if (System.getProperty("kr.ac.unist.cse.jqf.TEST_METHOD") != null) {
+            logDir = logDir + "/" + System.getProperty("kr.ac.unist.cse.jqf.TEST_METHOD");
+        }
 
-        Path inFile;
-        String inputID = System.getProperty("jqf.ei.inputID");
+        if(LogResult.isDiffOutputFound()) {
+            logDir = logDir + "/" + "DIFF";
+            System.out.println("Diff Log: " + logDir);
+        }
+        else {
+            logDir = logDir + "/" + "SAME";
+            System.out.println("Same Log: " + logDir);
+        }
+
+
         if (inputID == null) {
             if (!Files.exists(FileSystems.getDefault().getPath(logDir))) {
                 try {
@@ -692,7 +776,7 @@ public class Log {
             //Files.write(inFile, msg.getBytes(),
             //                    StandardOpenOption.APPEND);
             Files.write(inFile, msg.getBytes(),
-                    StandardOpenOption.WRITE);
+                    StandardOpenOption.APPEND);
         } catch (IOException e) {
             System.err.println("Failed to write branch to " + inFile);
             e.printStackTrace();
@@ -710,26 +794,51 @@ public class Log {
             return;
         }
 
-        if (Boolean.getBoolean("jqf.ei.run_two_versions")) {
-            if (System.getProperty("jqf.ei.run_fix").equals("true")) {
-                logDir += File.separator + "FIXED";
-            }
-            else if (!isPatch) {
-                logDir += File.separator + "ORG";
-            }
-            else if (System.getProperty("kr.ac.unist.cse.jqf.MULTI_FUZZ").equals("true")) {
-                String patchIndex = System.getProperty("jqf.ei.CURRENT_PATH_FOR_PATCH");
-//                System.out.println("Current Patch: " + patchIndex);
-                logDir += File.separator + "PATCH" + File.separator + patchIndex.split("patched/")[1].split("/target")[0];
-//                System.out.println("New Path LogDir: " + logDir);
+//        if (Boolean.getBoolean("jqf.ei.run_two_versions")) {
+//            if (System.getProperty("jqf.ei.run_fix").equals("true")) {
+//                logDir += File.separator + "FIXED";
+//            }
+//            else if (!isPatch) {
+//                logDir += File.separator + "ORG";
+//            }
+//            else if (System.getProperty("kr.ac.unist.cse.jqf.MULTI_FUZZ").equals("true")) {
+//                String patchIndex = System.getProperty("jqf.ei.CURRENT_PATH_FOR_PATCH");
+////                System.out.println("Current Patch: " + patchIndex);
+//                logDir += File.separator + "PATCH" + File.separator + patchIndex.split("patched/")[1].split("/target")[0];
+////                System.out.println("New Path LogDir: " + logDir);
+//            }
+//            else {
+//                logDir += File.separator + "PATCH";
+//            }
+//        }
+        logDir = getLogDir();
+
+        Path inFile = null;
+        String inputID = System.getProperty("jqf.ei.inputID");
+
+        if(System.getProperty("jqf.ei.fail_tests") != null && System.getProperty("kr.ac.unist.cse.jqf.TEST_METHOD") != null) {
+            if (System.getProperty("jqf.ei.fail_tests").contains(System.getProperty("kr.ac.unist.cse.jqf.TEST_METHOD"))) {
+                logDir = logDir + "/" + "FAIL";
             }
             else {
-                logDir += File.separator + "PATCH";
+                logDir = logDir + "/" + "PASS";
             }
         }
 
-        Path inFile;
-        String inputID = System.getProperty("jqf.ei.inputID");
+        if (System.getProperty("kr.ac.unist.cse.jqf.TEST_METHOD") != null) {
+            logDir = logDir + "/" + System.getProperty("kr.ac.unist.cse.jqf.TEST_METHOD");
+        }
+
+        if(LogResult.isDiffOutputFound()) {
+            logDir = logDir + "/" + "DIFF";
+            System.out.println("Diff Log: " + logDir);
+        }
+        else {
+            logDir = logDir + "/" + "SAME";
+            System.out.println("Same Log: " + logDir);
+        }
+
+
         if (inputID == null) {
             if (!Files.exists(FileSystems.getDefault().getPath(logDir))) {
                 try {
@@ -763,11 +872,13 @@ public class Log {
         for (String id:spectrum)
             msg+=id+",";
 
+//        System.out.println("PATH: " + msg);
+
         try {
 //            System.out.println("InFile: " + inFile.toString());
 //            System.out.println(msg);
             Files.write(inFile, msg.getBytes(),
-                    StandardOpenOption.WRITE);
+                    StandardOpenOption.APPEND);
         } catch (IOException e) {
             System.err.println("Failed to write path to " + inFile);
             e.printStackTrace();
@@ -865,9 +976,177 @@ public class Log {
 
     public static void logJson(boolean isPatch) {
 //        System.out.println("LogJson");
+//        && System.getProperty("kr.ac.unist.cse.jqf.IS_REPRO").equals("false")
+        if ((LogResult.isDiffOutputFound() || !System.getProperty("kr.ac.unist.cse.jqf.ONLY_DIFF").equals("true")) || true) {
+//            System.out.println("LogJson Diff: " + LogResult.isDiffOutputFound());
+//            System.out.println("LogJson Diff: " + LogResult.outputForPatch + " " + LogResult.outputForOrg);
+            String logDir = System.getProperty("jqf.ei.logDir");
+            if (logDir == null) {
+//            System.out.println("path: " + logDir);
+                return;
+            }
+
+//            if (Boolean.getBoolean("jqf.ei.run_two_versions")) {
+//                if (System.getProperty("jqf.ei.run_fix").equals("true")) {
+//                    logDir += File.separator + "FIXED";
+//                }
+//                else if (!isPatch) {
+//                    logDir += File.separator + "ORG";
+//                }
+//                else if (System.getProperty("kr.ac.unist.cse.jqf.MULTI_FUZZ").equals("true")) {
+//                    String patchIndex = System.getProperty("jqf.ei.CURRENT_PATH_FOR_PATCH");
+////                System.out.println("Current Patch: " + patchIndex);
+//                    logDir += File.separator + "PATCH" + File.separator + patchIndex.split("patched/")[1].split("/target")[0];
+////                System.out.println("New Path LogDir: " + logDir);
+//                }
+//                else {
+//                    logDir += File.separator + "PATCH";
+//                }
+//            }
+            logDir = getLogDir();
+
+            Path inFile = null;
+            String inputID = System.getProperty("jqf.ei.inputID");
+
+            if(System.getProperty("jqf.ei.fail_tests") != null && System.getProperty("kr.ac.unist.cse.jqf.TEST_METHOD") != null) {
+                if (System.getProperty("jqf.ei.fail_tests").contains(System.getProperty("kr.ac.unist.cse.jqf.TEST_METHOD"))) {
+                    logDir = logDir + "/" + "FAIL";
+                }
+                else {
+                    logDir = logDir + "/" + "PASS";
+                }
+            }
+
+            if (System.getProperty("kr.ac.unist.cse.jqf.TEST_METHOD") != null) {
+                logDir = logDir + "/" + System.getProperty("kr.ac.unist.cse.jqf.TEST_METHOD");
+            }
+
+            if(LogResult.isDiffOutputFound()) {
+                logDir = logDir + "/" + "DIFF";
+                System.out.println("Diff Log: " + logDir);
+            }
+            else {
+                logDir = logDir + "/" + "SAME";
+                System.out.println("Same Log: " + logDir);
+            }
+
+
+
+            try {
+                writer = dslJson.newWriter();
+                methodWriter = dslJson2.newWriter();
+
+                if (isPatch) {
+                    dslJson.serialize(writer, TraceLogger.get().methodMapP);
+                    dslJson2.serialize(methodWriter, TraceLogger.get().methodNameMapP);
+                }
+                else {
+                    dslJson.serialize(writer, TraceLogger.get().methodMap);
+                    dslJson2.serialize(methodWriter, TraceLogger.get().methodNameMap);
+                }
+
+//            writer.flush();
+//            methodWriter.flush();
+//            writer.reset();
+//            methodWriter.reset();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            //resulting buffer with JSON
+            byte[] buffer = writer.getByteBuffer();
+            byte[] methodBuffer = methodWriter.getByteBuffer();
+
+            //end of buffer
+            int size = writer.size();
+//        System.out.println(writer);
+            Path methodListFile;
+
+            if (inputID == null) {
+//            if (!Files.exists(FileSystems.getDefault().getPath(logDir))) {
+//                try {
+//                    Files.createDirectories(FileSystems.getDefault().getPath(logDir));
+//                } catch (IOException e) {
+//                    System.err.println("Failed to create a dir: " + logDir);
+//                    e.printStackTrace();
+//                }
+//            }
+                inFile = Paths.get(logDir, "TRACE.json");
+                methodListFile = Paths.get(logDir, "METHODMAP.json");
+            } else {
+                try {
+//                System.out.println("Path for each test" + Paths.get(logDir, System.getProperty("kr.ac.unist.cse.jqf.TEST_METHOD"), inputID).toString());
+                    Files.createDirectories(Paths.get(logDir, inputID));
+                } catch (IOException e) {
+                    System.err.println("Failed to create directory " + Paths.get(logDir, inputID));
+                    e.printStackTrace();
+                }
+                inFile = Paths.get(logDir,  inputID, "TRACE.json");
+                methodListFile = Paths.get(logDir,  inputID, "METHODMAP.json");
+            }
+
+
+
+            if (!Files.exists(inFile)) {
+                try {
+                    Files.createFile(inFile);
+                    Files.createFile(methodListFile);
+                } catch (IOException e) {
+                    System.err.println("Failed to create a file: " + inFile);
+                    e.printStackTrace();
+                }
+            }
+            else {
+                if (isPatch) {
+                    TraceLogger.get().initMethodLogP();
+                }
+                else {
+                    TraceLogger.get().initMethodLog();
+                }
+                return;
+            }
+
+            try {
+//            for (byte b : buffer) {
+////                if(Byte.toUnsignedInt(b) == 64 || Byte.toUnsignedInt(b) == 94)
+//                System.out.println("Buffer: " + (char) b);
+//            }
+//            System.out.println("Json: " + inFile.toString());
+                Files.write(inFile, buffer,
+                        StandardOpenOption.WRITE);
+            } catch (IOException e) {
+                System.err.println("Failed to write path to " + inFile);
+                e.printStackTrace();
+            }
+
+//        try {
+////            System.out.println(methodWriter);
+//            Files.write(methodListFile, methodBuffer,
+//                    StandardOpenOption.CREATE);
+//
+//        } catch (IOException e) {
+//            System.err.println("Failed to write path to " + methodListFile);
+//            e.printStackTrace();
+//        }
+//        writer = dslJson.newWriter();
+//        methodWriter = dslJson2.newWriter();
+
+            if (isPatch) {
+                TraceLogger.get().initMethodLogP();
+            }
+            else {
+                TraceLogger.get().initMethodLog();
+            }
+        }
+
+
+    }
+
+    public static void logJson(boolean isPatch, boolean wasDiff) {
+//        System.out.println("LogJson");
         if (LogResult.isDiffOutputFound() || !System.getProperty("kr.ac.unist.cse.jqf.ONLY_DIFF").equals("true") || true) {
-            System.out.println("LogJson Diff: " + LogResult.isDiffOutputFound());
-            System.out.println("LogJson Diff: " + LogResult.outputForPatch + " " + LogResult.outputForOrg);
+//            System.out.println("LogJson Diff: " + LogResult.isDiffOutputFound());
+//            System.out.println("LogJson Diff: " + LogResult.outputForPatch + " " + LogResult.outputForOrg);
             String logDir = System.getProperty("jqf.ei.logDir");
             if (logDir == null) {
 //            System.out.println("path: " + logDir);
@@ -895,7 +1174,7 @@ public class Log {
             Path inFile = null;
             String inputID = System.getProperty("jqf.ei.inputID");
 
-            if(LogResult.isDiffOutputFound()) {
+            if(wasDiff) {
                 logDir = logDir + "/" + "DIFF";
                 System.out.println("Diff Log: " + logDir);
             }

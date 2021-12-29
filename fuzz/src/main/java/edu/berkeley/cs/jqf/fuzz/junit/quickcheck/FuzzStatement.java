@@ -378,7 +378,7 @@ public class FuzzStatement extends Statement {
 
                         Log.resetLogDirForInput();
 
-                        System.out.println("First: " + Boolean.toString(first));
+//                        System.out.println("First: " + Boolean.toString(first));
                         if (first && Boolean.getBoolean("kr.ac.unist.cse.jqf.USE_SEED")) {
                             System.out.println("useSeed: " + Boolean.toString(Boolean.getBoolean("kr.ac.unist.cse.jqf.USE_SEED")));
                             for (int i = 0; i < method.getMethod().getParameterCount(); i++) {
@@ -418,6 +418,8 @@ public class FuzzStatement extends Statement {
                             first = false;
                         }
 
+                        System.setProperty("jqf.ei.run_patch", "false");
+                        System.setProperty("jqf.ei.run_fix", "false");
                         Log.logIn(args);
                         for (Object o : args) {
 //                            System.out.println("Arg: " + String.valueOf(o));
@@ -452,6 +454,8 @@ public class FuzzStatement extends Statement {
                         // System.out.println(randomFile.getTotalBytesRead() + " random bytes read");
                     }
 
+                    System.setProperty("jqf.ei.run_patch", "false");
+                    System.setProperty("jqf.ei.run_fix", "false");
                     // Attempt to run the trial
                     new TrialRunner(testClass.getJavaClass(), method, args).run();
 
@@ -501,18 +505,24 @@ public class FuzzStatement extends Statement {
                         System.out.println("PatchesLength:" + Integer.toString(patchInfos.size()));
                         for (PatchInfo pi : patchInfos) {
                             System.setProperty("jqf.ei.CURRENT_PATH_FOR_PATCH", pi.patchPath);
-                            System.out.println("PatchInfo: " + pi.patchPath);
+//                            System.out.println("PatchInfo: " + pi.patchPath);
                             runPatch(guidance, resultOfOrg, pi.getPatchLoader(), argsList.size());
 
+                            boolean wasDiff = isDiffOutputFound();
                             if (!guidance.isDiffOutFound()) {
-                                guidance.setDiffOutputFound(isDiffOutputFound());
+                                guidance.setDiffOutputFound(wasDiff);
+
                             }
-                            if (isDiffOutputFound()) {
-                                pi.increaseDiffFound();
-                                guidance.incDiffOutputFound();
-                            }
+//                            if (isDiffOutputFound()) {
+//                                pi.increaseDiffFound();
+//                                guidance.incDiffOutputFound();
+//                            }
                             boolean targetHit = false;
-                            if (DumpUtil.isTheTargetHit() && !isDiffOutputFound()) {
+                            Log.turnOffRunBuggyVersion();
+                            System.setProperty("jqf.ei.run_patch", "true");
+                            resultOfPatchesList.add(guidance.handleResultOfPatch(result, DumpUtil.isTheTargetHit(), wasDiff));
+                            System.setProperty("jqf.ei.run_patch", "false");
+                            if (DumpUtil.isTheTargetHit() && !wasDiff) {
                                 targetHit = true;
                                 // we call the original version again
                                 // we should retrieve the class loader for the buggy version
@@ -526,17 +536,17 @@ public class FuzzStatement extends Statement {
                                 DumpUtil.exitMethods.clear();
                                 DumpUtil.enterMethods.clear();
                             }
-                            Log.turnOffRunBuggyVersion();
-                            System.setProperty("jqf.ei.run_patch", "true");
-                            resultOfPatchesList.add(guidance.handleResultOfPatch(result, targetHit));
-                            System.setProperty("jqf.ei.run_patch", "false");
+//                            Log.turnOffRunBuggyVersion();
+//                            System.setProperty("jqf.ei.run_patch", "true");
+//                            resultOfPatchesList.add(guidance.handleResultOfPatch(result, targetHit));
+//                            System.setProperty("jqf.ei.run_patch", "false");
 
 
                             if (System.getProperty("jqf.ei.CLASSPATH_FOR_FIX") != null) {
                                 System.setProperty("jqf.ei.run_fix", "true");
                                 // TODO: Should be outside of this loop
                                 runFixed(guidance, resultOfOrg, loaderForFix, argsList.size());
-                                resultOfFix = guidance.handleResultOfFix(result, targetHit);
+//                                resultOfFix = guidance.handleResultOfFix(result, targetHit);
                                 System.setProperty("jqf.ei.run_fix", "false");
                             }
 
@@ -562,8 +572,9 @@ public class FuzzStatement extends Statement {
                             DumpUtil.enterMethods.clear();
                         }
                         Log.turnOffRunBuggyVersion();
-                        resultOfPatch = guidance.handleResultOfPatch(result, targetHit);
+                        resultOfPatch = guidance.handleResultOfPatch(result, targetHit, isDiffOutputFound());
                     }
+//                    runFixed(guidance, resultOfOrg, loaderForFix, args.length);
                     Log.turnOnRunBuggyVersion();
                 } else {
                     guidance.infoLog("Ignore input");
@@ -667,6 +678,7 @@ public class FuzzStatement extends Statement {
     }
 
     private void runPatch(PoracleGuidance guidance, PoracleGuidance.ResultOfOrg resultOfOrg, ClassLoader loaderPatch, int argLen) throws ClassNotFoundException {
+        System.out.println("RunPatched");
         ReproGuidance reproGuidance;
         if (argLen > 0) {
             reproGuidance = new ReproGuidance(resultOfOrg.getInputFile(), null,
@@ -695,15 +707,17 @@ public class FuzzStatement extends Statement {
     }
 
     private void runFixed(PoracleGuidance guidance, PoracleGuidance.ResultOfOrg resultOfOrg, ClassLoader loaderFix, int argLen) throws ClassNotFoundException {
+        System.out.println("RunFixed");
         ReproGuidance reproGuidance;
-        if (argLen > 0) {
-            reproGuidance = new ReproGuidance(resultOfOrg.getInputFile(), null,
-                    guidance.getOutputDirectory(), true);
-        }
-        else {
-            reproGuidance = new ReproGuidance(resultOfOrg.getInputFile(), null,
-                    guidance.getOutputDirectory());
-        }
+        reproGuidance = new ReproGuidance(resultOfOrg.getInputFile(), null,
+                guidance.getOutputDirectory());
+//        if (argLen > 0) {
+//            reproGuidance = new ReproGuidance(resultOfOrg.getInputFile(), null,
+//                    guidance.getOutputDirectory(), true);
+//        }
+//        else {
+//
+//        }
 
         System.setProperty("jqf.ei.run_fix", "true");
         if (loaderFix instanceof InstrumentingClassLoader) {
@@ -804,6 +818,8 @@ public class FuzzStatement extends Statement {
                             firstPatch = false;
                         }
 
+                        System.setProperty("jqf.ei.run_patch", "true");
+                        System.setProperty("jqf.ei.run_fix", "false");
                         Log.logIn(args);
                         DumpUtil.reset();
 
@@ -832,11 +848,14 @@ public class FuzzStatement extends Statement {
                     }
 
                     // Attempt to run the trial
+                    System.setProperty("jqf.ei.run_patch", "true");
+                    System.setProperty("jqf.ei.run_fix", "false");
                     ThreadTracer.evaluatingPatch = true;
                     new TrialRunner(testClass.getJavaClass(), method, args).run();
 
                     // If we reached here, then the trial must be a success
                     result = SUCCESS;
+
                 } catch (GuidanceException e) {
                     // Throw the guidance exception outside to stop fuzzing
                     throw e;
@@ -859,7 +878,13 @@ public class FuzzStatement extends Statement {
                 }
 
                 // Inform guidance about the outcome of this trial
+//                System.out.println("EvaluateFuzz");
+
+
                 guidance.handleResult(result, error);
+//                guidance.setDoNotLog(false);
+
+//                guidance.handleResultPatch(result, error);
                 if (System.getProperty("kr.ac.unist.cse.jqf.NO_FUZZ").equals("true")) {
                     break;
                 }

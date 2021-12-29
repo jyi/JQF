@@ -159,6 +159,10 @@ public class ZestCLI2 implements Runnable {
             description = "")
     private Target[] targets;
 
+    @Option(names = { "--failing-tests" }, split = ",",
+            description = "")
+    private String[] failTests;
+
     @Option(names = { "--seed" },
             description = "seed")
     private long seed = -1; // negative to denote that the option is not used
@@ -370,6 +374,9 @@ public class ZestCLI2 implements Runnable {
                 guidance = seedFiles.length > 0 ?
                         new ZestGuidance(title, duration, this.outputDirectory, seedFiles) :
                         new ZestGuidance(title, duration, this.outputDirectory);
+            }
+            if (failTests != null) {
+                System.setProperty("jqf.ei.fail_tests", Arrays.toString(failTests));
             }
             guidance.setBlind(blindFuzzing);
             if (requiredCount>0)

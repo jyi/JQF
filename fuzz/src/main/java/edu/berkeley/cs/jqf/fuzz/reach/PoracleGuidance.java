@@ -483,7 +483,8 @@ public class PoracleGuidance extends ZestGuidance {
     protected void prepareOutputDirectory() throws IOException {
         super.prepareOutputDirectory();
 
-        this.notIgnoreDirectory = new File(outputDirectory, "not_ignore");
+//        this.notIgnoreDirectory = new File(outputDirectory, "not_ignore");
+        this.notIgnoreDirectory = new File(outputDirectory, "");
         this.notIgnoreDirectory.mkdirs();
     }
 
@@ -768,8 +769,7 @@ public class PoracleGuidance extends ZestGuidance {
         return result;
     }
 
-    public ResultOfPatch handleResultOfPatch(Result result, boolean targetHit) {
-        System.out.println("handleResultOfPatch");
+    public ResultOfPatch handleResultOfPatch(Result result, boolean targetHit, boolean wasDiff) {
         // Stop timeout handling
         this.runStart = null;
 
@@ -797,7 +797,7 @@ public class PoracleGuidance extends ZestGuidance {
         List<String> pathSpectrum=runCoverageOfPatch.getPathSpectrum();
         Log.logBranchSpectrum(branchSpectrum,true);
         Log.logPathSpectrum(pathSpectrum,true);
-        Log.logJson(true);
+//        Log.logJson(true, wasDiff);
 
         // Compute a list of keys for which this input can assume responsiblity.
         // Newly covered branches are always included.
@@ -904,7 +904,7 @@ public class PoracleGuidance extends ZestGuidance {
         this.runStart = null;
 
         // Increment run count
-        this.numTrials++;
+//        this.numTrials++;
 
         boolean valid = result == Result.SUCCESS;
         if (valid) {
@@ -1158,14 +1158,24 @@ public class PoracleGuidance extends ZestGuidance {
 
     @Override
     public InputStream getInput() throws GuidanceException {
+        // I removed +1 for numTrials and inputIdx...?
         targetCoverage.clear();
         // Clear coverage stats for this run
         runCoverageOfOrg.clear();
         runCoverageOfPatch.clear();
 
         // set inputID
-        String saveFileName = String.format("id_%09d", numTrials + 1);
-        inputIdx = numTrials + 1;
+        long newNumTrials = 0;
+//        && System.getProperty("jqf.ei.run_patch").equals("true")
+        if (numTrials > 0 ) {
+            newNumTrials = numTrials;
+        }
+        else {
+            newNumTrials = numTrials;
+        }
+        String saveFileName = String.format("id_%09d", newNumTrials);
+        System.out.println("Save in Poracle: " + saveFileName);
+        inputIdx = newNumTrials;
         inputID = saveFileName;
         System.setProperty("jqf.ei.inputID", saveFileName);
 
@@ -1178,7 +1188,7 @@ public class PoracleGuidance extends ZestGuidance {
 
         } else if (savedInputs.isEmpty()) {
             // If no seeds given try to start with something random
-            if (!blind && numTrials > 100_000) {
+            if (!blind && newNumTrials > 100_000) {
                 throw new GuidanceException("Too many trials without coverage; " +
                         "likely all assumption violations");
             }
@@ -1293,6 +1303,7 @@ public class PoracleGuidance extends ZestGuidance {
     protected void ignoreEvent(TraceEvent e) {
     }
 
+    //TODO: have to add additional handleResult for json file
     public ResultOfOrg handleResultOfOrg(Result result, Throwable error) throws GuidanceException {
         boolean inputNotIgnored = false;
 
@@ -1312,6 +1323,7 @@ public class PoracleGuidance extends ZestGuidance {
             inputNotIgnored = true;
         }
 
+//        System.out.println("HandleResult in ORG");
         // Get spectrums
         Map<String,Integer> branchSpectrum=runCoverageOfOrg.getBranchSpectrum();
         List<String> pathSpectrum=runCoverageOfOrg.getPathSpectrum();
@@ -1363,7 +1375,7 @@ public class PoracleGuidance extends ZestGuidance {
 
         // Save input unconditionally if such a setting is enabled
         if (savedAllDirectory != null) {
-            this.curSaveFileName = String.format("id_%09d", numTrials+1);
+            this.curSaveFileName = String.format("id_%09d", numTrials);
             System.out.println("SaveAll: " + curSaveFileName);
             File saveFile = new File(savedAllDirectory, this.curSaveFileName);
             GuidanceException.wrap(() -> writeCurrentInputToFile(saveFile));
