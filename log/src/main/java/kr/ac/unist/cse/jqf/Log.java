@@ -133,6 +133,7 @@ public class Log {
 
     private static String getLogDir() {
         String logDir = System.getProperty("jqf.ei.logDir");
+//        System.out.println("getLogDir");
         if (logDir == null) {
             return null;
         }
@@ -144,23 +145,58 @@ public class Log {
 //                logDir += File.separator + "PATCH";
 //            }
 //        }
-        if (System.getProperty("jqf.ei.run_fix") != null) {
-            if (System.getProperty("jqf.ei.run_fix").equals("true")) {
-                logDir += File.separator + "FIXED";
+        if (System.getProperty("jqf.ei.repro_fix") != null && System.getProperty("jqf.ei.PATCH_ID") != null) {
+            String patchIndex = System.getProperty("jqf.ei.PATCH_ID");
+//            System.out.println(System.getProperty("jqf.ei.PATCH_ID"));
+            logDir = logDir.replace("all", "PATCH" + File.separator + patchIndex + File.separator + "FIXED");
+//            System.out.println("FixedLog: " + logDir);
+//            logDir += File.separator + "PATCH" + File.separator + patchIndex + File.separator + "FIXED";
+            return logDir;
+        }
+        if (System.getProperty("kr.ac.unist.cse.jqf.NO_FUZZ").equals("true")) {
+            logDir += File.separator + "D4JTST";
+            if(System.getProperty("jqf.ei.fail_tests") != null && System.getProperty("kr.ac.unist.cse.jqf.TEST_METHOD") != null) {
+                if (System.getProperty("jqf.ei.fail_tests").contains(System.getProperty("kr.ac.unist.cse.jqf.TEST_METHOD"))) {
+                    logDir = logDir + "/" + "FAIL";
+                }
+                else {
+                    logDir = logDir + "/" + "PASS";
+                }
             }
-            else if (Log.runBuggyVersion) {
-                logDir += File.separator + "ORG";
-            }
-            else if (System.getProperty("kr.ac.unist.cse.jqf.MULTI_FUZZ").equals("true")) {
-                String patchIndex = System.getProperty("jqf.ei.CURRENT_PATH_FOR_PATCH");
-//                System.out.println("Current Patch: " + patchIndex);
-                logDir += File.separator + "PATCH" + File.separator + patchIndex.split("patched/")[1].split("/target")[0];
-//                System.out.println("New LogDir: " + logDir);
-            }
-            else {
-                logDir += File.separator + "PATCH";
+            if (System.getProperty("kr.ac.unist.cse.jqf.TEST_METHOD") != null) {
+                logDir = logDir + "/" + System.getProperty("kr.ac.unist.cse.jqf.TEST_METHOD");
             }
         }
+        else if (System.getProperty("kr.ac.unist.cse.jqf.MULTI_FUZZ").equals("true")) {
+            String patchIndex = System.getProperty("jqf.ei.PATCH_ID");
+//                System.out.println("Current Patch: " + patchIndex);
+//                logDir += File.separator + "PATCH" + File.separator + patchIndex.split("patched/")[1].split("/target")[0];
+            logDir += File.separator + "PATCH" + File.separator + patchIndex;
+            if (Log.runBuggyVersion) {
+                logDir += File.separator + "ORG";
+            }
+
+            else if (System.getProperty("jqf.ei.run_patch").equals("true")) {
+                logDir += File.separator + "PATCHED";
+            }
+
+//                System.out.println("New LogDir: " + logDir);
+        }
+//        if (System.getProperty("jqf.ei.run_fix") != null) {
+////            System.out.println("RunFix: " + System.getProperty("jqf.ei.run_fix"));
+////            System.out.println(System.getProperty("jqf.ei.PATCH_ID"));
+//
+////            if (System.getProperty("jqf.ei.run_fix").equals("true") && System.getProperty("jqf.ei.PATCH_ID") != null) {
+////
+//////                logDir += File.separator + "FIXED";
+////            }
+//
+////            else {
+////                logDir += File.separator + "PATCH";
+////            }
+//        }
+
+
 
 
         return logDir;
@@ -338,17 +374,17 @@ public class Log {
 //        }
         logDir = getLogDir();
 
-        if(System.getProperty("jqf.ei.fail_tests") != null && System.getProperty("kr.ac.unist.cse.jqf.TEST_METHOD") != null) {
-            if (System.getProperty("jqf.ei.fail_tests").contains(System.getProperty("kr.ac.unist.cse.jqf.TEST_METHOD"))) {
-                logDir = logDir + "/" + "FAIL";
-            }
-            else {
-                logDir = logDir + "/" + "PASS";
-            }
-        }
-        if (System.getProperty("kr.ac.unist.cse.jqf.TEST_METHOD") != null) {
-            logDir = logDir + "/" + System.getProperty("kr.ac.unist.cse.jqf.TEST_METHOD");
-        }
+//        if(System.getProperty("jqf.ei.fail_tests") != null && System.getProperty("kr.ac.unist.cse.jqf.TEST_METHOD") != null) {
+//            if (System.getProperty("jqf.ei.fail_tests").contains(System.getProperty("kr.ac.unist.cse.jqf.TEST_METHOD"))) {
+//                logDir = logDir + "/" + "FAIL";
+//            }
+//            else {
+//                logDir = logDir + "/" + "PASS";
+//            }
+//        }
+//        if (System.getProperty("kr.ac.unist.cse.jqf.TEST_METHOD") != null) {
+//            logDir = logDir + "/" + System.getProperty("kr.ac.unist.cse.jqf.TEST_METHOD");
+//        }
 
         Path outFile;
         String inputID = System.getProperty("jqf.ei.inputID");
@@ -559,18 +595,18 @@ public class Log {
 //        }
         logDir = getLogDir();
 
-        if(System.getProperty("jqf.ei.fail_tests") != null && System.getProperty("kr.ac.unist.cse.jqf.TEST_METHOD") != null) {
-            if (System.getProperty("jqf.ei.fail_tests").contains(System.getProperty("kr.ac.unist.cse.jqf.TEST_METHOD"))) {
-                logDir = logDir + "/" + "FAIL";
-            }
-            else {
-                logDir = logDir + "/" + "PASS";
-            }
-        }
-
-        if (System.getProperty("kr.ac.unist.cse.jqf.TEST_METHOD") != null) {
-            logDir = logDir + "/" + System.getProperty("kr.ac.unist.cse.jqf.TEST_METHOD");
-        }
+//        if(System.getProperty("jqf.ei.fail_tests") != null && System.getProperty("kr.ac.unist.cse.jqf.TEST_METHOD") != null) {
+//            if (System.getProperty("jqf.ei.fail_tests").contains(System.getProperty("kr.ac.unist.cse.jqf.TEST_METHOD"))) {
+//                logDir = logDir + "/" + "FAIL";
+//            }
+//            else {
+//                logDir = logDir + "/" + "PASS";
+//            }
+//        }
+//
+//        if (System.getProperty("kr.ac.unist.cse.jqf.TEST_METHOD") != null) {
+//            logDir = logDir + "/" + System.getProperty("kr.ac.unist.cse.jqf.TEST_METHOD");
+//        }
 
         Path inFile;
         String inputID = System.getProperty("jqf.ei.inputID");
@@ -694,6 +730,12 @@ public class Log {
 //            System.out.println("branch: " + logDir);
             return;
         }
+        if (System.getProperty("jqf.ei.run_fix") != null) {
+            if (System.getProperty("jqf.ei.run_fix").equals("true")) {
+                return;
+            }
+        }
+
 
 //        if (Boolean.getBoolean("jqf.ei.run_two_versions")) {
 //            if (System.getProperty("jqf.ei.run_fix").equals("true")) {
@@ -717,17 +759,17 @@ public class Log {
         Path inFile = null;
         String inputID = System.getProperty("jqf.ei.inputID");
 
-        if(System.getProperty("jqf.ei.fail_tests") != null && System.getProperty("kr.ac.unist.cse.jqf.TEST_METHOD") != null) {
-            if (System.getProperty("jqf.ei.fail_tests").contains(System.getProperty("kr.ac.unist.cse.jqf.TEST_METHOD"))) {
-                logDir = logDir + "/" + "FAIL";
-            }
-            else {
-                logDir = logDir + "/" + "PASS";
-            }
-        }
-        if (System.getProperty("kr.ac.unist.cse.jqf.TEST_METHOD") != null) {
-            logDir = logDir + "/" + System.getProperty("kr.ac.unist.cse.jqf.TEST_METHOD");
-        }
+//        if(System.getProperty("jqf.ei.fail_tests") != null && System.getProperty("kr.ac.unist.cse.jqf.TEST_METHOD") != null) {
+//            if (System.getProperty("jqf.ei.fail_tests").contains(System.getProperty("kr.ac.unist.cse.jqf.TEST_METHOD"))) {
+//                logDir = logDir + "/" + "FAIL";
+//            }
+//            else {
+//                logDir = logDir + "/" + "PASS";
+//            }
+//        }
+//        if (System.getProperty("kr.ac.unist.cse.jqf.TEST_METHOD") != null) {
+//            logDir = logDir + "/" + System.getProperty("kr.ac.unist.cse.jqf.TEST_METHOD");
+//        }
 
         if(LogResult.isDiffOutputFound()) {
             logDir = logDir + "/" + "DIFF";
@@ -785,15 +827,16 @@ public class Log {
     }
 
     public static void logPathSpectrum(List<String> spectrum,boolean isPatch){
-
-
-
         String logDir = System.getProperty("jqf.ei.logDir");
         if (logDir == null) {
 //            System.out.println("path: " + logDir);
             return;
         }
-
+        if (System.getProperty("jqf.ei.run_fix") != null) {
+            if (System.getProperty("jqf.ei.run_fix").equals("true")) {
+                return;
+            }
+        }
 //        if (Boolean.getBoolean("jqf.ei.run_two_versions")) {
 //            if (System.getProperty("jqf.ei.run_fix").equals("true")) {
 //                logDir += File.separator + "FIXED";
@@ -816,18 +859,18 @@ public class Log {
         Path inFile = null;
         String inputID = System.getProperty("jqf.ei.inputID");
 
-        if(System.getProperty("jqf.ei.fail_tests") != null && System.getProperty("kr.ac.unist.cse.jqf.TEST_METHOD") != null) {
-            if (System.getProperty("jqf.ei.fail_tests").contains(System.getProperty("kr.ac.unist.cse.jqf.TEST_METHOD"))) {
-                logDir = logDir + "/" + "FAIL";
-            }
-            else {
-                logDir = logDir + "/" + "PASS";
-            }
-        }
-
-        if (System.getProperty("kr.ac.unist.cse.jqf.TEST_METHOD") != null) {
-            logDir = logDir + "/" + System.getProperty("kr.ac.unist.cse.jqf.TEST_METHOD");
-        }
+//        if(System.getProperty("jqf.ei.fail_tests") != null && System.getProperty("kr.ac.unist.cse.jqf.TEST_METHOD") != null) {
+//            if (System.getProperty("jqf.ei.fail_tests").contains(System.getProperty("kr.ac.unist.cse.jqf.TEST_METHOD"))) {
+//                logDir = logDir + "/" + "FAIL";
+//            }
+//            else {
+//                logDir = logDir + "/" + "PASS";
+//            }
+//        }
+//
+//        if (System.getProperty("kr.ac.unist.cse.jqf.TEST_METHOD") != null) {
+//            logDir = logDir + "/" + System.getProperty("kr.ac.unist.cse.jqf.TEST_METHOD");
+//        }
 
         if(LogResult.isDiffOutputFound()) {
             logDir = logDir + "/" + "DIFF";
@@ -975,6 +1018,7 @@ public class Log {
     }
 
     public static void logJson(boolean isPatch) {
+
 //        System.out.println("LogJson");
 //        && System.getProperty("kr.ac.unist.cse.jqf.IS_REPRO").equals("false")
         if ((LogResult.isDiffOutputFound() || !System.getProperty("kr.ac.unist.cse.jqf.ONLY_DIFF").equals("true")) || true) {
@@ -984,6 +1028,11 @@ public class Log {
             if (logDir == null) {
 //            System.out.println("path: " + logDir);
                 return;
+            }
+            if (System.getProperty("jqf.ei.run_fix") != null) {
+                if (System.getProperty("jqf.ei.run_fix").equals("true")) {
+                    return;
+                }
             }
 
 //            if (Boolean.getBoolean("jqf.ei.run_two_versions")) {
@@ -1008,18 +1057,18 @@ public class Log {
             Path inFile = null;
             String inputID = System.getProperty("jqf.ei.inputID");
 
-            if(System.getProperty("jqf.ei.fail_tests") != null && System.getProperty("kr.ac.unist.cse.jqf.TEST_METHOD") != null) {
-                if (System.getProperty("jqf.ei.fail_tests").contains(System.getProperty("kr.ac.unist.cse.jqf.TEST_METHOD"))) {
-                    logDir = logDir + "/" + "FAIL";
-                }
-                else {
-                    logDir = logDir + "/" + "PASS";
-                }
-            }
-
-            if (System.getProperty("kr.ac.unist.cse.jqf.TEST_METHOD") != null) {
-                logDir = logDir + "/" + System.getProperty("kr.ac.unist.cse.jqf.TEST_METHOD");
-            }
+//            if(System.getProperty("jqf.ei.fail_tests") != null && System.getProperty("kr.ac.unist.cse.jqf.TEST_METHOD") != null) {
+//                if (System.getProperty("jqf.ei.fail_tests").contains(System.getProperty("kr.ac.unist.cse.jqf.TEST_METHOD"))) {
+//                    logDir = logDir + "/" + "FAIL";
+//                }
+//                else {
+//                    logDir = logDir + "/" + "PASS";
+//                }
+//            }
+//
+//            if (System.getProperty("kr.ac.unist.cse.jqf.TEST_METHOD") != null) {
+//                logDir = logDir + "/" + System.getProperty("kr.ac.unist.cse.jqf.TEST_METHOD");
+//            }
 
             if(LogResult.isDiffOutputFound()) {
                 logDir = logDir + "/" + "DIFF";

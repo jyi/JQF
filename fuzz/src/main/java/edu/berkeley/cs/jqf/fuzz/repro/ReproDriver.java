@@ -80,6 +80,9 @@ public class ReproDriver implements Runnable {
             description = "")
     private String[] failTests;
 
+    @Option(names = {"--patch-id"}, description = "patch name")
+    private String patchID = null;
+
     @Override
     public void run() {
         System.out.println("Repro");
@@ -96,6 +99,10 @@ public class ReproDriver implements Runnable {
             System.setProperty("kr.ac.unist.cse.jqf.GO_ON",Boolean.toString(false));
             System.setProperty("kr.ac.unist.cse.jqf.USE_SEED",Boolean.toString(false));
             System.setProperty("jqf.ei.PATCHED_METHOD", "");
+            System.setProperty("jqf.ei.repro_fix", "true");
+            System.setProperty("jqf.ei.PATCH_ID", this.patchID);
+
+
             if (this.classPath != null) {
                 System.setProperty("jqf.ei.CLASSPATH_FOR_PATCH", this.classPath);
             }

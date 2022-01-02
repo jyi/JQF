@@ -163,6 +163,9 @@ public class ZestCLI2 implements Runnable {
             description = "")
     private String[] failTests;
 
+    @Option(names = {"--patch-id"}, description = "patch name")
+    private String patchID = null;
+
     @Option(names = { "--seed" },
             description = "seed")
     private long seed = -1; // negative to denote that the option is not used
@@ -348,6 +351,10 @@ public class ZestCLI2 implements Runnable {
         System.setProperty("kr.ac.unist.cse.jqf.USE_SEED",Boolean.toString(this.useSeed));
         System.setProperty("kr.ac.unist.cse.jqf.MULTI_FUZZ",Boolean.toString(this.multiFuzz));
         System.setProperty("kr.ac.unist.cse.jqf.ONLY_DIFF",Boolean.toString(this.onlyDiff));
+        if (this.patchID != null) {
+            System.setProperty("jqf.ei.PATCH_ID", this.patchID);
+        }
+
 
 //        System.out.println("MULTIFUZZ: " + Boolean.toString(Boolean.getBoolean(System.getProperty("kr.ac.unist.cse.jqf.MULTI_FUZZ"))));
 
