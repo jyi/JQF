@@ -419,7 +419,7 @@ public class Log {
         }
 
         try {
-            if (msg.length() > 0) {
+            if (false) {
 //                System.out.println("out: " + msg);
                 Files.write(outFile, msg.getBytes(),
                         StandardOpenOption.WRITE);
@@ -640,7 +640,7 @@ public class Log {
         }
 
         try {
-            if (msg.length() > 0) {
+            if (false) {
 //                System.out.println("out: " + msg);
                 Files.write(inFile, msg.getBytes(),
                         StandardOpenOption.WRITE);
