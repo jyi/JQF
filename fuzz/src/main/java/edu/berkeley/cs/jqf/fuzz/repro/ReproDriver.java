@@ -92,6 +92,7 @@ public class ReproDriver implements Runnable {
 
             System.setProperty("kr.ac.unist.cse.jqf.BATCH",Boolean.toString(this.batch));
             System.setProperty("kr.ac.unist.cse.jqf.MULTI_FUZZ",Boolean.toString(this.multiFuzz));
+
             System.setProperty("kr.ac.unist.cse.jqf.IS_REPRO", Boolean.toString(true));
             System.setProperty("kr.ac.unist.cse.jqf.ONLY_DIFF", Boolean.toString(false));
             System.setProperty("kr.ac.unist.cse.jqf.NO_FUZZ", "true");
@@ -120,7 +121,6 @@ public class ReproDriver implements Runnable {
             if (System.getProperty("kr.ac.unist.cse.jqf.BATCH").equals("true")) {
                 File dir = testInputFiles[0];
                 File files[] = dir.listFiles();
-
                 for (int i = 0; i < files.length; i++) {
                     System.out.println("file: " + files[i]);
                 }
