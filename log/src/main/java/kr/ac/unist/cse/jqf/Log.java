@@ -88,8 +88,8 @@ public class Log {
             assert outputForPatch != null;
 
 //            System.out.println("isDiffOutputFound is called");
-            System.out.println("outputForOrg: " + outputForOrg);
-            System.out.println("outputForPatch: " + outputForPatch);
+//            System.out.println("outputForOrg: " + outputForOrg);
+//            System.out.println("outputForPatch: " + outputForPatch);
 
             if (outputForOrg.contains("IGNORE_OUTPUT"))
                 return false;
