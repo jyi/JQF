@@ -797,7 +797,8 @@ public class PoracleGuidance extends ZestGuidance {
         List<String> pathSpectrum=runCoverageOfPatch.getPathSpectrum();
         Log.logBranchSpectrum(branchSpectrum,true);
         Log.logPathSpectrum(pathSpectrum,true);
-//        Log.logJson(true, wasDiff);
+//        Log.logTrace(true);
+        Log.logJson(true);
 
         // Compute a list of keys for which this input can assume responsiblity.
         // Newly covered branches are always included.
@@ -927,6 +928,7 @@ public class PoracleGuidance extends ZestGuidance {
         List<String> pathSpectrum=runCoverageOfPatch.getPathSpectrum();
         Log.logBranchSpectrum(branchSpectrum,true);
         Log.logPathSpectrum(pathSpectrum,true);
+//        Log.logTrace(true);
         Log.logJson(true);
 
         // Compute a list of keys for which this input can assume responsiblity.
@@ -1329,6 +1331,7 @@ public class PoracleGuidance extends ZestGuidance {
         List<String> pathSpectrum=runCoverageOfOrg.getPathSpectrum();
         Log.logBranchSpectrum(branchSpectrum,false);
         Log.logPathSpectrum(pathSpectrum,false);
+//        Log.logTrace(false);
         Log.logJson(false);
 
         boolean newCoverageFound = false;

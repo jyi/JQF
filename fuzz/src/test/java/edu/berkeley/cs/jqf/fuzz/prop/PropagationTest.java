@@ -53,30 +53,37 @@ public class PropagationTest {
     @Test
     public void runFuzz() {
         ZestCLI2.main(new String[] {
-                "--target", "org/apache/commons/math/complex/Complex.java:152", "--logdir", "/home/changhyeon/Remote/1301/probank-experiments/Repro/math53-repro/test1/1",
+                "--target", "org/apache/commons/math/optimization/linear/SimplexSolver.java:82", "--logdir", "/home/changhyeon/Remote/1302/probank-experiments/Repro/math82-repro/test1/1",
                 "--seed", "885441",
                 "--threadName", "main",
                 "--max-corpus-size", "10",
                 "--widening-plateau-threshold", "10",
                 "--max-mutations", "50",
                 "--timeout", "40000",
-                "--aop", "/home/changhyeon/Remote/1301/poracle/modules/JQF/aspect/aop.xml",
-                "--duration", "10m",
-                "--exploreDuration", "5s",
+                "--aop", "/home/changhyeon/Remote/1302/poracle/modules/JQF/aspect/aop.xml",
+                "--duration", "10s",
+                "--exploreDuration", "20s",
                 "--delta", "0",
-                "--execute-count", "10",
+                "--execute-count", "0",
+                "--patch-id",
+                "331_NFL_ACS_Patch_125_18",
+                "--ignore-log-cond",
                 "--multi-fuzzing",
                 "--cp-for-patch",
-                "/home/changhyeon/Remote/1301/probank-experiments/.poracle2/patched/target/test-classes:/home/changhyeon/Remote/1301/probank-experiments/.poracle2/patched/target/classes:/home/changhyeon/Remote/1301/poracle/modules/JQF/aspect/tracing.jar",
-                "--cp-for-fix",                "/home/changhyeon/Remote/1301/probank-experiments/.poracle2/Math53f/target/test-classes:/home/changhyeon/Remote/1301/probank-experiments/.poracle2/Math53f/target/classes:/home/changhyeon/Remote/1301/poracle/modules/JQF/aspect/tracing.jar",
-                "-o /home/changhyeon/Remote/1301/probank-experiments/.poracle2/fuzz-results/test1/1",
-                "/home/changhyeon/Remote/1301/probank-experiments/.poracle2/Math53b/target/test-classes:/home/changhyeon/Remote/1301/probank-experiments/.poracle2/Math53b/target/classes:/home/changhyeon/Remote/1301/poracle/modules/JQF/aspect/tracing.jar",
-                "org.apache.commons.math.complex.JQF_ComplexTest",
-                        "testAddNaN"
+                "/home/changhyeon/Remote/1302/probank-experiments/.poracle2/patched/target/test-classes:/home/changhyeon/Remote/1302/probank-experiments/.poracle2/patched/target/classes:/home/changhyeon/Remote/1302/poracle/modules/JQF/aspect/tracing.jar",
+                "-o /home/changhyeon/Remote/1302/probank-experiments/.poracle2/fuzz-results/test1/1",
+                "/home/changhyeon/Remote/1302/probank-experiments/.poracle2/Math82b/target/test-classes:/home/changhyeon/Remote/1302/probank-experiments/.poracle2/Math82b/target/classes:/home/changhyeon/Remote/1302/poracle/modules/JQF/aspect/tracing.jar",
+                "org.apache.commons.math.optimization.linear.JQF_SimplexSolverTest",
+                        "testMath288"
         });
 
 
     }
+
+//    zest --target org/apache/commons/math/optimization/linear/SimplexSolver.java:82             --logdir /probank-experiments/Repro/math82-repro/test1/1             --seed 885441             --threadName main             --max-corpus-size 10             --widening-plateau-threshold 10             --max-mutations 50             --timeout 30000             --aop /poracle/mod\
+//    ules/JQF/aspect/aop.xml             --duration 10s             --exploreDuration 5s             --delta 0             --execute-count 0               --patch-id                    331_NFL_ACS_Patch_125_18                                --only-diff                --ignore-log-cond                             --multi-fuzzing                             --cp-for-patch    \
+//            /probank-experiments/.poracle2/patched/target/test-classes:/probank-experiments/.poracle2/patched/target/classes:/poracle/modules/JQF/aspect/tracing.jar                                                          -o /probank-experiments/.poracle2/fuzz-results/test1/1 /probank-experiments/.poracle2/Math82b/target/test-classes:/probank-experiments/.poracle2/Math\
+//            82b/target/classes:/poracle/modules/JQF/aspect/tracing.jar org.apache.commons.math.optimization.linear.JQF_SimplexSolverTest testMath288
 
     @Test
     public void runOneTest() {

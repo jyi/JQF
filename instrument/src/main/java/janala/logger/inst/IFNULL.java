@@ -15,6 +15,6 @@ public class IFNULL extends Instruction implements ConditionalBranch {
 
   @Override
   public String toString() {
-    return "IFNULL iid=" + iid + " mid=" + mid + " label=" + label;
+    return "IFNULL iid=" + iid + " mid=" + mid + " label=" + Integer.toString(label);
   }
 }

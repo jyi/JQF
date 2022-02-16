@@ -19,6 +19,6 @@ public class RET extends Instruction {
 
   @Override
   public String toString() {
-    return "RET iid=" + iid + " mid=" + mid + " var=" + var;
+    return "RET iid=" + iid + " mid=" + mid + " var=" + Integer.toString(var);
   }
 }

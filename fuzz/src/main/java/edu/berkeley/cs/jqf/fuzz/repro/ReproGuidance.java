@@ -267,11 +267,13 @@ public class ReproGuidance implements Guidance {
                 System.out.println("HandleResultPatch in Repro");
                 Log.logBranchSpectrum(branchSpectrum,true);
                 Log.logPathSpectrum(pathSpectrum,true);
+//                Log.logTrace(true);
                 Log.logJson(true);
             }
             else {
                 Log.logBranchSpectrum(branchSpectrum,false);
                 Log.logPathSpectrum(pathSpectrum,false);
+//                Log.logTrace(false);
                 Log.logJson(false);
             }
         }
@@ -327,6 +329,7 @@ public class ReproGuidance implements Guidance {
         List<String> pathSpectrum=coverage.getPathSpectrum();
         Log.logBranchSpectrum(branchSpectrum,true);
         Log.logPathSpectrum(pathSpectrum,true);
+//        Log.logTrace(true);
         Log.logJson(true);
 
     }

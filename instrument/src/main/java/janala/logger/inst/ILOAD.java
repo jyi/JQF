@@ -19,6 +19,6 @@ public class ILOAD extends Instruction {
 
   @Override
   public String toString() {
-    return "ILOAD iid=" + iid + " mid=" + mid + " var=" + var;
+    return "ILOAD iid=" + iid + " mid=" + mid + " var=" + Integer.toString(var);
   }
 }

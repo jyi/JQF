@@ -15,6 +15,6 @@ public class IF_ICMPLE extends Instruction implements ConditionalBranch {
 
   @Override
   public String toString() {
-    return "IF_ICMPLE iid=" + iid + " mid=" + mid + " label=" + label;
+    return "IF_ICMPLE iid=" + iid + " mid=" + mid + " label=" + Integer.toString(label);
   }
 }

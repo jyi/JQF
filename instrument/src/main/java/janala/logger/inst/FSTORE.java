@@ -19,6 +19,6 @@ public class FSTORE extends Instruction {
 
   @Override
   public String toString() {
-    return "FSTORE iid=" + iid + " mid=" + mid + " var=" + var;
+    return "FSTORE iid=" + iid + " mid=" + mid + " var=" + Integer.toString(var);
   }
 }

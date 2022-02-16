@@ -15,6 +15,6 @@ public class IFEQ extends Instruction implements ConditionalBranch {
 
   @Override
   public String toString() {
-    return "IFEQ iid=" + iid + " mid=" + mid + " label=" + label;
+    return "IFEQ iid=" + iid + " mid=" + mid + " label=" + Integer.toString(label);
   }
 }

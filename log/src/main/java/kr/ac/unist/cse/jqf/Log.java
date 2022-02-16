@@ -133,7 +133,9 @@ public class Log {
 
     private static String getLogDir() {
         String logDir = System.getProperty("jqf.ei.logDir");
-//        System.out.println("getLogDir");
+//        System.out.println("ReproFix " + System.getProperty("jqf.ei.repro_fix"));
+//        System.out.println("PatchID " + System.getProperty("jqf.ei.PATCH_ID"));
+
         if (logDir == null) {
             return null;
         }
@@ -148,7 +150,7 @@ public class Log {
         if (System.getProperty("jqf.ei.repro_fix") != null && System.getProperty("jqf.ei.PATCH_ID") != null) {
             String patchIndex = System.getProperty("jqf.ei.PATCH_ID");
 //            System.out.println(System.getProperty("jqf.ei.PATCH_ID"));
-            logDir = logDir.replace("all", "PATCH" + File.separator + patchIndex + File.separator + "FIXED");
+            logDir = logDir.replace("test1/1", "test1/1/" + "PATCH" + File.separator + patchIndex + File.separator + "FIXED");
 //            System.out.println("FixedLog: " + logDir);
 //            logDir += File.separator + "PATCH" + File.separator + patchIndex + File.separator + "FIXED";
             return logDir;
@@ -874,11 +876,11 @@ public class Log {
 
         if(LogResult.isDiffOutputFound()) {
             logDir = logDir + "/" + "DIFF";
-            System.out.println("Diff Log: " + logDir);
+//            System.out.println("Diff Log: " + logDir);
         }
         else {
             logDir = logDir + "/" + "SAME";
-            System.out.println("Same Log: " + logDir);
+//            System.out.println("Same Log: " + logDir);
         }
 
 
@@ -1015,6 +1017,177 @@ public class Log {
 //        else {
 //            TraceLogger.get().initMethodLog();
 //        }
+    }
+
+    public static void logTrace(boolean isPatched) {
+        ArrayList<String> logList = new ArrayList<>();
+        if (System.getProperty("jqf.ei.run_patch") != null) {
+            if (System.getProperty("jqf.ei.run_patch").equals("true")) {
+
+                logList = TraceLogger.get().instructionLogP;
+//                System.out.println("Length of Trace: " + logList.size());
+            }
+            else {
+                logList = TraceLogger.get().instructionLog;
+            }
+        }
+
+        String logDir = System.getProperty("jqf.ei.logDir");
+        if (logDir == null) {
+//            System.out.println("path: " + logDir);
+            return;
+        }
+        if (System.getProperty("jqf.ei.run_fix") != null) {
+            if (System.getProperty("jqf.ei.run_fix").equals("true")) {
+                return;
+            }
+        }
+
+        logDir = getLogDir();
+
+        Path inFile = null;
+        String inputID = System.getProperty("jqf.ei.inputID");
+
+
+        if(LogResult.isDiffOutputFound()) {
+            logDir = logDir + "/" + "DIFF";
+//            System.out.println("Diff Log: " + logDir);
+        }
+        else {
+            logDir = logDir + "/" + "SAME";
+//            System.out.println("Same Log: " + logDir);
+        }
+
+
+        Path mapFile = null;
+        Path logFile = null;
+
+        if (inputID == null) {
+            if (!Files.exists(FileSystems.getDefault().getPath(logDir))) {
+                try {
+                    Files.createDirectories(FileSystems.getDefault().getPath(logDir));
+                } catch (IOException e) {
+                    System.err.println("Failed to create a dir: " + logDir);
+                    e.printStackTrace();
+                }
+            }
+            mapFile = Paths.get(logDir, "/traceMap.txt");
+            logFile = Paths.get(logDir, "/trace.txt");
+        } else {
+            try {
+                Files.createDirectories(Paths.get(logDir, inputID));
+            } catch (IOException e) {
+                System.err.println("Failed to create directory " + Paths.get(logDir, inputID));
+                e.printStackTrace();
+            }
+            mapFile = Paths.get(logDir, inputID, "/traceMap.txt");
+            logFile = Paths.get(logDir, inputID, "/trace.txt");
+        }
+
+        // new file object
+
+
+
+        BufferedWriter bf = null;
+        BufferedWriter bfLog = null;
+        BufferedWriter bfLogP = null;
+
+
+
+        try {
+
+            // create new BufferedWriter for the output file
+            bf = new BufferedWriter(new FileWriter(mapFile.toFile()));
+
+            // iterate map entries
+            for (Map.Entry<String, String> entry : TraceLogger.get().instMapP.entrySet()) {
+                // put key and value separated by a colon
+                bf.write(entry.getKey() + ":" + entry.getValue());
+                // new line
+                bf.newLine();
+            }
+            for (Map.Entry<String, String> entry : TraceLogger.get().fileMap.entrySet()) {
+                // put key and value separated by a colon
+                bf.write(entry.getKey() + ":" + entry.getValue());
+                // new line
+                bf.newLine();
+            }
+            for (Map.Entry<String, String> entry : TraceLogger.get().methodNameMap.entrySet()) {
+                // put key and value separated by a colon
+                bf.write(entry.getKey() + ":" + entry.getValue());
+                // new line
+                bf.newLine();
+            }
+            for (Map.Entry<String, String> entry : TraceLogger.get().descMap.entrySet()) {
+                // put key and value separated by a colon
+                bf.write(entry.getKey() + ":" + entry.getValue());
+                // new line
+                bf.newLine();
+            }
+
+            bf.flush();
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+        finally {
+            try {
+                bf.close();
+            }
+            catch (Exception e) {
+            }
+        }
+//        if (TraceLogger.get().instructionLogP.size() > 0) {
+//
+//        }
+        try {
+            if (System.getProperty("jqf.ei.run_patch").equals("true") && TraceLogger.get().instructionLogP.size() > 0) {
+                bfLog = new BufferedWriter(new FileWriter(logFile.toFile()));
+                System.out.println("Length of Trace: " + TraceLogger.get().instructionLogP.size());
+                for (String instLog : TraceLogger.get().instructionLogP) {
+                    // put key and value separated by a colon
+                    bfLog.write(instLog);
+                    // new line
+                    bfLog.newLine();
+                }
+                bfLog.flush();
+            }
+            else if (System.getProperty("jqf.ei.run_patch").equals("true")) {
+
+            }
+            else {
+                bfLog = new BufferedWriter(new FileWriter(logFile.toFile()));
+                for (String instLog : TraceLogger.get().instructionLog) {
+                    // put key and value separated by a colon
+                    bfLog.write(instLog);
+                    // new line
+                    bfLog.newLine();
+                }
+                bfLog.flush();
+            }
+            // iterate map entries
+
+
+
+
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+        finally {
+            try {
+                bfLog.close();
+                if (System.getProperty("jqf.ei.run_patch").equals("true")) {
+                    TraceLogger.get().initLogListP();
+                }
+                else {
+                    TraceLogger.get().initLogList();
+                }
+            }
+            catch (Exception e) {
+            }
+        }
+
     }
 
     public static void logJson(boolean isPatch) {

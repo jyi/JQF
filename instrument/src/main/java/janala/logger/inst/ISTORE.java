@@ -19,6 +19,6 @@ public class ISTORE extends Instruction {
 
   @Override
   public String toString() {
-    return "ISTORE iid=" + iid + " mid=" + mid + " var=" + var;
+    return "ISTORE iid=" + iid + " mid=" + mid + " var=" + Integer.toString(var);
   }
 }

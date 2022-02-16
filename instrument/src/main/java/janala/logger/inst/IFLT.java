@@ -15,6 +15,6 @@ public class IFLT extends Instruction implements ConditionalBranch {
 
   @Override
   public String toString() {
-    return "IFLT iid=" + iid + " mid=" + mid + " label=" + label;
+    return "IFLT iid=" + iid + " mid=" + mid + " label=" + Integer.toString(label);
   }
 }

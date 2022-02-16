@@ -15,6 +15,6 @@ public class IFNONNULL extends Instruction implements ConditionalBranch {
 
   @Override
   public String toString() {
-    return "IFNONNULL iid=" + iid + " mid=" + mid + " label=" + label;
+    return "IFNONNULL iid=" + iid + " mid=" + mid + " label=" + Integer.toString(label);
   }
 }

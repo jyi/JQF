@@ -19,6 +19,6 @@ public class LSTORE extends Instruction {
 
   @Override
   public String toString() {
-    return "LSTORE iid=" + iid + " mid=" + mid + " var=" + var;
+    return "LSTORE iid=" + iid + " mid=" + mid + " var=" + Integer.toString(var);
   }
 }

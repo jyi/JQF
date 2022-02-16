@@ -15,6 +15,6 @@ public class IFGE extends Instruction implements ConditionalBranch {
 
   @Override
   public String toString() {
-    return "IFGE iid=" + iid + " mid=" + mid + " label=" + label;
+    return "IFGE iid=" + iid + " mid=" + mid + " label=" + Integer.toString(label);
   }
 }

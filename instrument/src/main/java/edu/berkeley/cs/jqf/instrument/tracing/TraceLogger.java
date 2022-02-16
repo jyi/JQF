@@ -33,6 +33,7 @@ import edu.berkeley.cs.jqf.instrument.tracing.events.TraceEvent;
 import janala.logger.AbstractLogger;
 import janala.logger.inst.*;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -76,13 +77,17 @@ public class TraceLogger extends AbstractLogger {
     public ArrayList<methodCallInfo> methods = new ArrayList<>();
     public int numofMethods = 0;
     public int numofFiles = 0;
+    public int numofInsts = 0;
+    public int numofDescs = 0;
     public Map<String, Object> methodMap = new HashMap<String, Object>();
     public Map<String, String> fileMap = new HashMap<String, String>();
     public Map<String, String> methodNameMap = new HashMap<String, String>();
+    public Map<String, String> descMap = new HashMap<String, String>();
 
     public ArrayList<String> methodStack = new ArrayList<>();
     public ArrayList<String> keyWordStack = new ArrayList<>();
     public ArrayList<FileInfo> fileList = new ArrayList<>();
+
 
     public ArrayList<methodCallInfo> methodsP = new ArrayList<>();
     public int numofMethodsP = 0;
@@ -90,10 +95,14 @@ public class TraceLogger extends AbstractLogger {
     public Map<String, Object> methodMapP = new HashMap<String, Object>();
     public Map<String, String> fileMapP = new HashMap<String, String>();
     public Map<String, String> methodNameMapP = new HashMap<String, String>();
+    public Map<String, String> instMapP = new HashMap<String, String>();
 
     public ArrayList<String> methodStackP = new ArrayList<>();
     public ArrayList<String> keyWordStackP = new ArrayList<>();
     public ArrayList<FileInfo> fileListP = new ArrayList<>();
+
+    public ArrayList<String> instructionLog = new ArrayList<>();
+    public ArrayList<String> instructionLogP = new ArrayList<>();
 
 
     public boolean firstCall = false;
@@ -117,6 +126,36 @@ public class TraceLogger extends AbstractLogger {
     protected void log(Instruction instruction) {
 //        System.out.println("KeyStack: " + keyWordStack);
         boolean fileExist = false;
+
+        String instInfo = new String();
+        String executedInfo = new String();
+        String instId = "";
+        String mthId = "";
+        String fileId = "";
+        String descId = "";
+
+        instInfo = instruction.getClass().getName().replace("janala.logger.inst.", "");
+
+        if (!instMapP.containsKey(instInfo)) {
+            instMapP.put(instInfo, Integer.toString(numofInsts));
+//                        System.out.println("NewOwner: " + ((MemberRef) instruction).getOwner() + "f" + Integer.toString(numofFiles));
+            instId = Integer.toString(numofInsts);
+            numofInsts++;
+        }
+        else {
+            instId = instMapP.get(instInfo);
+        }
+        executedInfo = instId;
+
+        if (instruction.toString().contains("var=")) {
+//            System.out.println(instruction.toString());
+            executedInfo = instId + "_" + instruction.toString().split("var=")[1];
+        }
+//        if (instruction.toString().contains("value=")) {
+//            System.out.println(instruction.toString());
+////            executedInfo =  + "_" + instruction.toString().split("var=")[1];
+//        }
+
 
         if(!System.getProperty("jqf.ei.run_patch").equals("true")) {
             try {
@@ -158,7 +197,7 @@ public class TraceLogger extends AbstractLogger {
 //            methodStack.add(((INVOKESTATIC) instruction).name);
                 for (methodCallInfo m : methods) {
                     try {
-                        if (m.methodName.equals(((MemberRef) instruction).getName()) && m.fileName.equals(((MemberRef) instruction).getOwner())) {
+                        if (m.methodName.equals(((MemberRef) instruction).getName()) && m.fileName.equals(((MemberRef) instruction).getOwner()) && m.descInfo.equals(((MemberRef) instruction).getDesc())) {
 
 //                            System.out.println("ExistName: " + ((MemberRef) instruction).getName());
                             exist = true;
@@ -175,7 +214,7 @@ public class TraceLogger extends AbstractLogger {
 
                             keyWordStack.add(m.methodID + "_" + Integer.toString(m.callCount));
                             if (!((MemberRef) instruction).getOwner().equals("")) {
-                                newMethod.addExe(((MemberRef) instruction).getName() + fileMap.get(((MemberRef) instruction).getOwner()) + ":" + instruction.mid);
+                                newMethod.addExe(executedInfo);
                             }
                             methodMap.put(m.methodID + "_" + Integer.toString(m.callCount), newMethod);
                             break;
@@ -201,9 +240,9 @@ public class TraceLogger extends AbstractLogger {
                         }
 
                         keyWordStack.add(newKeyword + "_" + Integer.toString(0));
-                        methods.add(new methodCallInfo(newKeyword, ((MemberRef) instruction).getOwner(), ((MemberRef) instruction).getName()));
+                        methods.add(new methodCallInfo(newKeyword, ((MemberRef) instruction).getOwner(), ((MemberRef) instruction).getName(), ((MemberRef) instruction).getDesc()));
                         if (!((MemberRef) instruction).getOwner().equals("")) {
-                            newMethod.addExe(((MemberRef) instruction).getName() + fileMap.get(((MemberRef) instruction).getOwner()) + ":" + instruction.mid);
+                            newMethod.addExe(executedInfo);
                         }
                         methodMap.put(newKeyword + "_0", newMethod);
 
@@ -225,7 +264,7 @@ public class TraceLogger extends AbstractLogger {
                 try {
 
                     if (!instruction.fileName.equals("")) {
-                        ((MethodLog)methodMap.get(keyWordStack.get(keyWordStack.size()-1))).addExe(fileMap.get(instruction.fileName.split("\\.")[0]) + ":" + instruction.mid);
+                        ((MethodLog)methodMap.get(keyWordStack.get(keyWordStack.size()-1))).addExe(executedInfo);
                     }
 //                int lastIndex = methodStack.size()-1;
 //                methodStack.remove(lastIndex);
@@ -240,7 +279,7 @@ public class TraceLogger extends AbstractLogger {
             }
             else if (keyWordStack.size() > 0) {
                 if (!instruction.fileName.equals("")) {
-                    ((MethodLog)methodMap.get(keyWordStack.get(keyWordStack.size()-1))).addExe(fileMap.get(instruction.fileName.split("\\.")[0]) + ":" + instruction.mid);
+                    ((MethodLog)methodMap.get(keyWordStack.get(keyWordStack.size()-1))).addExe(executedInfo);
                 }
             }
             else {
@@ -284,7 +323,7 @@ public class TraceLogger extends AbstractLogger {
 //            methodStack.add(((INVOKESTATIC) instruction).name);
                 for (methodCallInfo m : methodsP) {
                     try {
-                        if (m.methodName.equals(((MemberRef) instruction).getName()) && m.fileName.equals(((MemberRef) instruction).getOwner())) {
+                        if (m.methodName.equals(((MemberRef) instruction).getName()) && m.fileName.equals(((MemberRef) instruction).getOwner()) && m.descInfo.equals(((MemberRef) instruction).getDesc())) {
                             exist = true;
                             m.incCallCount();
                             MethodLog newMethod;
@@ -299,7 +338,7 @@ public class TraceLogger extends AbstractLogger {
 
                             keyWordStackP.add(m.methodID + "_" + Integer.toString(m.callCount));
                             if (!((MemberRef) instruction).getOwner().equals("")) {
-                                newMethod.addExe(((MemberRef) instruction).getName() + fileMapP.get(((MemberRef) instruction).getOwner()) + ":" + instruction.mid);
+                                newMethod.addExe(executedInfo);
                             }
                             methodMapP.put(m.methodID + "_" + Integer.toString(m.callCount), newMethod);
                             break;
@@ -326,9 +365,9 @@ public class TraceLogger extends AbstractLogger {
 
 
                         keyWordStackP.add(newKeyword + "_" + Integer.toString(0));
-                        methodsP.add(new methodCallInfo(newKeyword, ((MemberRef) instruction).getOwner(), ((MemberRef) instruction).getName()));
+                        methodsP.add(new methodCallInfo(newKeyword, ((MemberRef) instruction).getOwner(), ((MemberRef) instruction).getName(), ((MemberRef) instruction).getDesc()));
                         if (!((MemberRef) instruction).getOwner().equals("")) {
-                            newMethod.addExe(((MemberRef) instruction).getName() + fileMapP.get(((MemberRef) instruction).getOwner()) + ":" + instruction.mid);
+                            newMethod.addExe(executedInfo);
                         }
                         methodMapP.put(newKeyword + "_0", newMethod);
 
@@ -350,7 +389,7 @@ public class TraceLogger extends AbstractLogger {
                 try {
 
                     if (!instruction.fileName.equals("")) {
-                        ((MethodLog)methodMapP.get(keyWordStackP.get(keyWordStackP.size()-1))).addExe(fileMapP.get(instruction.fileName.split("\\.")[0]) + ":" + instruction.mid);
+                        ((MethodLog)methodMapP.get(keyWordStackP.get(keyWordStackP.size()-1))).addExe(executedInfo);
                     }
 //                int lastIndex = methodStack.size()-1;
 //                methodStack.remove(lastIndex);
@@ -365,7 +404,7 @@ public class TraceLogger extends AbstractLogger {
             }
             else if (keyWordStackP.size() > 0) {
                 if (!instruction.fileName.equals("")) {
-                    ((MethodLog)methodMapP.get(keyWordStackP.get(keyWordStackP.size()-1))).addExe(fileMapP.get(instruction.fileName.split("\\.")[0]) + ":" + instruction.mid);
+                    ((MethodLog)methodMapP.get(keyWordStackP.get(keyWordStackP.size()-1))).addExe(executedInfo);
                 }
             }
             else {
@@ -374,11 +413,118 @@ public class TraceLogger extends AbstractLogger {
         }
 
 
-//        System.out.println("StackSize: " + Integer.toString(stackSize));
-//        if (firstCall) {
-//            System.out.println("CurrentID : " + keyWordStack.get(keyWordStack.size() - 1));
+
+//        String instInfo = new String();
+//        String executedInfo = new String();
+//        String instId = "";
+//        String mthId = "";
+//        String fileId = "";
+//        String descId = "";
+//
+//        instInfo = instruction.getClass().getName().replace("janala.logger.inst.", "");
+//
+//        try {
+//            if (instruction instanceof INVOKESTATIC || instruction instanceof INVOKESPECIAL || instruction instanceof METHOD_BEGIN || instruction instanceof INVOKEVIRTUAL || instruction instanceof INVOKEINTERFACE) {
+//                if (!fileMap.containsKey(((MemberRef) instruction).getOwner())) {
+//                    fileMap.put(((MemberRef) instruction).getOwner(), "f" + Integer.toString(numofFiles));
+////                        System.out.println("NewOwner: " + ((MemberRef) instruction).getOwner() + "f" + Integer.toString(numofFiles));
+//                    fileId = "f" + Integer.toString(numofFiles);
+//                    numofFiles++;
+//                }
+//                else {
+//                    fileId = fileMap.get(((MemberRef) instruction).getOwner());
+//                }
+//                if (!methodNameMap.containsKey(((MemberRef) instruction).getName())) {
+//                    methodNameMap.put(((MemberRef) instruction).getName(), "m" + Integer.toString(numofMethods));
+////                        System.out.println("NewOwner: " + ((MemberRef) instruction).getOwner() + "f" + Integer.toString(numofFiles));
+//                    mthId = "m" + Integer.toString(numofMethods);
+//                    numofMethods++;
+//                }
+//                else {
+//                    mthId = methodNameMap.get(((MemberRef) instruction).getName());
+//                }
+//                if (!instMapP.containsKey(instInfo)) {
+//                    instMapP.put(instInfo, Integer.toString(numofInsts));
+////                        System.out.println("NewOwner: " + ((MemberRef) instruction).getOwner() + "f" + Integer.toString(numofFiles));
+//                    instId = Integer.toString(numofInsts);
+//                    numofInsts++;
+//                }
+//                else {
+//                    instId = instMapP.get(instInfo);
+//                }
+//                if (!descMap.containsKey(((MemberRef) instruction).getDesc())) {
+//                    descMap.put(((MemberRef) instruction).getDesc(), "d" + Integer.toString(numofDescs));
+////                        System.out.println("NewOwner: " + ((MemberRef) instruction).getOwner() + "f" + Integer.toString(numofFiles));
+//                    descId = "d" + Integer.toString(numofDescs);
+//                    numofDescs++;
+//                }
+//                else {
+//                    descId = descMap.get(((MemberRef) instruction).getDesc());
+//                }
+//            }
+//            else if (instruction instanceof INVOKEMETHOD_END ||         instruction instanceof RETURN || instruction instanceof ARETURN ||
+//                    instruction instanceof DRETURN || instruction instanceof FRETURN ||
+//                    instruction instanceof IRETURN || instruction instanceof LRETURN) {
+////                System.out.println("ReturnMethod: " + instruction.name);
+//                if (!instMapP.containsKey(instInfo)) {
+//                    instMapP.put(instInfo, Integer.toString(numofInsts));
+////                        System.out.println("NewOwner: " + ((MemberRef) instruction).getOwner() + "f" + Integer.toString(numofFiles));
+//                    instId = Integer.toString(numofInsts);
+//                    numofInsts++;
+//                }
+//                else {
+//                    instId = instMapP.get(instInfo);
+//                }
+//                if(methodNameMap.containsKey(instruction.name)) {
+//                    mthId = methodNameMap.get(instruction.name);
+//                }
+//            }
+//            else {
+//                if (!instMapP.containsKey(instInfo)) {
+//                    instMapP.put(instInfo, Integer.toString(numofInsts));
+////                        System.out.println("NewOwner: " + ((MemberRef) instruction).getOwner() + "f" + Integer.toString(numofFiles));
+//                    numofInsts++;
+//                }
+//                else {
+//                    instId = instMapP.get(instInfo);
+//                }
+//            }
+//
 //        }
-//        System.out.println("Patched Method: " + System.getProperty("jqf.ei.PATCHED_METHOD"));
+//        catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//
+//
+//        if (instruction instanceof INVOKESTATIC || instruction instanceof INVOKESPECIAL || instruction instanceof METHOD_BEGIN || instruction instanceof INVOKEVIRTUAL || instruction instanceof INVOKEINTERFACE) {
+//            instInfo = instInfo + ":" + ((MemberRef) instruction).getName() + ":" + ((MemberRef) instruction).getOwner();
+//        }
+//
+//
+////        if (instruction.toString().contains("label=")) {
+////            System.out.println(instruction.toString());
+////            instInfo = instInfo + "_" + instruction.toString().split("label=")[1];
+////        }
+////        this.instructionLog.add(instInfo);
+//        executedInfo = instId + ":" + fileId + ":" + mthId + ":" + descId;
+//        if (instruction.toString().contains("var=")) {
+////            System.out.println(instruction.toString());
+//            executedInfo = executedInfo + "_" + instruction.toString().split("var=")[1];
+//        }
+//        if (instruction.toString().contains("value=")) {
+//            System.out.println(instruction.toString());
+////            executedInfo = executedInfo + "_" + instruction.toString().split("var=")[1];
+//        }
+//
+//        if(System.getProperty("jqf.ei.run_patch").equals("true")) {
+//            instructionLogP.add(executedInfo);
+//        }
+//        else {
+////            System.out.println("In Patched: " + executedInfo);
+//            instructionLog.add(executedInfo);
+//        }
+
+//        System.out.println(executedInfo);
         tracer.get().consume(instruction);
     }
 
@@ -386,6 +532,7 @@ public class TraceLogger extends AbstractLogger {
     public void emit(TraceEvent event) {
         tracer.get().emit(event);
     }
+    
 
     public void initMethodLog () {
         this.stackSize = 0;
@@ -405,6 +552,11 @@ public class TraceLogger extends AbstractLogger {
         this.methodsP = new ArrayList<methodCallInfo>();
         this.methodNameMapP = new HashMap<String, String>();
     }
-
+    public void initLogList () {
+        this.instructionLog = new ArrayList<>();
+    }
+    public void initLogListP () {
+        this.instructionLogP = new ArrayList<>();
+    }
 }
 

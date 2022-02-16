@@ -19,6 +19,6 @@ public class DLOAD extends Instruction {
 
   @Override
   public String toString() {
-    return "DLOAD iid=" + iid + " mid=" + mid + " var=" + var;
+    return "DLOAD iid=" + iid + " mid=" + mid + " var=" + Integer.toString(var);
   }
 }

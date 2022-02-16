@@ -22,6 +22,6 @@ public class IINC extends Instruction {
 
   @Override
   public String toString() {
-    return "IINC iid=" + iid + " mid=" + mid + " var=" + var + " increment=" + increment;
+    return "IINC iid=" + iid + " mid=" + mid + " var=" + Integer.toString(var) + " increment=" + increment;
   }
 }

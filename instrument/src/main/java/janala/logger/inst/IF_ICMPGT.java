@@ -15,6 +15,6 @@ public class IF_ICMPGT extends Instruction implements ConditionalBranch {
 
   @Override
   public String toString() {
-    return "IF_ICMPGT iid=" + iid + " mid=" + mid + " label=" + label;
+    return "IF_ICMPGT iid=" + iid + " mid=" + mid + " label=" + Integer.toString(label);
   }
 }

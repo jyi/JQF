@@ -15,6 +15,6 @@ public class IF_ICMPGE extends Instruction implements ConditionalBranch {
 
   @Override
   public String toString() {
-    return "IF_ICMPGE iid=" + iid + " mid=" + mid + " label=" + label;
+    return "IF_ICMPGE iid=" + iid + " mid=" + mid + " label=" + Integer.toString(label);
   }
 }

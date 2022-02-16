@@ -631,6 +631,7 @@ public class ZestGuidance implements Guidance {
             List<String> pathSpectrum=runCoverage.getPathSpectrum();
             Log.logBranchSpectrum(branchSpectrum,false);
             Log.logPathSpectrum(pathSpectrum,false);
+//            Log.logTrace(false);
             Log.logJson(false);
 
             // Compute a list of keys for which this input can assume responsiblity.

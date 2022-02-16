@@ -19,6 +19,6 @@ public class FLOAD extends Instruction {
 
   @Override
   public String toString() {
-    return "FLOAD iid=" + iid + " mid=" + mid + " var=" + var;
+    return "FLOAD iid=" + iid + " mid=" + mid + " var=" + Integer.toString(var);
   }
 }

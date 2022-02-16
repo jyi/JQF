@@ -19,6 +19,6 @@ public class JSR extends Instruction {
 
   @Override
   public String toString() {
-    return "JSR iid=" + iid + " mid=" + mid + " label=" + label;
+    return "JSR iid=" + iid + " mid=" + mid + " label=" + Integer.toString(label);
   }
 }

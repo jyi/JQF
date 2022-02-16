@@ -15,6 +15,6 @@ public class IFLE extends Instruction implements ConditionalBranch {
 
   @Override
   public String toString() {
-    return "IFLE iid=" + iid + " mid=" + mid + " label=" + label;
+    return "IFLE iid=" + iid + " mid=" + mid + " label=" + Integer.toString(label);
   }
 }

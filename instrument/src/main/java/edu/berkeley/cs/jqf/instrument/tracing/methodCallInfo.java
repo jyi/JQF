@@ -8,15 +8,17 @@ public class methodCallInfo implements JsonObject {
     public methodCallInfo() {
     }
 
-    public methodCallInfo(String methodID, String fileName, String methodName) {
+    public methodCallInfo(String methodID, String fileName, String methodName, String descInfo) {
         this.methodID = methodID;
         this.fileName = fileName;
         this.methodName = methodName;
+        this.descInfo = descInfo;
     }
 
     public String methodID = new String();
     public String fileName = new String();
     public String methodName = new String();
+    public String descInfo = new String();
     public int callCount = 0;
 
     public void incCallCount() {

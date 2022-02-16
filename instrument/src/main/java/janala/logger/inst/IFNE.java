@@ -15,6 +15,6 @@ public class IFNE extends Instruction implements ConditionalBranch {
 
   @Override
   public String toString() {
-    return "IFNE iid=" + iid + " mid=" + mid + " label=" + label;
+    return "IFNE iid=" + iid + " mid=" + mid + " label=" + Integer.toString(label);
   }
 }
